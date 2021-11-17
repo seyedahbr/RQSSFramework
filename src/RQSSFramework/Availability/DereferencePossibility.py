@@ -1,19 +1,13 @@
+from typing import Iterator, List, NamedTuple
+
 import requests
-from typing import Tuple, List, Iterator, NamedTuple
 from rdflib import URIRef
+
 
 class DerefOfURI(NamedTuple):
     uri: URIRef
     deref: bool
     
-import requests
-from typing import Tuple, List, Iterator, NamedTuple
-from rdflib import URIRef
-
-class DerefOfURI(NamedTuple):
-    uri: URIRef
-    deref: bool
-
 class DerefrenceExplorer:
     _uris=[]
     results=None
