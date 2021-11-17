@@ -38,4 +38,4 @@ class DerefrenceExplorer:
             print('Results are not computed')
             return
         for r in self.results:
-            print("URI:{0}, Deref:{1}".format(r.uri,r.deref))
+            print("URI:{0:40}, Deref:{1}".format(r.uri,r.deref))
