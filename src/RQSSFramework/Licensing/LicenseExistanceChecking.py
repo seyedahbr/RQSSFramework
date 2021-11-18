@@ -9,13 +9,6 @@ class LicExistOfDom(NamedTuple):
     domain: URIRef
     license: bool
 
-known_licensed_domains=[
-    'wikidata.org',
-    'wikimediafoundation.org',
-    'wikipedia.org',
-    'uniprot.org'
-]
-
 # covering most popular license terms according to 
 # https://www.synopsys.com/blogs/software-security/top-open-source-licenses/
 licensing_keywords=[
@@ -74,7 +67,6 @@ licensing_keywords=[
     'iBM public license',
     'mozilla.org/mpl',
     'mozilla public license',
-    
 ]
 
 class LicenseChecker:
@@ -82,12 +74,12 @@ class LicenseChecker:
     results=None
     def __init__(self, uris: Iterator[URIRef]):
         _uris = list(dict.fromkeys(uris)) # remove duplicated URIs
-        self._domains = list(dict.fromkeys(self.domain_extractor(_uris))) # compute and remove duplicated domains
+        self._domains = dict.fromkeys(self.domain_extractor(_uris)) # compute and remove duplicated domains
     
-    def domain_extractor(uris: Iterator[URIRef]) -> List[URIRef]:
+    def domain_extractor(self,uris: Iterator[URIRef]) -> List[URIRef]:
         ret_list=[]
         for u in uris:
-            ret_list.append(urlparse(u).netloc)
+            ret_list.append('https://'+urlparse(u).netloc)
         return ret_list
 
     def check_license_existance(self) -> List[LicExistOfDom]:
@@ -97,11 +89,11 @@ class LicenseChecker:
         self.results=[]
         for u in self._domains:
             try:
-                if u.lower() in known_licensed_domains:
-                    self.results.append(LicExistOfDom(u,True))
-                    continue
                 r = requests.get(u)
-                if (r.status_code == 200 and self.html_contains_license(r.text.lower())):
+                if(r.status_code != 200):   # if https not supported then try http
+                    u = u.replace('https','http')
+                    r = requests.get(u)
+                if (r.status_code == 200 and self.html_contains_license(r.text.lower())):   # main human readable license existance checking
                     self.results.append(LicExistOfDom(u,True))
                 else:
                     self.results.append(LicExistOfDom(u,False))
@@ -109,7 +101,7 @@ class LicenseChecker:
                 print(e)
         return self.results
     
-    def html_contains_license(html: str):
+    def html_contains_license(self, html: str):
         return any(licensing_keyword in html for licensing_keyword in licensing_keywords)
                 
     def print_results(self):
@@ -120,4 +112,4 @@ class LicenseChecker:
             print('Results are not computed')
             return
         for r in self.results:
-            print("Domain:{0}, License Existed:{1}".format(r.domain, r.license))
+            print("Domain:{0:40}, License Existed:{1}".format(r.domain, r.license))
