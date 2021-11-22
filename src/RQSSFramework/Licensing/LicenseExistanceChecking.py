@@ -89,10 +89,8 @@ class LicenseChecker:
         self.results=[]
         for u in self._domains:
             try:
-                r = requests.get(u)
-                if(r.status_code != 200):   # if https not supported then try http
-                    u = u.replace('https','http')
-                    r = requests.get(u)
+                r = requests.get(u, verify=False)
+                print(r.status_code)
                 if (r.status_code == 200 and self.html_contains_license(r.text.lower())):   # main human readable license existance checking
                     self.results.append(LicExistOfDom(u,True))
                 else:
