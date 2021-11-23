@@ -1,5 +1,5 @@
 # RQSS-Framework
-RQSS is a Data Quality Assessment Methodology that aims to measure the fitness of the Wikidata references to the users and applications by defining explicit metrics for data quality dimensions.
+RQSS is a Data Quality Assessment Methodology that aims to measure the fitness of the Wikidata references (and other RDF graphs) to the users and applications by defining explicit metrics for data quality dimensions.
 
 ## Input/Output
 RQSS gets an RDF graph as the **input**. RQSS gets an RDF graph as the input. The input graph could be either a raw RDF file (.nt, .ttl, ...) or a local/public SPARQL endpoint. [Currently] The most comprehensive input graph for the system are subsets of Wikidata. These subsets can be topical or not. They can be as small as a statement or as large as the entire Wikidata. The only condition for the input subset is to include at least one reference.
