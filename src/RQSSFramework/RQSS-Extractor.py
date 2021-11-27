@@ -13,10 +13,16 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
     group.add_argument("--endpoint", help="The local/public endpoint of the dataset")
     parser.add_argument("-f", "--format", help="Input file RDF format (nt, ttl)", default='nt')
     parser.add_argument("-o", "--output_dir", help="Output destination directory to store extarcted components from the RDF input file", default='./rqss_extractor_output')
-    parser.add_argument("-eExt" , "--extract_external", help="Extract all external sources (Wikibase referencing model)", action='store_true')
+    parser.add_argument("-eExt" , "--extract_external", help="Extract all external sources (Wikibase referencing model) and save them on output dir", action='store_true')
     return parser
 
-def
+def extract_from_file(opts: ArgumentParser) -> int:
+    return -1
+
+def extract_from_endpoint(opts: ArgumentParser) -> int:
+    if(opts.extract_external):
+        
+
 
 def RQSS_Extractor(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] = None) -> int:
     if isinstance(argv, str):
