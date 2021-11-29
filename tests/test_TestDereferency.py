@@ -9,7 +9,7 @@ class TestDereferency(unittest.TestCase):
         self.test_data = [URIRef("https://www.wikidata.org/wiki/Q1"),\
             URIRef("https://www.wikidata.org/wiki/Q1"),\
             URIRef("https://www.wikidata.org/wiki/Qabc"),\
-            URIRef("https://www.wikidata.org/wiki/Q25")]
+            URIRef("https://www2.macs.hw.ac.uk/~sh200/")] # dereference of redirects
 
     def test_not_computed(self):
         """
