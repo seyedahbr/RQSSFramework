@@ -5,11 +5,12 @@ from typing import Optional, Union, List
 from rdflib import Graph
 from rdflib.namespace import RDF, RDFS
 from rdflib import Namespace
+from Queries import RQSS_QUERIES
 
 def genargs(prog: Optional[str] = None) -> ArgumentParser:
     parser = ArgumentParser(prog)
     group = parser.add_mutually_exclusive_group(required=True)
-    #group.add_argument("--input", help="Input RDF file of the dataset")
+    group.add_argument("--input", help="Input RDF file of the dataset")
     group.add_argument("--endpoint", help="The local/public endpoint of the dataset")
     parser.add_argument("-f", "--format", help="Input file RDF format (nt, ttl)", default='nt')
     parser.add_argument("-o", "--output_dir", help="Output destination directory to store extarcted components from the RDF input file", default='./rqss_extractor_output')
@@ -17,11 +18,13 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
     return parser
 
 def extract_from_file(opts: ArgumentParser) -> int:
-    return -1
+    print('Local file extraction is not supported yet. Please use local/public endpoint.')
+    return 1
 
 def extract_from_endpoint(opts: ArgumentParser) -> int:
     if(opts.extract_external):
-        
+        print(RQSS_QUERIES["get_all_external_sources_filter_wikimedia"])
+        return 0
 
 
 def RQSS_Extractor(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] = None) -> int:
