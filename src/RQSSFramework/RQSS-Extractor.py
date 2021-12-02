@@ -2,9 +2,7 @@ import sys
 from pathlib import Path
 from argparse import ArgumentParser
 from typing import Optional, Union, List
-from rdflib import Graph
-from rdflib.namespace import RDF, RDFS
-from rdflib import Namespace
+from SPARQLWrapper import SPARQLWrapper, CSV
 from Queries import RQSS_QUERIES
 
 def genargs(prog: Optional[str] = None) -> ArgumentParser:
@@ -22,7 +20,12 @@ def extract_from_file(opts: ArgumentParser) -> int:
     return 1
 
 def extract_from_endpoint(opts: ArgumentParser) -> int:
+    sparql = SPARQLWrapper(opts.endpoint)
     if(opts.extract_external):
+        sparql.setQuery(RQSS_QUERIES["get_all_external_sources_filter_wikimedia"])
+        sparql.setReturnFormat(CSV)
+        results = sparql.query()
+
         print(RQSS_QUERIES["get_all_external_sources_filter_wikimedia"])
         return 0
 
