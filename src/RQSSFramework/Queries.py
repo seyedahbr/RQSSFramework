@@ -29,7 +29,8 @@ SELECT ?to_ret WHERE {
           !CONTAINS(lcase(str(?to_ret)), "wikisource.org")&&
           !CONTAINS(lcase(str(?to_ret)), "wikibooks.org") &&
           !CONTAINS(lcase(str(?to_ret)), "wikiquote.org") &&
-          !CONTAINS(lcase(str(?to_ret)), "wiktionary.org"))
+          !CONTAINS(lcase(str(?to_ret)), "wiktionary.org")&&
+          !CONTAINS(lcase(str(?to_ret)), "wikiba.se"))
 }
 ''',
 "get_all_external_sources_filter_wikimedia_distinct" : 
@@ -49,7 +50,8 @@ SELECT DISTINCT ?to_ret WHERE {
           !CONTAINS(lcase(str(?to_ret)), "wikisource.org")&&
           !CONTAINS(lcase(str(?to_ret)), "wikibooks.org") &&
           !CONTAINS(lcase(str(?to_ret)), "wikiquote.org") &&
-          !CONTAINS(lcase(str(?to_ret)), "wiktionary.org"))
+          !CONTAINS(lcase(str(?to_ret)), "wiktionary.org")&&
+          !CONTAINS(lcase(str(?to_ret)), "wikiba.se"))
 }
 '''
 }
