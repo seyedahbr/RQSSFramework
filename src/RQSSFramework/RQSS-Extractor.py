@@ -1,6 +1,7 @@
+from base64 import encodestring
 import sys
 import os
-import requests
+from datetime import datetime
 from pathlib import Path
 from argparse import ArgumentParser
 from typing import Optional, Union, List
@@ -48,13 +49,17 @@ def extract_from_file(opts: ArgumentParser) -> int:
 def extract_from_endpoint(opts: ArgumentParser) -> int:
 
     if(opts.extract_external):
+        start_time=datetime.now()
+        
         external_uris=perform_query(opts.endpoint, RQSS_QUERIES["get_all_external_sources_filter_wikimedia"])
         output_file = os.path.join(opts.output_dir + os.sep + 'external_uris.data')
         with open(output_file, 'w') as file_handler:
             for uri in external_uris:
                 file_handler.write("{}\n".format(uri))
 
+        end_time=datetime.now()
         print('External URIs have been written in the file: {0}'.format(output_file))
+        print('DONE. Duration: {0}'.format(end_time - start_time))
         return 0
 
 
