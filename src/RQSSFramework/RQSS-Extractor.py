@@ -1,3 +1,4 @@
+from ssl import create_default_context
 import sys
 import os
 from datetime import datetime
@@ -17,7 +18,7 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
     parser.add_argument(
         "-f", "--format", help="Input file RDF format (nt, ttl)", default='nt')
     parser.add_argument(
-        "-o", "--output_dir", help="Output destination directory to store extarcted components from the RDF input file", default='.'+os.sep+'rqss_extractor_output')
+        "-o", "--output_dir", help="Output destination directory to store extarcted components from the RDF input file", default=os.getcwd()+os.sep+'rqss_extractor_output')
     parser.add_argument("-eExt", "--extract_external",
                         help="Extract all external sources (Wikibase referencing model) and save them on output dir", action='store_true')
     return parser
@@ -50,6 +51,7 @@ def extract_from_endpoint(opts: ArgumentParser) -> int:
     if(opts.extract_external):
         start_time=datetime.now()
 
+        #external_uris=perform_query(opts.endpoint, RQSS_QUERIES["test_query"])
         external_uris=perform_query(opts.endpoint, RQSS_QUERIES["get_all_external_sources_filter_wikimedia_distinct"])
         output_file = os.path.join(opts.output_dir + os.sep + 'external_uris.data')
         with open(output_file, 'w') as file_handler:
@@ -66,7 +68,8 @@ def RQSS_Extractor(argv: Optional[Union[str, List[str]]] = None, prog: Optional[
     if isinstance(argv, str):
         argv = argv.split()
     opts = genargs(prog).parse_args(argv if argv is not None else sys.argv[1:])
-
+    
+    print('Creating output directory: {0}'.format(opts.output_dir))
     Path(opts.output_dir).mkdir(parents=True, exist_ok=True)
 
     if(opts.input != None):
