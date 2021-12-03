@@ -48,7 +48,7 @@ def extract_from_file(opts: ArgumentParser) -> int:
 def extract_from_endpoint(opts: ArgumentParser) -> int:
 
     if(opts.extract_external):
-        external_uris=perform_query(opts.endpoint, RQSS_QUERIES["test_query"])#RQSS_QUERIES["get_all_external_sources_filter_wikimedia"])
+        external_uris=perform_query(opts.endpoint, RQSS_QUERIES["get_all_external_sources_filter_wikimedia"])
         output_file = os.path.join(opts.output_dir + os.sep + 'external_uris.data')
         with open(output_file, 'w') as file_handler:
             for uri in external_uris:
