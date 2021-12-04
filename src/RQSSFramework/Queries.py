@@ -4,8 +4,8 @@ RQSS_QUERIES={
 SELECT ?to_ret WHERE
 {
   ?statement prov:wasDerivedFrom ?ref.
-  ?ref pr:P854 str(?to_ret).
-  FILTER(isIRI(str(?to_ret))).
+  ?ref pr:P854 ?to_ret.
+  #FILTER(isIRI(str(?to_ret))).
 }
 
 Limit 3

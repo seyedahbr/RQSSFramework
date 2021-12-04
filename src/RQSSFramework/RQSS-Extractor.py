@@ -1,11 +1,12 @@
-from ssl import create_default_context
-import sys
 import os
+import sys
+from argparse import ArgumentParser
 from datetime import datetime
 from pathlib import Path
-from argparse import ArgumentParser
-from typing import Optional, Union, List
-from SPARQLWrapper import SPARQLWrapper, JSON, CSV
+from typing import List, Optional, Union
+
+from SPARQLWrapper import JSON, SPARQLWrapper
+
 from Queries import RQSS_QUERIES
 
 
