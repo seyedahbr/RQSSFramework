@@ -1,3 +1,4 @@
+from multiprocessing.context import Process
 import os
 import sys
 from argparse import ArgumentParser
@@ -42,27 +43,40 @@ def perform_query(endpoint: str, query: str) -> List[str]:
     return ret_val
 
 
+def extract_external_uris(opts: ArgumentParser) -> int:
+    print('Started extracting External Sources’ URIs')
+    start_time=datetime.now()
+
+    #external_uris=perform_query(opts.endpoint, RQSS_QUERIES["test_query"])
+    external_uris=perform_query(opts.endpoint, RQSS_QUERIES["get_all_external_sources_filter_wikimedia_distinct"])
+    output_file = os.path.join(opts.output_dir + os.sep + 'external_uris.data')
+    with open(output_file, 'w') as file_handler:
+        for uri in external_uris:
+            file_handler.write("{}\n".format(uri))
+
+    end_time=datetime.now()
+    print('External URIs have been written in the file: {0}'.format(output_file))
+    print('DONE. Duration: {0}'.format(end_time - start_time))
+    return 0
+
 def extract_from_file(opts: ArgumentParser) -> int:
     print('Local file extraction is not supported yet. Please use local/public endpoint.')
     return 1
 
 
 def extract_from_endpoint(opts: ArgumentParser) -> int:
+    # list of parallel processes
+    extractor_procs = []
 
     if(opts.extract_external):
-        start_time=datetime.now()
-
-        #external_uris=perform_query(opts.endpoint, RQSS_QUERIES["test_query"])
-        external_uris=perform_query(opts.endpoint, RQSS_QUERIES["get_all_external_sources_filter_wikimedia_distinct"])
-        output_file = os.path.join(opts.output_dir + os.sep + 'external_uris.data')
-        with open(output_file, 'w') as file_handler:
-            for uri in external_uris:
-                file_handler.write("{}\n".format(uri))
-
-        end_time=datetime.now()
-        print('External URIs have been written in the file: {0}'.format(output_file))
-        print('DONE. Duration: {0}'.format(end_time - start_time))
-        return 0
+        p = Process(target=extract_external_uris(opts))
+        extractor_procs.append(p)
+    
+    for proc in extractor_procs:
+        proc.start()
+    
+    for proc in extractor_procs:
+        proc.join()       
 
 
 def RQSS_Extractor(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] = None) -> int:
