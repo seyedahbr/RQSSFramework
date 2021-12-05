@@ -3,7 +3,7 @@ import sys
 import time
 from argparse import ArgumentParser
 from datetime import datetime
-from multiprocessing import Process
+from multiprocessing.context import Process
 from pathlib import Path
 from typing import List, Optional, Union
 
@@ -29,20 +29,32 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
 
 def compute_dereferencing() -> int:
     print('Started computing Metric: Dereference Possibility of the External URIs')
+    start_time=datetime.now()
+    output_file=''
     time.sleep(2)
-    print('DONE Metric: Dereference Possibility of the External URIs')
+    end_time=datetime.now()
+    print('Metric: Dereference Possibility of the External URIs results have been written in the file: {0}'.format(output_file))
+    print('DONE. Metric: Dereference Possibility of the External URIs, Duration: {0}'.format(end_time - start_time))
     return 0
 
 def compute_licensing() -> int:
     print('Started computing Metric: External Sources’ Datasets Licensing')
-    time.sleep(1)
-    print('DONE Metric: External Sources’ Datasets Licensing')
+    start_time=datetime.now()
+    output_file=''
+    time.sleep(2)
+    end_time=datetime.now()
+    print('Metric: External Sources’ Datasets Licensing results have been written in the file: {0}'.format(output_file))
+    print('DONE. Metric: External Sources’ Datasets Licensing, Duration: {0}'.format(end_time - start_time))
     return 0
 
 def compute_security() -> int:
     print('Started computing Metric: Link Security of the External URIs')
-    time.sleep(3)
-    print('DONE Metric: Link Security of the External URIs')
+    start_time=datetime.now()
+    output_file=''
+    time.sleep(2)
+    end_time=datetime.now()
+    print('Metric: Link Security of the External URIs results have been written in the file: {0}'.format(output_file))
+    print('DONE. Metric: Link Security of the External URIs, Duration: {0}'.format(end_time - start_time))
     return 0
 
 def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] = None) -> int:

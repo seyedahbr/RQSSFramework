@@ -56,7 +56,7 @@ def extract_external_uris(opts: ArgumentParser) -> int:
 
     end_time=datetime.now()
     print('External URIs have been written in the file: {0}'.format(output_file))
-    print('DONE. Duration: {0}'.format(end_time - start_time))
+    print('DONE. Extracting External URIs, Duration: {0}'.format(end_time - start_time))
     return 0
 
 def extract_from_file(opts: ArgumentParser) -> int:
@@ -93,7 +93,6 @@ def RQSS_Extractor(argv: Optional[Union[str, List[str]]] = None, prog: Optional[
         return extract_from_endpoint(opts)
 
     return 0
-
 
 if __name__ == '__main__':
     RQSS_Extractor(sys.argv[1:])
