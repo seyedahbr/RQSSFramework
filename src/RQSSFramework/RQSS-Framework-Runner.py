@@ -1,7 +1,9 @@
 import os
 import sys
+import time
 from argparse import ArgumentParser
 from datetime import datetime
+from multiprocessing import Process
 from pathlib import Path
 from typing import List, Optional, Union
 
@@ -25,12 +27,58 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
     
     return parser
 
+def compute_dereferencing() -> int:
+    print('Started computing Metric: Dereference Possibility of the External URIs')
+    time.sleep(2)
+    print('DONE Metric: Dereference Possibility of the External URIs')
+    return 0
+
+def compute_licensing() -> int:
+    print('Started computing Metric: External Sources’ Datasets Licensing')
+    time.sleep(1)
+    print('DONE Metric: External Sources’ Datasets Licensing')
+    return 0
+
+def compute_security() -> int:
+    print('Started computing Metric: Link Security of the External URIs')
+    time.sleep(3)
+    print('DONE Metric: Link Security of the External URIs')
+    return 0
 
 def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] = None) -> int:
     if isinstance(argv, str):
         argv = argv.split()
     opts = genargs(prog).parse_args(argv if argv is not None else sys.argv[1:])
 
+    # checking existance of the input data directory
+    opts.data_dir = Path(opts.data_dir)
+    if not opts.data_dir.is_dir():
+        print('The data directory "{0}" not existed.'.format(opts.data_dir))
+        return 1
+    opts.data_dir = opts.data_dir.resolve(strict=True)
 
+    # creating the output destination directory
+    print('Creating output directory: {0}'.format(opts.output_dir))
+    Path(opts.output_dir).mkdir(parents=True, exist_ok=True)
+
+    # list of parallel processes
+    framework_procs = []
+
+    if opts.dereferencing:
+        p = Process(target=compute_dereferencing)
+        framework_procs.append(p)
+    if opts.licensing:
+        p = Process(target=compute_licensing)
+        framework_procs.append(p)
+    if opts.security:
+        p = Process(target=compute_security)
+        framework_procs.append(p)
+    
+    for proc in framework_procs:
+        proc.start()
+    
+    for proc in framework_procs:
+        proc.join()
+    
 if __name__ == '__main__':
     RQSS_Framework_Runner(sys.argv[1:])
