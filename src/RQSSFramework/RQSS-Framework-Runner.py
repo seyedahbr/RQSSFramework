@@ -1,13 +1,17 @@
 import os
 import sys
 import time
+import csv
 from argparse import ArgumentParser
 from datetime import datetime
 from multiprocessing.context import Process
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import Iterator, List, NamedTuple, Optional, Union
 
 from SPARQLWrapper import JSON, SPARQLWrapper
+from Availability.DereferencePossibility import DerefrenceExplorer
+from Licensing.LicenseExistanceChecking import LicenseChecker
+from Security.TLSExistanceChecking import TLSChecker
 
 from Queries import RQSS_QUERIES
 
@@ -27,17 +31,40 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
     
     return parser
 
-def compute_dereferencing() -> int:
+def write_results_to_CSV(results: Iterator[NamedTuple], output_file: str) -> None:
+    with open(output_file, 'w') as f:
+        w = csv.writer(f)
+        w.writerow([field for field in results._fields])    # write header from NamedTuple fields
+        w.writerow()
+
+    
+def compute_dereferencing(opts: ArgumentParser) -> int:
     print('Started computing Metric: Dereference Possibility of the External URIs')
+    input_data_file = os.path.join(opts.data_dir + os.sep + 'external_uris.data')
+    output_file = os.path.join(opts.output_dir + os.sep + 'dereferencing.csv')
+
+    # reading the extracted External URIs
+    print('Reading data ...')
+    uris = []
+    with open(input_data_file) as file:
+        for line in file:
+            uris.append(line.rstrip())
+
+    # running the framework metric function
+    print('Running metric ...')
     start_time=datetime.now()
-    output_file=''
-    time.sleep(2)
+    result = DerefrenceExplorer(uris).check_dereferencies()
     end_time=datetime.now()
+
+    # saving the results for presentation layer
+
+
+    time.sleep(2)
     print('Metric: Dereference Possibility of the External URIs results have been written in the file: {0}'.format(output_file))
     print('DONE. Metric: Dereference Possibility of the External URIs, Duration: {0}'.format(end_time - start_time))
     return 0
 
-def compute_licensing() -> int:
+def compute_licensing(opts: ArgumentParser) -> int:
     print('Started computing Metric: External Sources’ Datasets Licensing')
     start_time=datetime.now()
     output_file=''
@@ -47,7 +74,7 @@ def compute_licensing() -> int:
     print('DONE. Metric: External Sources’ Datasets Licensing, Duration: {0}'.format(end_time - start_time))
     return 0
 
-def compute_security() -> int:
+def compute_security(opts: ArgumentParser) -> int:
     print('Started computing Metric: Link Security of the External URIs')
     start_time=datetime.now()
     output_file=''
@@ -77,13 +104,13 @@ def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Op
     framework_procs = []
 
     if opts.dereferencing:
-        p = Process(target=compute_dereferencing)
+        p = Process(target=compute_dereferencing(opts))
         framework_procs.append(p)
     if opts.licensing:
-        p = Process(target=compute_licensing)
+        p = Process(target=compute_licensing(opts))
         framework_procs.append(p)
     if opts.security:
-        p = Process(target=compute_security)
+        p = Process(target=compute_security(opts))
         framework_procs.append(p)
     
     for proc in framework_procs:
