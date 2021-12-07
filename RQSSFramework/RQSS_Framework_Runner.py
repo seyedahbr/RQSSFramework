@@ -37,9 +37,7 @@ def write_results_to_CSV(results: List[NamedTuple], output_file: str) -> None:
         w = csv.writer(f)
         w.writerow([field for field in results[0]._fields])    # write header from NamedTuple fields
         for result in results:
-            row = []
-            for field in result._fields:
-                row.append(result._asdict()[field])
+            row = [result._asdict()[field] for field in result._fields]
             w.writerow(row)
 
     
