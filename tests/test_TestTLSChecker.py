@@ -1,7 +1,7 @@
 import unittest
 from unittest import result
 from rdflib import URIRef
-from src.RQSSFramework.Security.TLSExistanceChecking import TLSChecker
+from RQSSFramework.Security.TLSExistanceChecking import TLSChecker
 
 class TestTLSChecking(unittest.TestCase):
 

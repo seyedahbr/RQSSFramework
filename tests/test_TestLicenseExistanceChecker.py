@@ -1,7 +1,7 @@
 import unittest
 from unittest import result
 from rdflib import URIRef
-from src.RQSSFramework.Licensing.LicenseExistanceChecking import LicenseChecker
+from RQSSFramework.Licensing.LicenseExistanceChecking import LicenseChecker
 
 class TestLicensing(unittest.TestCase):
 

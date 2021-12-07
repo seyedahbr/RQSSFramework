@@ -1,7 +1,7 @@
 import unittest
 from unittest import result
 from rdflib import URIRef
-from src.RQSSFramework.Availability.DereferencePossibility import DerefrenceExplorer
+from RQSSFramework.Availability.DereferencePossibility import DerefrenceExplorer
 
 class TestDereferency(unittest.TestCase):
 
