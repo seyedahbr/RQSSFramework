@@ -10,10 +10,10 @@ from typing import Iterator, List, NamedTuple, Optional, Union
 
 from SPARQLWrapper import JSON, SPARQLWrapper
 
-from src.RQSSFramework.Availability.DereferencePossibility import DerefrenceExplorer
-from src.RQSSFramework.Licensing.LicenseExistanceChecking import LicenseChecker
-from src.RQSSFramework.Queries import RQSS_QUERIES
-from src.RQSSFramework.Security.TLSExistanceChecking import TLSChecker
+from RQSSFramework.Availability.DereferencePossibility import DerefrenceExplorer
+from RQSSFramework.Licensing.LicenseExistanceChecking import LicenseChecker
+from RQSSFramework.Queries import RQSS_QUERIES
+from RQSSFramework.Security.TLSExistanceChecking import TLSChecker
 
 
 def genargs(prog: Optional[str] = None) -> ArgumentParser:

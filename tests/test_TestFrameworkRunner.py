@@ -1,10 +1,10 @@
 import os
 import unittest
 from multiprocessing.context import Process
-from src.RQSSFramework.RQSS_Framework_Runner import write_results_to_CSV
+from RQSSFramework.RQSS_Framework_Runner import write_results_to_CSV
 #from src.RQSSFramework.RQSS_Framework_Runner import write_results_to_CSV
 
-from src.RQSSFramework.Availability.DereferencePossibility import DerefOfURI
+from RQSSFramework.Availability.DereferencePossibility import DerefOfURI
 
 
 
