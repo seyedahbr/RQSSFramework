@@ -60,18 +60,8 @@ def compute_dereferencing(opts: ArgumentParser) -> int:
     end_time=datetime.now()
 
     # saving the results for presentation layer
-    # with open(output_file, 'w') as f:
-    #     w = csv.writer(f)
-    #     w.writerow([field.replace("_", "").title() for field in DerefOfURI._fields])    # write header from NamedTuple fields
-    #     for result in results:
-    #         row = []
-    #         for field in DerefOfURI._fields:
-    #             row.append(results[field.replace("_", "").title()])
-    #         w.writerow(row)
+    write_results_to_CSV(results, output_file)
 
-
-
-    time.sleep(2)
     print('Metric: Dereference Possibility of the External URIs results have been written in the file: {0}'.format(output_file))
     print('DONE. Metric: Dereference Possibility of the External URIs, Duration: {0}'.format(end_time - start_time))
     return 0
