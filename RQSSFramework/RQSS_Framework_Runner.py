@@ -68,20 +68,50 @@ def compute_dereferencing(opts: ArgumentParser) -> int:
 
 def compute_licensing(opts: ArgumentParser) -> int:
     print('Started computing Metric: External Sources’ Datasets Licensing')
+    input_data_file = os.path.join(opts.data_dir + os.sep + 'external_uris.data')
+    output_file = os.path.join(opts.output_dir + os.sep + 'licensing.csv')
+
+    # reading the extracted External URIs
+    print('Reading data ...')
+    uris = []
+    with open(input_data_file) as file:
+        for line in file:
+            uris.append(line.rstrip())
+
+    # running the framework metric function
+    print('Running metric ...')
     start_time=datetime.now()
-    output_file=''
-    time.sleep(2)
+    results = LicenseChecker(uris).check_license_existance()
     end_time=datetime.now()
+
+    # saving the results for presentation layer
+    write_results_to_CSV(results, output_file)
+
     print('Metric: External Sources’ Datasets Licensing results have been written in the file: {0}'.format(output_file))
     print('DONE. Metric: External Sources’ Datasets Licensing, Duration: {0}'.format(end_time - start_time))
     return 0
 
 def compute_security(opts: ArgumentParser) -> int:
     print('Started computing Metric: Link Security of the External URIs')
+    input_data_file = os.path.join(opts.data_dir + os.sep + 'external_uris.data')
+    output_file = os.path.join(opts.output_dir + os.sep + 'security.csv')
+
+    # reading the extracted External URIs
+    print('Reading data ...')
+    uris = []
+    with open(input_data_file) as file:
+        for line in file:
+            uris.append(line.rstrip())
+
+    # running the framework metric function
+    print('Running metric ...')
     start_time=datetime.now()
-    output_file=''
-    time.sleep(2)
+    results = TLSChecker(uris).check_support_tls()
     end_time=datetime.now()
+
+    # saving the results for presentation layer
+    write_results_to_CSV(results, output_file)
+    
     print('Metric: Link Security of the External URIs results have been written in the file: {0}'.format(output_file))
     print('DONE. Metric: Link Security of the External URIs, Duration: {0}'.format(end_time - start_time))
     return 0
