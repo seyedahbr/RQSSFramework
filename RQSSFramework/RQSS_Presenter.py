@@ -85,7 +85,7 @@ def RQSS_Plot(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] 
     if not opts.result_dir.is_dir():
         print('The data directory "{0}" not existed.'.format(opts.result_dir))
         return 1
-    opts.result_dir = opts.result_dir.resolve(strict=True)
+    opts.result_dir = str(opts.result_dir.resolve(strict=True))
 
     # creating the output destination directory
     print('Creating output directory: {0}'.format(opts.output_dir))

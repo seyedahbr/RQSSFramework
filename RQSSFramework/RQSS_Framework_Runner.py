@@ -126,7 +126,7 @@ def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Op
     if not opts.data_dir.is_dir():
         print('The data directory "{0}" not existed.'.format(opts.data_dir))
         return 1
-    opts.data_dir = opts.data_dir.resolve(strict=True)
+    opts.data_dir = str(opts.data_dir.resolve(strict=True))
 
     # creating the output destination directory
     print('Creating output directory: {0}'.format(opts.output_dir))
