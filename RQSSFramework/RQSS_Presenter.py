@@ -1,8 +1,6 @@
 import sys
 import os
-import seaborn as sns
 import pandas as pd
-import matplotlib.pyplot as plt
 from argparse import ArgumentParser
 from datetime import datetime
 from multiprocessing.context import Process
@@ -25,8 +23,9 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
 
 
 def box_whisker_plot(data, x_row: str, y_col: str, output: str) -> None:
-    frame = pd.concat(data, axis=0, ignore_index=True)
-    box_plot = sns.boxplot(data=frame, y=y_col, showmeans=True, showfliers=True,
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    box_plot = sns.boxplot(data=data, y=y_col, showmeans=True, showfliers=False,
                            meanprops={"marker": "^",
                                       "markerfacecolor": "black",
                                       "markeredgecolor": "black",
@@ -35,16 +34,19 @@ def box_whisker_plot(data, x_row: str, y_col: str, output: str) -> None:
                            flierprops={"marker": "o", "markersize": "5"})
     box_plot.set_xlabel(x_row)
     box_plot.set_ylabel(y_col)
-    plt.savefig(output , format='eps')
+    plt.savefig(output , format='png')
+    plt.close()
 
 
 def plot_dereferencing(opts: ArgumentParser) -> int:
     input_data_file = os.path.join(
         opts.result_dir + os.sep + 'dereferencing.csv')
-    output_file = os.path.join(opts.output_dir + os.sep + 'dereferencing.eps')
+    output_file = os.path.join(opts.output_dir + os.sep + 'dereferencing.png')
 
     csv_data = pd.read_csv(input_data_file, index_col=None, header=0)
-    box_whisker_plot(csv_data, 'Derefrence Possibility', str(DerefOfURI._fields[1], output_file))
+    # convert True and False to 1 and 0
+    csv_data[str(DerefOfURI._fields[1])] = (csv_data[str(DerefOfURI._fields[1])] == True).astype(int)
+    box_whisker_plot(csv_data, 'Derefrence Possibility', str(DerefOfURI._fields[1]), output_file)
     
     print('Metric: Dereference Possibility of the External URIs chart(s) have been plotted in the file: {0}'.format(
         output_file))
@@ -53,10 +55,11 @@ def plot_dereferencing(opts: ArgumentParser) -> int:
 def plot_licensing(opts: ArgumentParser) -> int:
     input_data_file = os.path.join(
         opts.result_dir + os.sep + 'licensing.csv')
-    output_file = os.path.join(opts.output_dir + os.sep + 'licensing.eps')
+    output_file = os.path.join(opts.output_dir + os.sep + 'licensing.png')
 
     csv_data = pd.read_csv(input_data_file, index_col=None, header=0)
-    box_whisker_plot(csv_data, 'Licensing', str(LicExistOfDom._fields[1], output_file))
+    csv_data[str(LicExistOfDom._fields[1])] = (csv_data[str(LicExistOfDom._fields[1])] == True).astype(int)
+    box_whisker_plot(csv_data, 'Licensing', str(LicExistOfDom._fields[1]), output_file)
     
     print('Metric: External Sources’ Datasets Licensing chart(s) have been plotted in the file: {0}'.format(
         output_file))
@@ -65,10 +68,11 @@ def plot_licensing(opts: ArgumentParser) -> int:
 def plot_security(opts: ArgumentParser) -> int:
     input_data_file = os.path.join(
         opts.result_dir + os.sep + 'security.csv')
-    output_file = os.path.join(opts.output_dir + os.sep + 'security.eps')
+    output_file = os.path.join(opts.output_dir + os.sep + 'security.png')
 
     csv_data = pd.read_csv(input_data_file, index_col=None, header=0)
-    box_whisker_plot(csv_data, 'Security', str(TLSExist._fields[1], output_file))
+    csv_data[str(TLSExist._fields[1])] = (csv_data[str(TLSExist._fields[1])] == True).astype(int)
+    box_whisker_plot(csv_data, 'Security', str(TLSExist._fields[1]), output_file)
     
     print('Metric: Link Security of the External URIs chart(s) have been plotted in the file: {0}'.format(
         output_file))
