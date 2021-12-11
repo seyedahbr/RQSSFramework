@@ -30,6 +30,7 @@ class TLSChecker:
                     self.results.append(TLSExist(u,False))
             except Exception as e:
                 self.results.append(TLSExist(u,False))
+                print(e)
         return self.results
                 
     def print_results(self):

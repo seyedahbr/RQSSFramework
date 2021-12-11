@@ -27,6 +27,7 @@ class DerefrenceExplorer:
                 else:
                     self.results.append(DerefOfURI(u,False))
             except Exception as e:
+                self.results.append(DerefOfURI(u,False))
                 print(e)
         return self.results
                 
