@@ -95,6 +95,7 @@ class LicenseChecker:
                 else:
                     self.results.append(LicExistOfDom(u,False))
             except Exception as e:
+                self.results.append(LicExistOfDom(u,False))
                 print(e)
         return self.results
     
