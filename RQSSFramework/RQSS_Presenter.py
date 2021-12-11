@@ -7,9 +7,9 @@ from multiprocessing.context import Process
 from pathlib import Path
 from typing import Iterator, List, NamedTuple, Optional, Union
 
-from RQSSFramework.Availability.DereferencePossibility import DerefOfURI
-from RQSSFramework.Licensing.LicenseExistanceChecking import LicExistOfDom
-from RQSSFramework.Security.TLSExistanceChecking import TLSExist
+from Availability.DereferencePossibility import DerefOfURI
+from Licensing.LicenseExistanceChecking import LicExistOfDom
+from Security.TLSExistanceChecking import TLSExist
 
 
 def genargs(prog: Optional[str] = None) -> ArgumentParser:
