@@ -6,6 +6,12 @@ class WikibaseSyntaxChecker:
     def __init__(self):
         self._num_fails = 0
     
+    def check_shex_schema(self) -> int:
+        num_fails = 0
+        
+        self._num_fails = num_fails
+        return num_fails
+    
     def print_results(self):
         """
         print self._num_fains if it is already computed
