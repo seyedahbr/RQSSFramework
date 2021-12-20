@@ -1,4 +1,6 @@
 from typing import Iterator, List, NamedTuple
+import pyshex
+import ShExes
 
 class WikibaseSyntaxChecker:
     _num_fails = None
@@ -8,7 +10,7 @@ class WikibaseSyntaxChecker:
     
     def check_shex_schema(self) -> int:
         num_fails = 0
-        
+        results=pyshex.ShExEvaluator.evaluate(None,ShExes.SHEX_SCHEMAS['wikibase_reference_reification'])
         self._num_fails = num_fails
         return num_fails
     
