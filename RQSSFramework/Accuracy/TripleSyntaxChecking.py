@@ -9,7 +9,11 @@ import ShExes, Queries
 class SyntxResult(NamedTuple):
     total: int
     fails: int
-    score: float = 1-(fails/total)
+    def __repr__(self):
+        return "Number of checked items: {0:10} fails:{1:10} score{2}".format(self.total, self.fails, self.score)
+    @property
+    def score(self):
+        return 1-(self.fails/self.total)
 
 class WikibaseRefTripleSyntaxChecker:
     result:SyntxResult = None
@@ -39,4 +43,4 @@ class WikibaseRefTripleSyntaxChecker:
         if self.result == None:
             print('Results are not computed')
             return
-        print("Number of checked items: {0:10} fails:{1:10} score{2}".format(self.result.total, self.result.fails, self.result.score))
+        print(self.result)
