@@ -37,7 +37,7 @@ class WikibaseRefTripleSyntaxChecker:
                 result=ShExEvaluator(SlurpyGraphWithAgent(self.endpoint),
                 ShExes.SHEX_SCHEMAS['wikibase_reference_reification'],
                 statement_node).evaluate()
-                if not result.result: num_fails += 1
+                if not result[0].result: num_fails += 1
             except Exception as e:
                 num_fails += 1
                 print(e)
