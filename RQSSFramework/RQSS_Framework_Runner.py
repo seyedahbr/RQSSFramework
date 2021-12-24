@@ -128,6 +128,7 @@ def compute_ref_triple_syntax(opts: ArgumentParser) -> int:
     # running the framework metric function
     print('Running metric ...')
     start_time=datetime.now()
+    results = []
     if(opts.endpoint):
         results = WikibaseRefTripleSyntaxChecker(opts.endpoint, None).check_shex_over_endpoint()
     end_time=datetime.now()
