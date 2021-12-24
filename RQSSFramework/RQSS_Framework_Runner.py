@@ -123,18 +123,26 @@ def compute_security(opts: ArgumentParser) -> int:
 
 def compute_ref_triple_syntax(opts: ArgumentParser) -> int:
     print('Started computing Metric: Syntactic Validity of Reference Triples')
+    input_data_file = os.path.join(opts.data_dir + os.sep + 'statement_nodes_uris.data')
     output_file = os.path.join(opts.output_dir + os.sep + 'ref_triple_syntax.csv')
+
+    # reading the extracted External URIs
+    print('Reading data ...')
+    statements = []
+    with open(input_data_file) as file:
+        for line in file:
+            statements.append(line.rstrip())
 
     # running the framework metric function
     print('Running metric ...')
     start_time=datetime.now()
     results = []
     if(opts.endpoint):
-        results = WikibaseRefTripleSyntaxChecker(opts.endpoint, None).check_shex_over_endpoint()
+        results = WikibaseRefTripleSyntaxChecker(statements, opts.endpoint, None).check_shex_over_endpoint()
     end_time=datetime.now()
 
     # saving the results for presentation layer
-    write_results_to_CSV(results, output_file)
+    write_results_to_CSV([results], output_file)
     
     print('Metric: Syntactic Validity of Reference Triples results have been written in the file: {0}'.format(output_file))
     print('DONE. Metric: Syntactic Validity of Reference Triples, Duration: {0}'.format(end_time - start_time))

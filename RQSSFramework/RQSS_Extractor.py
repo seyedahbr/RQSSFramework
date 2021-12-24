@@ -22,7 +22,9 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
     parser.add_argument(
         "-o", "--output_dir", help="Output destination directory to store extarcted components from the RDF input file", default=os.getcwd()+os.sep+'rqss_extractor_output')
     parser.add_argument("-eExt", "--extract_external",
-                        help="Extract all external sources (Wikibase referencing model) and save them on output dir", action='store_true')
+                        help="Extract all external sources uris (Wikibase referencing model) and save them on output dir", action='store_true')
+    parser.add_argument("-sn", "--statement_nodes",
+                        help="Extract all statement nodes uris (Wikibase referencing model) and save them on output dir", action='store_true')
     return parser
 
 
@@ -47,7 +49,6 @@ def extract_external_uris(opts: ArgumentParser) -> int:
     print('Started extracting External Sources’ URIs')
     start_time=datetime.now()
 
-    #external_uris=perform_query(opts.endpoint, RQSS_QUERIES["test_query"])
     external_uris=perform_query(opts.endpoint, RQSS_QUERIES["get_all_external_sources_filter_wikimedia_distinct"])
     output_file = os.path.join(opts.output_dir + os.sep + 'external_uris.data')
     with open(output_file, 'w') as file_handler:
@@ -57,6 +58,21 @@ def extract_external_uris(opts: ArgumentParser) -> int:
     end_time=datetime.now()
     print('External URIs have been written in the file: {0}'.format(output_file))
     print('DONE. Extracting External URIs, Duration: {0}'.format(end_time - start_time))
+    return 0
+
+def extract_statement_nodes_uris(opts: ArgumentParser) -> int:
+    print('Started extracting Statement Nodes URIs')
+    start_time=datetime.now()
+
+    statement_uris=perform_query(opts.endpoint, RQSS_QUERIES["get_all_statement_nodes_wikimedia"])
+    output_file = os.path.join(opts.output_dir + os.sep + 'statement_nodes_uris.data')
+    with open(output_file, 'w') as file_handler:
+        for uri in statement_uris:
+            file_handler.write("{}\n".format(uri))
+
+    end_time=datetime.now()
+    print('Statement Nodes URIs have been written in the file: {0}'.format(output_file))
+    print('DONE. Extracting Statement Nodes URIs, Duration: {0}'.format(end_time - start_time))
     return 0
 
 def extract_from_file(opts: ArgumentParser) -> int:
@@ -70,6 +86,10 @@ def extract_from_endpoint(opts: ArgumentParser) -> int:
 
     if(opts.extract_external):
         p = Process(target=extract_external_uris(opts))
+        extractor_procs.append(p)
+    
+    if(opts.statement_nodes):
+        p = Process(target=extract_statement_nodes_uris(opts))
         extractor_procs.append(p)
     
     for proc in extractor_procs:

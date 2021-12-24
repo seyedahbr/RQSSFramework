@@ -3,6 +3,8 @@ from typing import Iterator, List, NamedTuple
 from pyshex.shex_evaluator import ShExEvaluator
 from pyshex.user_agent import SlurpyGraphWithAgent
 from pyshex.utils.sparql_query import SPARQLQuery
+from rdflib import URIRef
+from rdflib.term import Statement
 
 import ShExes, Queries
 
@@ -16,23 +18,30 @@ class SyntxResult(NamedTuple):
         return 1-(self.fails/self.total)
 
 class WikibaseRefTripleSyntaxChecker:
+    statements = []
     result:SyntxResult = None
     endpoint: str = None
     file: str = None 
 
-    def __init__(self, endpoint: str = None, file: str = None):
+    def __init__(self, statements: List[URIRef], endpoint: str = None, file: str = None):
+        self.statements = statements
         self.endpoint = endpoint
         self.file = file
     
     def check_shex_over_endpoint(self) -> int:
         num_total = 0
         num_fails = 0
-        results=ShExEvaluator(SlurpyGraphWithAgent(self.endpoint),
-        ShExes.SHEX_SCHEMAS['wikibase_reference_reification'],
-        SPARQLQuery(self.endpoint,Queries.RQSS_QUERIES['get_all_statement_nodes_wikimedia']).focus_nodes()).evaluate()
-        num_total = len(results)
-        for r in results:
-            if not r.result: num_fails += 1
+        for statement_node in self.statements:
+            num_total += 1
+            try:
+                result=ShExEvaluator(SlurpyGraphWithAgent(self.endpoint),
+                ShExes.SHEX_SCHEMAS['wikibase_reference_reification'],
+                statement_node).evaluate()
+                if not result.result: num_fails += 1
+            except Exception as e:
+                num_fails += 1
+                print(e)
+                continue
         self.result = SyntxResult(num_total, num_fails)
         return self.result
     
