@@ -14,6 +14,7 @@ from Availability.DereferencePossibility import DerefrenceExplorer
 from Licensing.LicenseExistanceChecking import LicenseChecker
 from Queries import RQSS_QUERIES
 from Security.TLSExistanceChecking import TLSChecker
+from Accuracy.TripleSyntaxChecking import WikibaseRefTripleSyntaxChecker
 
 
 def genargs(prog: Optional[str] = None) -> ArgumentParser:
@@ -28,6 +29,8 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
                         help="Compute the metric: External Sources’ Datasets Licensing", action='store_true')
     parser.add_argument("-sec", "--security",
                         help="Compute the metric: Link Security of the External URIs", action='store_true')
+    parser.add_argument("-rts", "--reftriplesyntax",
+                        help="Compute the metric: Syntactic Validity of Reference Triples", action='store_true')
     
     return parser
 
@@ -116,6 +119,23 @@ def compute_security(opts: ArgumentParser) -> int:
     print('DONE. Metric: Link Security of the External URIs, Duration: {0}'.format(end_time - start_time))
     return 0
 
+def compute_ref_triple_syntax(opts: ArgumentParser) -> int:
+    print('Started computing Metric: Syntactic Validity of Reference Triples')
+    output_file = os.path.join(opts.output_dir + os.sep + 'security.csv')
+
+    # running the framework metric function
+    print('Running metric ...')
+    start_time=datetime.now()
+    results = WikibaseRefTripleSyntaxChecker('http://137.195.143.213:9998/blazegraph/sparql/').check_shex_over_endpoint()
+    end_time=datetime.now()
+
+    # saving the results for presentation layer
+    write_results_to_CSV(results, output_file)
+    
+    print('Metric: Syntactic Validity of Reference Triples results have been written in the file: {0}'.format(output_file))
+    print('DONE. Metric: Syntactic Validity of Reference Triples, Duration: {0}'.format(end_time - start_time))
+    return 0
+
 def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] = None) -> int:
     if isinstance(argv, str):
         argv = argv.split()
@@ -143,6 +163,9 @@ def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Op
         framework_procs.append(p)
     if opts.security:
         p = Process(target=compute_security(opts))
+        framework_procs.append(p)
+    if opts.reftriplesyntax:
+        p = Process(target=compute_ref_triple_syntax(opts))
         framework_procs.append(p)
     
     for proc in framework_procs:
