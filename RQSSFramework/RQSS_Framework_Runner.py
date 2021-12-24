@@ -22,6 +22,8 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
     parser.add_argument(
         "data_dir", help="Input data directory that includes initial collections like facts, properties, literals, external sources, etc.")
     parser.add_argument(
+       "--endpoint", help="The local/public endpoint of the dataset for shex-based metrics", required=False)
+    parser.add_argument(
         "-o", "--output_dir", help="Output destination directory to store computed metrics details", default=os.getcwd()+os.sep+'rqss_framework_output')
     parser.add_argument("-dp", "--dereferencing",
                         help="Compute the metric: Dereference Possibility of the External URIs", action='store_true')
@@ -35,13 +37,13 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
     return parser
 
 def write_results_to_CSV(results: List[NamedTuple], output_file: str) -> None:
-    if len(results) == 0: return
     with open(output_file, 'w', newline='') as f:
         w = csv.writer(f)
         w.writerow([field for field in results[0]._fields])    # write header from NamedTuple fields
         for result in results:
             row = [result._asdict()[field] for field in result._fields]
             w.writerow(row)
+    return
 
     
 def compute_dereferencing(opts: ArgumentParser) -> int:
@@ -121,12 +123,13 @@ def compute_security(opts: ArgumentParser) -> int:
 
 def compute_ref_triple_syntax(opts: ArgumentParser) -> int:
     print('Started computing Metric: Syntactic Validity of Reference Triples')
-    output_file = os.path.join(opts.output_dir + os.sep + 'security.csv')
+    output_file = os.path.join(opts.output_dir + os.sep + 'ref_triple_syntax.csv')
 
     # running the framework metric function
     print('Running metric ...')
     start_time=datetime.now()
-    results = WikibaseRefTripleSyntaxChecker('http://137.195.143.213:9998/blazegraph/sparql/').check_shex_over_endpoint()
+    if(opts.endpoint):
+        results = WikibaseRefTripleSyntaxChecker(opts.endpoint, None).check_shex_over_endpoint()
     end_time=datetime.now()
 
     # saving the results for presentation layer

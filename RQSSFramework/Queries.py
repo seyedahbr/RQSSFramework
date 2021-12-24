@@ -16,7 +16,7 @@ Limit 3
 PREFIX wikibase: <http://wikiba.se/ontology#>
 SELECT ?item WHERE{
 	?item a wikibase:Statement.
-} LIMIT 3
+}
 ''',
 
 "get_all_external_sources_filter_wikimedia" : 
