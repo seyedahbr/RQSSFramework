@@ -14,8 +14,8 @@ Limit 3
 "get_all_statement_nodes_wikimedia":
 '''
 PREFIX wikibase: <http://wikiba.se/ontology#>
-SELECT ?item WHERE{
-	?item a wikibase:Statement.
+SELECT ?to_ret WHERE{
+	?to_ret a wikibase:Statement.
 }
 ''',
 
