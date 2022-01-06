@@ -1,12 +1,10 @@
-from re import S
-from typing import Iterator, List, NamedTuple
+from typing import List, NamedTuple
+
+import ShExes
 from pyshex.shex_evaluator import ShExEvaluator
 from pyshex.user_agent import SlurpyGraphWithAgent
-from pyshex.utils.sparql_query import SPARQLQuery
 from rdflib import URIRef
-from rdflib.term import Statement
 
-import ShExes, Queries
 
 class SyntxResult(NamedTuple):
     total: int
