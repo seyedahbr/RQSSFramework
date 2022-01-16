@@ -10,7 +10,10 @@ SELECT ?to_ret WHERE
 
 Limit 3
 ''',
-
+"get_property_constraints_regex":
+'''
+SELECT ?to_ret WHERE{{wd:{0} p:P2302 [pq:P1793 ?to_ret]}}
+''',
 "get_all_statement_nodes_wikimedia":
 '''
 PREFIX wikibase: <http://wikiba.se/ontology#>
