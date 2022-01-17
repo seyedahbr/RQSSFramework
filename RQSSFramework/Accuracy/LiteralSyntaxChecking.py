@@ -13,6 +13,10 @@ class WikibaseRefLiteralSyntaxChecker:
         self._properties_values = prop_vals
         self._regexes = self.get_property_regex(prop_vals.keys())
     
+    def check_literals_regex(self) -> List[SyntxResult]:
+        num_total = 0
+        
+
     def get_property_regex(properties: Iterator) -> Dict:
         ret_val = Dict.fromkeys(properties)
         sparql = SPARQLWrapper("https://query.wikidata.org/sparql")
@@ -25,7 +29,12 @@ class WikibaseRefLiteralSyntaxChecker:
                 value=result["to_ret"]["value"]
                 ret_val[str(prop)].append(value)
         return ret_val
-
+    
+    def write_to_CSV(self):
+        if self.result == None:
+            print('Results are not computed')
+            return
+        
     def print_results(self):
         """
         print self.result if it is already computed
