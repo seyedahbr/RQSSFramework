@@ -26,7 +26,7 @@ class WikibaseRefTripleSyntaxChecker:
         self.endpoint = endpoint
         self.file = file
     
-    def check_shex_over_endpoint(self) -> int:
+    def check_shex_over_endpoint(self) -> SyntxResult:
         num_total = 0
         num_fails = 0
         for statement_node in self.statements:
