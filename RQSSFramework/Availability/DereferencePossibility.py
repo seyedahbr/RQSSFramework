@@ -7,7 +7,9 @@ from rdflib import URIRef
 class DerefOfURI(NamedTuple):
     uri: URIRef
     deref: bool
-    
+    def __repr__(self):
+        return "URI:{0:40}, Deref:{1}".format(self.uri,self.deref)
+
 class DerefrenceExplorer:
     _uris=[]
     results=None
@@ -39,4 +41,4 @@ class DerefrenceExplorer:
             print('Results are not computed')
             return
         for r in self.results:
-            print("URI:{0:40}, Deref:{1}".format(r.uri,r.deref))
+            print(r)

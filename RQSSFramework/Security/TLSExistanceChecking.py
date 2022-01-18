@@ -7,6 +7,8 @@ from rdflib import URIRef
 class TLSExist(NamedTuple):
     uri: URIRef
     support: bool
+    def __repr__(self):
+        return "URI:{0:85}, TLS:{1}".format(self.uri, self.support)
 
 class TLSChecker:
     _uris=[]
@@ -41,4 +43,4 @@ class TLSChecker:
             print('Results are not computed')
             return
         for r in self.results:
-            print("URI:{0:85}, TLS:{1}".format(r.uri, r.support))
+            print(r)

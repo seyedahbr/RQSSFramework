@@ -10,7 +10,7 @@ class SyntxResult(NamedTuple):
     total: int
     fails: int
     def __repr__(self):
-        return "Number of checked items: {0:10} fails:{1:10} score{2}".format(self.total, self.fails, self.score)
+        return "Number of checked items: {0}; fails:{1}; score: {2}".format(self.total, self.fails, self.score)
     @property
     def score(self):
         return 1-(self.fails/self.total)

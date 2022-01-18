@@ -8,6 +8,8 @@ from rdflib import URIRef
 class LicExistOfDom(NamedTuple):
     domain: URIRef
     license: bool
+    def __repr__(self):
+        return "Domain:{0:40}, License Existed:{1}".format(self.domain, self.license)
 
 # covering most popular license terms according to 
 # https://www.synopsys.com/blogs/software-security/top-open-source-licenses/
@@ -110,4 +112,4 @@ class LicenseChecker:
             print('Results are not computed')
             return
         for r in self.results:
-            print("Domain:{0:40}, License Existed:{1}".format(r.domain, r.license))
+            print(r)
