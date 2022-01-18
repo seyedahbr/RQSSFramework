@@ -25,6 +25,8 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
                         help="Extract all external sources uris (Wikibase referencing model) and save them on output dir", action='store_true')
     parser.add_argument("-sn", "--statement_nodes",
                         help="Extract all statement nodes uris (Wikibase referencing model) and save them on output dir", action='store_true')
+    parser.add_argument("-l", "--literals",
+                        help="Extract all literal values in reference triples and save them on output dir", action='store_true')
     return parser
 
 
@@ -41,7 +43,10 @@ def perform_query(endpoint: str, query: str) -> List[str]:
         return ret_val
 
     for result in results["results"]["bindings"]:
-        ret_val.append(result["to_ret"]["value"])
+        row = ''
+        for value in result:
+            row += value + ','
+        ret_val.append(row[:-1])
     return ret_val
 
 
@@ -75,6 +80,21 @@ def extract_statement_nodes_uris(opts: ArgumentParser) -> int:
     print('DONE. Extracting Statement Nodes URIs, Duration: {0}'.format(end_time - start_time))
     return 0
 
+def extract_refrence_literals(opts: ArgumentParser) -> int:
+    print('Started extracting literal values in reference triples')
+    start_time=datetime.now()
+
+    ref_literals=perform_query(opts.endpoint, RQSS_QUERIES["get_reference_literals_wikimedia"])
+    output_file = os.path.join(opts.output_dir + os.sep + 'reference_literals.data')
+    with open(output_file, 'w') as file_handler:
+        for lit in ref_literals:
+            file_handler.write("{}\n".format(lit.replace('http://www.wikidata.org/prop/reference/','')))
+
+    end_time=datetime.now()
+    print('References’ literal values have been written in the file: {0}'.format(output_file))
+    print('DONE. Extracting literal values in reference triples, Duration: {0}'.format(end_time - start_time))
+    return 0
+
 def extract_from_file(opts: ArgumentParser) -> int:
     print('Local file extraction is not supported yet. Please use local/public endpoint.')
     return 1
@@ -90,6 +110,10 @@ def extract_from_endpoint(opts: ArgumentParser) -> int:
     
     if(opts.statement_nodes):
         p = Process(target=extract_statement_nodes_uris(opts))
+        extractor_procs.append(p)
+    
+    if(opts.literals):
+        p = Process(target=extract_refrence_literals(opts))
         extractor_procs.append(p)
     
     for proc in extractor_procs:

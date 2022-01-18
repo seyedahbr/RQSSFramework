@@ -10,6 +10,16 @@ SELECT ?to_ret WHERE
 
 Limit 3
 ''',
+"get_reference_literals_wikimedia":
+'''
+PREFIX prov: <http://www.w3.org/ns/prov#>
+SELECT ?to_ret1 ?to_ret2 WHERE {
+   ?statement prov:wasDerivedFrom ?ref .
+   ?ref ?to_ret1 ?to_ret2 .
+  FILTER (isLiteral(?to_ret2))
+}
+'''
+,
 "get_property_constraints_regex":
 '''
 SELECT ?to_ret WHERE{{wd:{0} p:P2302 [pq:P1793 ?to_ret]}}

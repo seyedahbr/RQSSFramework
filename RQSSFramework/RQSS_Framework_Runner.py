@@ -15,6 +15,7 @@ from Licensing.LicenseExistanceChecking import LicenseChecker
 from Queries import RQSS_QUERIES
 from Security.TLSExistanceChecking import TLSChecker
 from Accuracy.TripleSyntaxChecking import WikibaseRefTripleSyntaxChecker
+from Accuracy.LiteralSyntaxChecking import WikibaseRefLiteralSyntaxChecker
 
 
 def genargs(prog: Optional[str] = None) -> ArgumentParser:
@@ -33,6 +34,8 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
                         help="Compute the metric: Link Security of the External URIs", action='store_true')
     parser.add_argument("-rts", "--reftriplesyntax",
                         help="Compute the metric: Syntactic Validity of Reference Triples", action='store_true')
+    parser.add_argument("-rls", "--refliteralsyntax",
+                        help="Compute the metric: Syntactic validity of references’ literals", action='store_true')
     
     return parser
 
@@ -148,6 +151,34 @@ def compute_ref_triple_syntax(opts: ArgumentParser) -> int:
     print('DONE. Metric: Syntactic Validity of Reference Triples, Duration: {0}'.format(end_time - start_time))
     return 0
 
+def compute_ref_literal_syntax(opts: ArgumentParser) -> int:
+    print('Started computing Metric: Syntactic validity of references’ literals')
+    input_data_file = os.path.join(opts.data_dir + os.sep + 'reference_literals.data')
+    output_file = os.path.join(opts.output_dir + os.sep + 'ref_literal_syntax.csv')
+
+    # reading the extracted External URIs
+    print('Reading data ...')
+    prop_values = {}
+    with open(input_data_file) as file:
+        reader = csv.reader(file)
+        for row in reader:
+            if row[0] not in prop_values.keys():
+                prop_values[str(row[0])]=[]
+            prop_values[str(row[0])].append(row[1])
+    
+    # running the framework metric function
+    print('Running metric ...')
+    start_time=datetime.now()
+    results = WikibaseRefLiteralSyntaxChecker(prop_values).check_literals_regex()
+    end_time=datetime.now()
+
+    # saving the results for presentation layer
+    write_results_to_CSV(results, output_file)
+    
+    print('Metric: Syntactic validity of references’ literals results have been written in the file: {0}'.format(output_file))
+    print('DONE. Metric: Syntactic validity of references’ literals, Duration: {0}'.format(end_time - start_time))
+    return 0
+
 def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] = None) -> int:
     if isinstance(argv, str):
         argv = argv.split()
@@ -178,6 +209,9 @@ def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Op
         framework_procs.append(p)
     if opts.reftriplesyntax:
         p = Process(target=compute_ref_triple_syntax(opts))
+        framework_procs.append(p)
+    if opts.refliteralsyntax:
+        p = Process(target=compute_ref_literal_syntax(opts))
         framework_procs.append(p)
     
     for proc in framework_procs:
