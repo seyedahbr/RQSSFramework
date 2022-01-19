@@ -3,7 +3,7 @@ from typing import Dict, Iterable, List, Iterator, NamedTuple, Set
 from unittest import result
 from SPARQLWrapper import JSON, SPARQLWrapper
 
-from RQSSFramework.Queries import RQSS_QUERIES
+from Queries import RQSS_QUERIES
 
 class LiteralSyntaxResult(NamedTuple):
     property: str
