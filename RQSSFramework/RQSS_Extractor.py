@@ -45,7 +45,7 @@ def perform_query(endpoint: str, query: str) -> List[str]:
     for result in results["results"]["bindings"]:
         row = ''
         for value in result:
-            row += value + ','
+            row += result[str(value)]["value"] + ','
         ret_val.append(row[:-1])
     return ret_val
 
