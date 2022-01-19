@@ -131,3 +131,5 @@ dmypy.json
 # temporary codes
 temp.py
 *.test.csv
+*_output*
+launch.json
