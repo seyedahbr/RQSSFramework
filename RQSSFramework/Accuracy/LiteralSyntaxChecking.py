@@ -9,8 +9,9 @@ class LiteralSyntaxResult(NamedTuple):
     property: str
     total: int
     fails: int
+    errors: int
     def __repr__(self):
-        return "Number of checked values for propety {0}: {1}; fails:{2}; score:{3}".format(self.property, self.total, self.fails, self.score)
+        return "Number of checked values for propety {0}: {1}; fails:{2}; score:{3}; regex errors:{4}".format(self.property, self.total, self.fails, self.score, self.errors)
     @property
     def score(self):
         return 1-(self.fails/self.total)
@@ -31,15 +32,20 @@ class WikibaseRefLiteralSyntaxChecker:
         self.results = []
         for prop in self._properties_values.keys():
             num_fails = 0
+            num_errors = 0
             for value in self._properties_values[str(prop)]:
                 failed = True
                 for regex in self._regexes[str(prop)]:
-                    pattern = re.compile(regex)
-                    if bool(re.match(pattern, value)):
-                        failed = False
-                        break
+                    try:
+                        pattern = re.compile(regex)
+                        if bool(re.match(pattern, value)):
+                            failed = False
+                            break
+                    except re.error as err:
+                        num_errors += 1
+                        continue
                 if failed: num_fails +=1
-            self.results.append(LiteralSyntaxResult(str(prop),len(self._properties_values[str(prop)]),num_fails))
+            self.results.append(LiteralSyntaxResult(str(prop),len(self._properties_values[str(prop)]),num_fails,num_errors))
         return self.results
 
     def get_property_regex_from_Wikidata(self) -> Dict:
