@@ -82,6 +82,20 @@ def plot_security(opts: ArgumentParser) -> int:
         output_file))
     return 0
 
+def plot_literal_syntax(opts: ArgumentParser) -> int:
+    input_data_file = os.path.join(
+        opts.result_dir + os.sep + 'ref_literal_syntax.csv')
+    output_file = os.path.join(opts.output_dir + os.sep + 'ref_literal_syntax.png')
+
+    csv_data = pd.read_csv(input_data_file, index_col=None, header=0)
+    csv_data['accuracy rate'] = 1 - csv_data['fails']/csv_data['total']
+    csv_data['error rate'] = csv_data['errors']/csv_data['total']
+    to_plot_csv = pd.concat(csv_data['accuracy rate'], csv_data['error rate'])
+    box_whisker_plot(to_plot_csv, 'Literal Syntax Accuracy and Errors', 'accurcy_rate', output_file)
+    
+    print('Metric:  Syntactic validity of references’ literals chart(s) have been plotted in the file: {0}'.format(
+        output_file))
+    return 0
 
 def RQSS_Plot(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] = None) -> int:
     if isinstance(argv, str):
@@ -110,6 +124,9 @@ def RQSS_Plot(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] 
         framework_procs.append(p)
     if Path(opts.result_dir + os.sep + 'security.csv').is_file():
         p = Process(target=plot_security(opts))
+        framework_procs.append(p)
+    if Path(opts.result_dir + os.sep + 'ref_literal_syntax.csv').is_file():
+        p = Process(target=plot_literal_syntax(opts))
         framework_procs.append(p)
 
     for proc in framework_procs:
