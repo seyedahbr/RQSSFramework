@@ -22,10 +22,10 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
     return parser
 
 
-def box_whisker_plot(data, x_row: str, y_col: str, output: str) -> None:
+def box_whisker_plot(data, x_row: str, y_col: str, output: str, x_col:str = None) -> None:
     import matplotlib.pyplot as plt
     import seaborn as sns
-    box_plot = sns.boxplot(data=data, y=y_col, showmeans=False, showfliers=False,
+    box_plot = sns.boxplot(data=data, y=y_col, x=x_col, showmeans=False, showfliers=False,
                            meanprops={"marker": "^",
                                       "markerfacecolor": "black",
                                       "markeredgecolor": "black",
@@ -37,7 +37,7 @@ def box_whisker_plot(data, x_row: str, y_col: str, output: str) -> None:
     box_plot.text(box_plot.get_xticks()[0],data[y_col].mean(),'Avg:{0}'.format(round(data[y_col].mean(),2)), 
             horizontalalignment='center',size='x-small',color='black',weight='semibold')
     box_plot.set(ylim=(0, 1))
-    sns.despine(offset=15, trim=True)
+    sns.despine( trim=True)
     plt.savefig(output , format='png')
     plt.close()
 
@@ -90,10 +90,9 @@ def plot_literal_syntax(opts: ArgumentParser) -> int:
     csv_data = pd.read_csv(input_data_file, index_col=None, header=0)
     csv_data['accuracy rate'] = 1 - csv_data['fails']/csv_data['total']
     csv_data['error rate'] = csv_data['errors']/csv_data['total']
-    to_plot_csv = pd.concat(csv_data['accuracy rate'], csv_data['error rate'])
-    box_whisker_plot(to_plot_csv, 'Literal Syntax Accuracy and Errors', 'accurcy_rate', output_file)
-    
-    print('Metric:  Syntactic validity of references’ literals chart(s) have been plotted in the file: {0}'.format(
+    box_whisker_plot(pd.melt(csv_data[['accuracy rate','error rate']]), 'Literal Syntax Accuracy and Errors', 'value', output_file, 'variable')
+
+    print('Metric: Syntactic validity of references’ literals chart(s) have been plotted in the file: {0}'.format(
         output_file))
     return 0
 
