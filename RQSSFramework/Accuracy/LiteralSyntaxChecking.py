@@ -6,12 +6,12 @@ from SPARQLWrapper import JSON, SPARQLWrapper
 from Queries import RQSS_QUERIES
 
 class LiteralSyntaxResult(NamedTuple):
-    property: str
+    ref_property: str
     total: int
     fails: int
     errors: int
     def __repr__(self):
-        return "Number of checked values for propety {0}: {1}; fails:{2}; score:{3}; regex errors:{4}".format(self.property, self.total, self.fails, self.score, self.errors)
+        return "Number of checked values for propety {0}: {1}; fails:{2}; score:{3}; regex errors:{4}".format(self.ref_property, self.total, self.fails, self.score, self.errors)
     @property
     def score(self):
         return 1-(self.fails/self.total)
