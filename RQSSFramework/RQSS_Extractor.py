@@ -101,7 +101,7 @@ def extract_refrence_literals(opts: ArgumentParser) -> int:
         opts.output_dir + os.sep + 'reference_literals.data')
     with open(output_file, 'w') as file_handler:
         for lit in ref_literals:
-            file_handler.write("{}\n",lit)
+            file_handler.write("{}\n".format(lit))
 
     end_time = datetime.now()
     print('References’ literal values have been written in the file: {0}'.format(
