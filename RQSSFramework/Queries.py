@@ -13,9 +13,9 @@ Limit 3
 "get_reference_literals_wikimedia":
 '''
 PREFIX prov: <http://www.w3.org/ns/prov#>
-SELECT DISTINCT ?to_ret1 ?to_ret2 WHERE {
-   ?statement prov:wasDerivedFrom ?ref .
-   ?ref ?to_ret1 ?to_ret2 .
+SELECT DISTINCT (REPLACE(STR(?refProp),".*P","P") AS ?to_ret1) ?to_ret2 WHERE {
+  ?statement prov:wasDerivedFrom ?ref .
+  ?ref ?refProp ?to_ret2 .
   FILTER (isLiteral(?to_ret2))
 }
 '''
