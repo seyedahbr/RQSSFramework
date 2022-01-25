@@ -34,12 +34,15 @@ class RefTripleSemanticChecker:
 
     def check_semantic_to_gold_standard(self) -> List[TripleSemanticResult]:
         self.results = []
+        visited_gs_facts = []
         prop_results = {}
-        for fact_gs in self._gold_standard:
-            if fact_gs.property not in prop_results.keys():
-                prop_results[str(fact_gs.property)] = [0, 0]
-            for ref_triple in self._fact_ref_triples:
-                if self.is_sub_rel_match(ref_triple, fact_gs):
+        for ref_triple in self._fact_ref_triples:
+            visited_gs_facts.clear()
+            for fact_gs in self._gold_standard:
+                if fact_gs.property not in prop_results.keys():
+                    prop_results[str(fact_gs.property)] = [0, 0]
+                if self.is_sub_rel_match(ref_triple, fact_gs) and (fact_gs.subject,fact_gs.property,fact_gs.ref_property) not in visited_gs_facts:
+                    visited_gs_facts.append((fact_gs.subject,fact_gs.property,fact_gs.ref_property))
                     prop_results[str(fact_gs.property)][0] += 1
                     if self.is_triple_exact_match(ref_triple, fact_gs):
                         prop_results[str(fact_gs.property)][1] += 1
