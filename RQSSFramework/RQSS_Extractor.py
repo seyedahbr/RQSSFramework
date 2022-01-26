@@ -124,9 +124,9 @@ def extract_fact_ref_triples(opts: ArgumentParser) -> int:
     output_file = os.path.join(
         opts.output_dir + os.sep + 'fact_ref_triples.data')
     with open(output_file, 'w') as file_handler:
+        csv_writer = csv.writer(file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for row in fact_ref_triples:
-            file_handler.write("{}\n".format(row.replace(
-                'http://www.wikidata.org/prop/reference/', '')))  # TODO
+            csv_writer.writerow(row)
 
     end_time = datetime.now()
     print('Facts and their referece triples have been written in the file: {0}'.format(

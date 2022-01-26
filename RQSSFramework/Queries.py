@@ -10,6 +10,23 @@ SELECT ?to_ret WHERE
 
 Limit 3
 ''',
+"get_fact_ref_triples_wikimedia":
+'''
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+SELECT DISTINCT (REPLACE(STR(?item),".*Q","Q") AS ?ret1)
+                (REPLACE(STR(?property),".*P","P") AS ?ret2)
+                (REPLACE(STR(?refProperty),".*P","P") AS ?ret3)
+                (REPLACE(STR(?refObject),".*Q","Q") AS ?ret4) WHERE{
+  ?item ?property ?statementNode.
+  ?statementNode a wikibase:Statement.
+  ?statementNode prov:wasDerivedFrom ?refNode.
+  ?refNode ?refProperty ?refObject.
+  MINUS {?refObject a wikibase:TimeValue}
+  MINUS {?refObject a wikibase:QuantityValue}
+  FILTER (?refObject != <http://wikiba.se/ontology#Reference>)
+}
+''',
 "get_reference_literals_wikimedia":
 '''
 PREFIX prov: <http://www.w3.org/ns/prov#>
