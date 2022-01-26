@@ -1,6 +1,7 @@
 from multiprocessing.context import Process
 import os
 import sys
+import csv
 from argparse import ArgumentParser
 from datetime import datetime
 from pathlib import Path
@@ -32,7 +33,7 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
     return parser
 
 
-def perform_query(endpoint: str, query: str) -> List[str]:
+def perform_query(endpoint: str, query: str) -> List[List[str]]:
     ret_val = []
     sparql = SPARQLWrapper(endpoint)
     sparql.setQuery(query)
@@ -45,10 +46,10 @@ def perform_query(endpoint: str, query: str) -> List[str]:
         return ret_val
 
     for result in results["results"]["bindings"]:
-        row = ''
+        row = []
         for value in result:
-            row += result[str(value)]["value"] + ','
-        ret_val.append(row[:-1])
+            row.append(result[str(value)]["value"])
+        ret_val.append(row)
     return ret_val
 
 
@@ -100,8 +101,9 @@ def extract_refrence_literals(opts: ArgumentParser) -> int:
     output_file = os.path.join(
         opts.output_dir + os.sep + 'reference_literals.data')
     with open(output_file, 'w') as file_handler:
+        csv_writer = csv.writer(file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for lit in ref_literals:
-            file_handler.write("{}\n".format(lit))
+            csv_writer.writerow(lit)
 
     end_time = datetime.now()
     print('References’ literal values have been written in the file: {0}'.format(
