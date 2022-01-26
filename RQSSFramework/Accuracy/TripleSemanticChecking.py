@@ -1,7 +1,4 @@
-from typing import List, NamedTuple, Dict
-
-from sqlalchemy import true
-
+from typing import Dict, List, NamedTuple
 
 class TripleSemanticResult(NamedTuple):
     property: int       # the property at the heart of the fact
@@ -41,20 +38,22 @@ class RefTripleSemanticChecker:
             for fact_gs in self._gold_standard:
                 if fact_gs.property not in prop_results.keys():
                     prop_results[str(fact_gs.property)] = [0, 0]
-                if self.is_sub_rel_match(ref_triple, fact_gs) and (fact_gs.subject,fact_gs.property,fact_gs.ref_property) not in visited_gs_facts:
-                    visited_gs_facts.append((fact_gs.subject,fact_gs.property,fact_gs.ref_property))
+                if self.is_sub_rel_match(ref_triple, fact_gs) and (fact_gs.subject, fact_gs.property, fact_gs.ref_property) not in visited_gs_facts:
+                    visited_gs_facts.append(
+                        (fact_gs.subject, fact_gs.property, fact_gs.ref_property))
                     prop_results[str(fact_gs.property)][0] += 1
                     if self.is_triple_exact_match(ref_triple, fact_gs):
                         prop_results[str(fact_gs.property)][1] += 1
         for prop in prop_results.keys():
-            self.results.append(TripleSemanticResult(str(prop), prop_results[str(prop)][0], prop_results[str(prop)][1]))
+            self.results.append(TripleSemanticResult(
+                str(prop), prop_results[str(prop)][0], prop_results[str(prop)][1]))
         return self.results
 
     def is_sub_rel_match(self, ref_triple: FactReference, fact_gs: FactReference) -> bool:
         if ref_triple.subject == fact_gs.subject and\
            ref_triple.property == fact_gs.property and\
            ref_triple.ref_property == fact_gs.ref_property:
-            return true
+            return True
         # other equivalency conditions can be placed here
         # for example doing :sameAs searchs
 
@@ -63,7 +62,7 @@ class RefTripleSemanticChecker:
            ref_triple.property == fact_gs.property and\
            ref_triple.ref_property == fact_gs.ref_property and\
            ref_triple.ref_value == fact_gs.ref_value:
-            return true
+            return True
         # other equivalency conditions can be placed here
         # for example doing :sameAs searchs
 
