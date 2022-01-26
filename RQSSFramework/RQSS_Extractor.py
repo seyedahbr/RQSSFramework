@@ -61,8 +61,9 @@ def extract_external_uris(opts: ArgumentParser) -> int:
         opts.endpoint, RQSS_QUERIES["get_all_external_sources_filter_wikimedia_distinct"])
     output_file = os.path.join(opts.output_dir + os.sep + 'external_uris.data')
     with open(output_file, 'w') as file_handler:
+        csv_writer = csv.writer(file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for uri in external_uris:
-            file_handler.write("{}\n".format(uri))
+            csv_writer.writerow(uri)
 
     end_time = datetime.now()
     print('External URIs have been written in the file: {0}'.format(
@@ -81,8 +82,9 @@ def extract_statement_nodes_uris(opts: ArgumentParser) -> int:
     output_file = os.path.join(
         opts.output_dir + os.sep + 'statement_nodes_uris.data')
     with open(output_file, 'w') as file_handler:
+        csv_writer = csv.writer(file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for uri in statement_uris:
-            file_handler.write("{}\n".format(uri))
+            csv_writer.writerow(uri)
 
     end_time = datetime.now()
     print('Statement Nodes URIs have been written in the file: {0}'.format(
