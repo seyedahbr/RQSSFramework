@@ -1,21 +1,20 @@
 import csv
 import os
 import sys
-import time
 from argparse import ArgumentParser
 from datetime import datetime
 from multiprocessing.context import Process
 from pathlib import Path
-from typing import Iterator, List, NamedTuple, Optional, Union
+from typing import List, NamedTuple, Optional, Union
 
-from SPARQLWrapper import JSON, SPARQLWrapper
-
+from Accuracy.LiteralSyntaxChecking import WikibaseRefLiteralSyntaxChecker
+from Accuracy.TripleSemanticChecking import (FactReference,
+                                             RefTripleSemanticChecker)
+from Accuracy.TripleSyntaxChecking import WikibaseRefTripleSyntaxChecker
 from Availability.DereferencePossibility import DerefrenceExplorer
 from Licensing.LicenseExistanceChecking import LicenseChecker
 from Queries import RQSS_QUERIES
 from Security.TLSExistanceChecking import TLSChecker
-from Accuracy.TripleSyntaxChecking import WikibaseRefTripleSyntaxChecker
-from Accuracy.LiteralSyntaxChecking import WikibaseRefLiteralSyntaxChecker
 
 
 def genargs(prog: Optional[str] = None) -> ArgumentParser:
@@ -23,7 +22,7 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
     parser.add_argument(
         "data_dir", help="Input data directory that includes initial collections like facts, properties, literals, external sources, etc.")
     parser.add_argument(
-       "--endpoint", help="The local/public endpoint of the dataset for shex-based metrics", required=False)
+        "--endpoint", help="The local/public endpoint of the dataset for shex-based metrics", required=False)
     parser.add_argument(
         "-o", "--output_dir", help="Output destination directory to store computed metrics details", default=os.getcwd()+os.sep+'rqss_framework_output')
     parser.add_argument("-dp", "--dereferencing",
@@ -36,148 +35,250 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
                         help="Compute the metric: Syntactic Validity of Reference Triples", action='store_true')
     parser.add_argument("-rls", "--refliteralsyntax",
                         help="Compute the metric: Syntactic validity of references’ literals", action='store_true')
-    
+    parser.add_argument("-rtm", "--reftriplesemantic",
+                        help="Compute the metric: Semantic validity of reference triples", action='store_true')
     return parser
+
 
 def write_results_to_CSV(results: List[NamedTuple], output_file: str) -> None:
     with open(output_file, 'w', newline='') as f:
         w = csv.writer(f)
-        w.writerow([field for field in results[0]._fields])    # write header from NamedTuple fields
+        # write header from NamedTuple fields
+        w.writerow([field for field in results[0]._fields])
         for result in results:
             row = [result._asdict()[field] for field in result._fields]
             w.writerow(row)
     return
 
-    
+
 def compute_dereferencing(opts: ArgumentParser) -> int:
     print('Started computing Metric: Dereference Possibility of the External URIs')
-    input_data_file = os.path.join(opts.data_dir + os.sep + 'external_uris.data')
+    input_data_file = os.path.join(
+        opts.data_dir + os.sep + 'external_uris.data')
     output_file = os.path.join(opts.output_dir + os.sep + 'dereferencing.csv')
 
     # reading the extracted External URIs
     print('Reading data ...')
     uris = []
-    with open(input_data_file) as file:
-        for line in file:
-            uris.append(line.rstrip())
+    try:
+        with open(input_data_file) as file:
+            for line in file:
+                uris.append(line.rstrip())
+    except FileNotFoundError:
+        print("Error: Input data file not found. Provide data file with name: {0} in data_dir".format(
+            '"external_uris.data"'))
+        exit(1)
 
     # running the framework metric function
     print('Running metric ...')
-    start_time=datetime.now()
+    start_time = datetime.now()
     results = DerefrenceExplorer(uris).check_dereferencies()
-    end_time=datetime.now()
+    end_time = datetime.now()
 
     # saving the results for presentation layer
     write_results_to_CSV(results, output_file)
 
-    print('Metric: Dereference Possibility of the External URIs results have been written in the file: {0}'.format(output_file))
-    print('DONE. Metric: Dereference Possibility of the External URIs, Duration: {0}'.format(end_time - start_time))
+    print('Metric: Dereference Possibility of the External URIs results have been written in the file: {0}'.format(
+        output_file))
+    print('DONE. Metric: Dereference Possibility of the External URIs, Duration: {0}'.format(
+        end_time - start_time))
     return 0
+
 
 def compute_licensing(opts: ArgumentParser) -> int:
     print('Started computing Metric: External Sources’ Datasets Licensing')
-    input_data_file = os.path.join(opts.data_dir + os.sep + 'external_uris.data')
+    input_data_file = os.path.join(
+        opts.data_dir + os.sep + 'external_uris.data')
     output_file = os.path.join(opts.output_dir + os.sep + 'licensing.csv')
 
     # reading the extracted External URIs
     print('Reading data ...')
     uris = []
-    with open(input_data_file) as file:
-        for line in file:
-            uris.append(line.rstrip())
-
+    try:
+        with open(input_data_file) as file:
+            for line in file:
+                uris.append(line.rstrip())
+    except FileNotFoundError:
+        print("Error: Input data file not found. Provide data file with name: {0} in data_dir".format(
+            '"external_uris.data"'))
+        exit(1)
     # running the framework metric function
     print('Running metric ...')
-    start_time=datetime.now()
+    start_time = datetime.now()
     results = LicenseChecker(uris).check_license_existance()
-    end_time=datetime.now()
+    end_time = datetime.now()
 
     # saving the results for presentation layer
     write_results_to_CSV(results, output_file)
 
-    print('Metric: External Sources’ Datasets Licensing results have been written in the file: {0}'.format(output_file))
-    print('DONE. Metric: External Sources’ Datasets Licensing, Duration: {0}'.format(end_time - start_time))
+    print('Metric: External Sources’ Datasets Licensing results have been written in the file: {0}'.format(
+        output_file))
+    print('DONE. Metric: External Sources’ Datasets Licensing, Duration: {0}'.format(
+        end_time - start_time))
     return 0
+
 
 def compute_security(opts: ArgumentParser) -> int:
     print('Started computing Metric: Link Security of the External URIs')
-    input_data_file = os.path.join(opts.data_dir + os.sep + 'external_uris.data')
+    input_data_file = os.path.join(
+        opts.data_dir + os.sep + 'external_uris.data')
     output_file = os.path.join(opts.output_dir + os.sep + 'security.csv')
 
     # reading the extracted External URIs
     print('Reading data ...')
     uris = []
-    with open(input_data_file) as file:
-        for line in file:
-            uris.append(line.rstrip())
-
+    try:
+        with open(input_data_file) as file:
+            for line in file:
+                uris.append(line.rstrip())
+    except FileNotFoundError:
+        print("Error: Input data file not found. Provide data file with name: {0} in data_dir".format(
+            '"external_uris.data"'))
+        exit(1)
     # running the framework metric function
     print('Running metric ...')
-    start_time=datetime.now()
+    start_time = datetime.now()
     results = TLSChecker(uris).check_support_tls()
-    end_time=datetime.now()
+    end_time = datetime.now()
 
     # saving the results for presentation layer
     write_results_to_CSV(results, output_file)
-    
-    print('Metric: Link Security of the External URIs results have been written in the file: {0}'.format(output_file))
-    print('DONE. Metric: Link Security of the External URIs, Duration: {0}'.format(end_time - start_time))
+
+    print('Metric: Link Security of the External URIs results have been written in the file: {0}'.format(
+        output_file))
+    print('DONE. Metric: Link Security of the External URIs, Duration: {0}'.format(
+        end_time - start_time))
     return 0
+
 
 def compute_ref_triple_syntax(opts: ArgumentParser) -> int:
     print('Started computing Metric: Syntactic Validity of Reference Triples')
-    input_data_file = os.path.join(opts.data_dir + os.sep + 'statement_nodes_uris.data')
-    output_file = os.path.join(opts.output_dir + os.sep + 'ref_triple_syntax.csv')
+    input_data_file = os.path.join(
+        opts.data_dir + os.sep + 'statement_nodes_uris.data')
+    output_file = os.path.join(
+        opts.output_dir + os.sep + 'ref_triple_syntax.csv')
 
-    # reading the extracted External URIs
+    # reading the statement nodes data
     print('Reading data ...')
     statements = []
-    with open(input_data_file) as file:
-        for line in file:
-            statements.append(line.rstrip())
-
+    try:
+        with open(input_data_file) as file:
+            for line in file:
+                statements.append(line.rstrip())
+    except FileNotFoundError:
+        print("Error: Input data file not found. Provide data file with name: {0} in data_dir".format(
+            '"statement_nodes_uris.data"'))
+        exit(1)
     # running the framework metric function
     print('Running metric ...')
-    start_time=datetime.now()
+    start_time = datetime.now()
     results = []
     if(opts.endpoint):
-        results = WikibaseRefTripleSyntaxChecker(statements, opts.endpoint, None).check_shex_over_endpoint()
-    end_time=datetime.now()
+        results = WikibaseRefTripleSyntaxChecker(
+            statements, opts.endpoint, None).check_shex_over_endpoint()
+    end_time = datetime.now()
 
     # saving the results for presentation layer
     write_results_to_CSV([results], output_file)
-    
-    print('Metric: Syntactic Validity of Reference Triples results have been written in the file: {0}'.format(output_file))
-    print('DONE. Metric: Syntactic Validity of Reference Triples, Duration: {0}'.format(end_time - start_time))
+
+    print('Metric: Syntactic Validity of Reference Triples results have been written in the file: {0}'.format(
+        output_file))
+    print('DONE. Metric: Syntactic Validity of Reference Triples, Duration: {0}'.format(
+        end_time - start_time))
     return 0
+
 
 def compute_ref_literal_syntax(opts: ArgumentParser) -> int:
     print('Started computing Metric: Syntactic validity of references’ literals')
-    input_data_file = os.path.join(opts.data_dir + os.sep + 'reference_literals.data')
-    output_file = os.path.join(opts.output_dir + os.sep + 'ref_literal_syntax.csv')
+    input_data_file = os.path.join(
+        opts.data_dir + os.sep + 'reference_literals.data')
+    output_file = os.path.join(
+        opts.output_dir + os.sep + 'ref_literal_syntax.csv')
 
-    # reading the extracted External URIs
+    # reading the properties/literals
     print('Reading data ...')
     prop_values = {}
-    with open(input_data_file) as file:
-        reader = csv.reader(file)
-        for row in reader:
-            if row[0] not in prop_values.keys():
-                prop_values[str(row[0])]=[]
-            prop_values[str(row[0])].append(row[1])
-    
+    try:
+        with open(input_data_file) as file:
+            reader = csv.reader(file)
+            for row in reader:
+                if row[0] not in prop_values.keys():
+                    prop_values[str(row[0])] = []
+                prop_values[str(row[0])].append(row[1])
+    except FileNotFoundError:
+        print("Error: Input data file not found. Provide data file with name: {0} in data_dir".format(
+            '"reference_literals.data"'))
+        exit(1)
+
     # running the framework metric function
     print('Running metric ...')
-    start_time=datetime.now()
-    results = WikibaseRefLiteralSyntaxChecker(prop_values).check_literals_regex()
-    end_time=datetime.now()
+    start_time = datetime.now()
+    results = WikibaseRefLiteralSyntaxChecker(
+        prop_values).check_literals_regex()
+    end_time = datetime.now()
 
     # saving the results for presentation layer
     write_results_to_CSV(results, output_file)
-    
-    print('Metric: Syntactic validity of references’ literals results have been written in the file: {0}'.format(output_file))
-    print('DONE. Metric: Syntactic validity of references’ literals, Duration: {0}'.format(end_time - start_time))
+
+    print('Metric: Syntactic validity of references’ literals results have been written in the file: {0}'.format(
+        output_file))
+    print('DONE. Metric: Syntactic validity of references’ literals, Duration: {0}'.format(
+        end_time - start_time))
     return 0
+
+
+def compute_ref_triple_semantic(opts: ArgumentParser) -> int:
+    print('Started computing Metric: Semantic validity of reference triples')
+    input_data_file = os.path.join(
+        opts.data_dir + os.sep + 'fact_ref_triples.data')
+    input_gold_standard_file = os.path.join(
+        opts.data_dir + os.sep + 'semantic_validity_gs.data')
+    output_file = os.path.join(
+        opts.output_dir + os.sep + 'semantic_validity.csv')
+
+    # reading the fact/reference triples
+    print('Reading data ...')
+    fact_refs = []
+    try:
+        with open(input_data_file) as file:
+            reader = csv.reader(file)
+            for row in reader:
+                fact_refs.append(FactReference(row[0], row[1], row[2], row[3]))
+    except FileNotFoundError:
+        print("Error: Input data file not found. Provide data file with name: {0} in data_dir".format(
+            '"reference_literals.data"'))
+        exit(1)
+
+    # reading the gold standard set
+    print('Reading gold standard set ...')
+    gs_fact_refs = []
+    try:
+        with open(input_gold_standard_file) as file:
+            reader = csv.reader(file)
+            for row in reader:
+                gs_fact_refs.append(FactReference(
+                    row[0], row[1], row[2], row[3]))
+    except FileNotFoundError:
+        print("Error: Gold Standard Set file not found. Provide gold standard data file with name: {0} in data_dir".format(
+            '"fact_ref_triples.data"'))
+        exit(1)
+
+    # running the framework metric function
+    print('Running metric ...')
+    start_time = datetime.now()
+    results = RefTripleSemanticChecker(
+        gs_fact_refs, fact_refs).check_semantic_to_gold_standard()
+    end_time = datetime.now()
+
+    # saving the results for presentation layer
+    write_results_to_CSV(results, output_file)
+
+    print('Metric: Syntactic validity of references’ literals results have been written in the file: {0}'.format(
+        output_file))
+    print('DONE. Metric: Syntactic validity of references’ literals, Duration: {0}'.format(
+        end_time - start_time))
+    return 0
+
 
 def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] = None) -> int:
     if isinstance(argv, str):
@@ -213,12 +314,16 @@ def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Op
     if opts.refliteralsyntax:
         p = Process(target=compute_ref_literal_syntax(opts))
         framework_procs.append(p)
-    
+    if opts.reftriplesemantic:
+        p = Process(target=compute_ref_triple_semantic(opts))
+        framework_procs.append(p)
+
     for proc in framework_procs:
         proc.start()
-    
+
     for proc in framework_procs:
         proc.join()
-    
+
+
 if __name__ == '__main__':
     RQSS_Framework_Runner(sys.argv[1:])
