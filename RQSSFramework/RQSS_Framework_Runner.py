@@ -61,7 +61,7 @@ def compute_dereferencing(opts: ArgumentParser) -> int:
     print('Reading data ...')
     uris = []
     try:
-        with open(input_data_file) as file:
+        with open(input_data_file, encoding="utf8") as file:
             for line in file:
                 uris.append(line.rstrip())
     except FileNotFoundError:
@@ -95,7 +95,7 @@ def compute_licensing(opts: ArgumentParser) -> int:
     print('Reading data ...')
     uris = []
     try:
-        with open(input_data_file) as file:
+        with open(input_data_file, encoding="utf8") as file:
             for line in file:
                 uris.append(line.rstrip())
     except FileNotFoundError:
@@ -128,7 +128,7 @@ def compute_security(opts: ArgumentParser) -> int:
     print('Reading data ...')
     uris = []
     try:
-        with open(input_data_file) as file:
+        with open(input_data_file, encoding="utf8") as file:
             for line in file:
                 uris.append(line.rstrip())
     except FileNotFoundError:
@@ -162,7 +162,7 @@ def compute_ref_triple_syntax(opts: ArgumentParser) -> int:
     print('Reading data ...')
     statements = []
     try:
-        with open(input_data_file) as file:
+        with open(input_data_file, encoding="utf8") as file:
             for line in file:
                 statements.append(line.rstrip())
     except FileNotFoundError:
@@ -199,7 +199,7 @@ def compute_ref_literal_syntax(opts: ArgumentParser) -> int:
     print('Reading data ...')
     prop_values = {}
     try:
-        with open(input_data_file) as file:
+        with open(input_data_file, encoding="utf8") as file:
             reader = csv.reader(file)
             for row in reader:
                 if row[0] not in prop_values.keys():
@@ -240,27 +240,27 @@ def compute_ref_triple_semantic(opts: ArgumentParser) -> int:
     print('Reading data ...')
     fact_refs = []
     try:
-        with open(input_data_file) as file:
+        with open(input_data_file, encoding="utf8") as file:
             reader = csv.reader(file)
             for row in reader:
                 fact_refs.append(FactReference(row[0], row[1], row[2], row[3]))
     except FileNotFoundError:
         print("Error: Input data file not found. Provide data file with name: {0} in data_dir".format(
-            '"reference_literals.data"'))
+            '"fact_ref_triples.data"'))
         exit(1)
 
     # reading the gold standard set
     print('Reading gold standard set ...')
     gs_fact_refs = []
     try:
-        with open(input_gold_standard_file) as file:
+        with open(input_gold_standard_file, encoding="utf8") as file:
             reader = csv.reader(file)
             for row in reader:
                 gs_fact_refs.append(FactReference(
                     row[0], row[1], row[2], row[3]))
     except FileNotFoundError:
         print("Error: Gold Standard Set file not found. Provide gold standard data file with name: {0} in data_dir".format(
-            '"fact_ref_triples.data"'))
+            '"semantic_validity_gs.data"'))
         exit(1)
 
     # running the framework metric function
