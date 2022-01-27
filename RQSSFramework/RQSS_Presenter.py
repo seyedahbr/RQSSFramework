@@ -90,9 +90,22 @@ def plot_literal_syntax(opts: ArgumentParser) -> int:
     csv_data = pd.read_csv(input_data_file, index_col=None, header=0)
     csv_data['accuracy rate'] = 1 - csv_data['fails']/csv_data['total']
     csv_data['error rate'] = csv_data['errors']/csv_data['total']
-    box_whisker_plot(pd.melt(csv_data[['accuracy rate','error rate']]), 'Literal Syntax Accuracy and Errors', 'value', output_file, 'variable')
+    box_whisker_plot(pd.melt(csv_data[['accuracy rate','error rate']]), 'Syntax Validity of Reference Literals and Regex Errors', 'value', output_file, 'variable')
 
     print('Metric: Syntactic validity of references’ literals chart(s) have been plotted in the file: {0}'.format(
+        output_file))
+    return 0
+
+def plot_semantic_accuracy(opts: ArgumentParser) -> int:
+    input_data_file = os.path.join(
+        opts.result_dir + os.sep + 'semantic_validity.csv')
+    output_file = os.path.join(opts.output_dir + os.sep + 'seamntic_accuracy.png')
+
+    csv_data = pd.read_csv(input_data_file, index_col=None, header=0)
+    csv_data['accuracy rate'] = csv_data['full_matches']/csv_data['half_matches']
+    box_whisker_plot(pd.melt(csv_data[['accuracy rate']]), 'Semantic Valididty of Reference Triples', 'value', output_file, 'variable')
+
+    print('Metric: Semantic validity of reference triples chart(s) have been plotted in the file: {0}'.format(
         output_file))
     return 0
 
@@ -126,6 +139,9 @@ def RQSS_Plot(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] 
         framework_procs.append(p)
     if Path(opts.result_dir + os.sep + 'ref_literal_syntax.csv').is_file():
         p = Process(target=plot_literal_syntax(opts))
+        framework_procs.append(p)
+    if Path(opts.result_dir + os.sep + 'semantic_validity.csv').is_file():
+        p = Process(target=plot_semantic_accuracy(opts))
         framework_procs.append(p)
 
     for proc in framework_procs:
