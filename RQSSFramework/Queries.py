@@ -10,6 +10,17 @@ SELECT ?to_ret WHERE
 
 Limit 3
 ''',
+"get_ref_properties_wikimedia":
+'''
+PREFIX wikibase: <http://wikiba.se/ontology#>
+SELECT DISTINCT (REPLACE(STR(?refProperty),".*P","P") AS ?to_ret) WHERE{
+        ?item a wikibase:Reference.
+        ?item ?refProperty ?object.
+        MINUS {?object a wikibase:TimeValue}
+        MINUS {?object a wikibase:QuantityValue}
+        FILTER (?object != <http://wikiba.se/ontology#Reference>)
+}
+''',
 "get_property_constraints_specificity":
 '''
 SELECT ?to_ret WHERE{{

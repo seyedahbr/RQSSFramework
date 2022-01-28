@@ -30,6 +30,8 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
                         help="Extract all literal values in reference triples and save them on output dir. Collects data for computing Metric: Syntactic validity of references’ literals", action='store_true')
     parser.add_argument("-fr", "--factreftriples",
                         help="Extract all facts and their reference triples and save them on output dir. Collects data for computing Metric: Semantic validity of reference triples", action='store_true')
+    parser.add_argument("-rp", "--refproperties",
+                        help="Extract all properties that are used i references and save them on output dir. Collects data for computing Metric: Consistency of references’ properties", action='store_true')
     return parser
 
 
@@ -135,6 +137,25 @@ def extract_fact_ref_triples(opts: ArgumentParser) -> int:
         end_time - start_time))
     return 0
 
+def extract_reference_properties(opts: ArgumentParser) -> int:
+    print('Started extracting properties that are used in references')
+    start_time = datetime.now()
+
+    ref_props = perform_query(
+        opts.endpoint, RQSS_QUERIES["get_ref_properties_wikimedia"])
+    output_file = os.path.join(
+        opts.output_dir + os.sep + 'ref_properties.data')
+    with open(output_file, 'w') as file_handler:
+        csv_writer = csv.writer(file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        for row in ref_props:
+            csv_writer.writerow(row)
+
+    end_time = datetime.now()
+    print('Reference properties have been written in the file: {0}'.format(
+        output_file))
+    print('DONE. Extracting reference properties, Duration: {0}'.format(
+        end_time - start_time))
+    return 0
 
 def extract_from_file(opts: ArgumentParser) -> int:
     print('Local file extraction is not supported yet. Please use local/public endpoint.')
@@ -159,6 +180,9 @@ def extract_from_endpoint(opts: ArgumentParser) -> int:
 
     if(opts.factreftriples):
         p = Process(target=extract_fact_ref_triples(opts))
+        extractor_procs.append(p)
+    if(opts.refproperties):
+        p = Process(target=extract_reference_properties(opts))
         extractor_procs.append(p)
 
     for proc in extractor_procs:
