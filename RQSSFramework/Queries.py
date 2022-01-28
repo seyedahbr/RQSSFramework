@@ -10,11 +10,11 @@ SELECT ?to_ret WHERE
 
 Limit 3
 ''',
-"":
+"get_property_constraints_specificity":
 '''
-SELECT ?to_ret WHERE{
+SELECT ?to_ret WHERE{{
   BIND (EXISTS{{wd:{0} p:P2302 [pq:P5314 wd:Q54828450]}} AS ?to_ret)
-}
+}}
 ''',
 "get_fact_ref_triples_wikimedia":
 '''
