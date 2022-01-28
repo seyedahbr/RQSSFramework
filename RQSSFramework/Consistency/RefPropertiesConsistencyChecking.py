@@ -1,4 +1,3 @@
-import re
 from typing import List, NamedTuple
 from SPARQLWrapper import JSON, SPARQLWrapper
 
@@ -7,7 +6,7 @@ from Queries import RQSS_QUERIES
 
 class PropConsistencyResult(NamedTuple):
     property: str
-    is_ref_specific: str
+    is_ref_specific: bool
     def __repr__(self):
         return "Property {0} is reference-specific: {1}".format(self.property, self.is_ref_specific)
 
@@ -27,12 +26,10 @@ class RefPropertiesConsistencyChecker:
             results = sparql.query().convert()
             for result in results["results"]["bindings"]:
                 value=result["to_ret"]["value"]
-                if value == 'ref':
-                    self.results.append(PropConsistencyResult(prop, 'True'))
-                elif value == '':
-                    self.results.append(PropConsistencyResult(prop, 'NKN'))
+                if value == 'true':
+                    self.results.append(PropConsistencyResult(prop, True))
                 else:
-                    self.results.append(PropConsistencyResult(prop, 'False'))
+                    self.results.append(PropConsistencyResult(prop, False))
         return self.results
 
     def print_results(self):
