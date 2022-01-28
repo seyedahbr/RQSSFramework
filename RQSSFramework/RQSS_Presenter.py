@@ -10,7 +10,7 @@ from typing import Iterator, List, NamedTuple, Optional, Union
 from Availability.DereferencePossibility import DerefOfURI
 from Licensing.LicenseExistanceChecking import LicExistOfDom
 from Security.TLSExistanceChecking import TLSExist
-
+from Consistency.RefPropertiesConsistencyChecking import PropConsistencyResult
 
 def genargs(prog: Optional[str] = None) -> ArgumentParser:
     parser = ArgumentParser(prog)
@@ -109,6 +109,19 @@ def plot_semantic_accuracy(opts: ArgumentParser) -> int:
         output_file))
     return 0
 
+def plot_ref_properties_consistency(opts: ArgumentParser) -> int:
+    input_data_file = os.path.join(
+        opts.result_dir + os.sep + 'ref_properties_consistency.csv')
+    output_file = os.path.join(opts.output_dir + os.sep + 'ref_properties_consistency.png')
+
+    csv_data = pd.read_csv(input_data_file, index_col=None, header=0)
+    csv_data[str(PropConsistencyResult._fields[1])] = (csv_data[str(PropConsistencyResult._fields[1])] == True).astype(int)
+    box_whisker_plot(csv_data, 'Reference Properties Consistency', str(PropConsistencyResult._fields[1]), output_file)
+    
+    print('Metric: Consistency of references’ properties chart(s) have been plotted in the file: {0}'.format(
+        output_file))
+    return 0
+
 def RQSS_Plot(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] = None) -> int:
     if isinstance(argv, str):
         argv = argv.split()
@@ -143,6 +156,10 @@ def RQSS_Plot(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] 
     if Path(opts.result_dir + os.sep + 'semantic_validity.csv').is_file():
         p = Process(target=plot_semantic_accuracy(opts))
         framework_procs.append(p)
+    if Path(opts.result_dir + os.sep + 'ref_properties_consistency.csv').is_file():
+        p = Process(target=plot_ref_properties_consistency(opts))
+        framework_procs.append(p)
+
 
     for proc in framework_procs:
         proc.start()
