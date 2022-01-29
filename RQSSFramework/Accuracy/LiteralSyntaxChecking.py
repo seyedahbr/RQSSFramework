@@ -21,12 +21,12 @@ class WikibaseRefLiteralSyntaxChecker:
     _properties_values: Dict
     _regexes: Dict
 
-    def __init__(self, prop_vals: Dict, _regexes: Dict = None):
+    def __init__(self, prop_vals: Dict, regexes: Dict = None):
         self._properties_values = prop_vals
-        if _regexes == None:
+        if regexes == None:
             self._regexes = self.get_property_regex_from_Wikidata()
         else:
-            self._regexes = _regexes
+            self._regexes = regexes
     
     def check_literals_regex(self) -> List[LiteralSyntaxResult]:
         self.results = []
