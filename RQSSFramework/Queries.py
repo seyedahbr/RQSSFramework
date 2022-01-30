@@ -12,7 +12,8 @@ Limit 3
 ''',
 "get_property_range_wikimedia":
 '''
-
+SELECT ?to_ret WHERE{{wd:{0} p:P2302 [ps:P2302 wd:Q21510865;
+                                      pq:P2308 ?to_ret]}}
 ''',
 "get_ref_properties_wikimedia":
 '''
