@@ -10,6 +10,10 @@ SELECT ?to_ret WHERE
 
 Limit 3
 ''',
+"get_property_range_wikimedia":
+'''
+
+''',
 "get_ref_properties_wikimedia":
 '''
 PREFIX wikibase: <http://wikiba.se/ontology#>
