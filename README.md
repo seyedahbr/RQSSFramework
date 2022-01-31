@@ -13,7 +13,8 @@ Reference Quality Scoring System (RQSS) has three main layers:
 Extractor layer prepares the required collections for the Framework Layer which are needed to calculate the metrics. These collections are the collection of items, properties, statements, references, literals, external sources, etc. Collections can be extracted from the raw RDF files or local/public SPARQL endpoints. The extractor obtains the collections mostly by performing SPARQL queries.
 
 ### Framework Layer
+The framework layer is the main part of RQSS. It contains independent classes, each of which computes a metric. The framework classes use collected data from the extractor layer as input and create CSV files to demonstrate the computed results. Rather than saving just [0,1] scores, the framework classes save more computation data so we can compute a distribution over results. The framework layer is categorized in different dimensions, according to metric definitions.
 
 ### Presenttion Layer
-
+The presenter layer is the last step of RQSS. The presenter layer accepts the framework layer results as input and plots different charts to demonstrate the results to human users efficiently.
 
