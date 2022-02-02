@@ -10,6 +10,23 @@ SELECT ?to_ret WHERE
 
 Limit 3
 ''',
+"get_ref_properties_object_value_types_wikimedia":
+'''
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+SELECT DISTINCT (REPLACE(STR(?refProperty),".*P","P") AS ?ret1)
+                (REPLACE(STR(?refVlueType),".*Q","Q") AS ?ret2) WHERE{
+  ?refNode a wikibase:Reference.
+  ?refNode ?refProperty ?refObject.
+  MINUS {?refObject a wikibase:TimeValue}
+  MINUS {?refObject a wikibase:QuantityValue}
+  FILTER (?refObject != <http://wikiba.se/ontology#Reference>).
+  ?refobject wdt:P31 ?refVlueType.
+  ?refobject wdt:P279 ?refVlueType.
+  ?refobject wdt:P31/wdt:P279* ?refVlueType.
+}
+''',
 "get_property_range_wikimedia":
 '''
 SELECT (REPLACE(STR(?constr),".*Q","Q") AS ?to_ret) WHERE{{wd:{0} p:P2302 [ps:P2302 wd:Q21510865;
