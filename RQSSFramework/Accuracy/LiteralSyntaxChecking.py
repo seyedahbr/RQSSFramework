@@ -1,6 +1,5 @@
-import re, csv
-from typing import Dict, Iterable, List, Iterator, NamedTuple, Set
-from unittest import result
+import re
+from typing import Dict, List, NamedTuple
 from SPARQLWrapper import JSON, SPARQLWrapper
 
 from Queries import RQSS_QUERIES
