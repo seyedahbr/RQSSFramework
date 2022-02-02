@@ -8,8 +8,9 @@ class RangeConsistencyResult(NamedTuple):
     ref_property: str
     total: int
     fails: int
+    not_exixts: int
     def __repr__(self):
-        return "Number of checked values for propety {0}: {1}; fails:{2}; score:{3}".format(self.ref_property, self.total, self.fails, self.score)
+        return "Number of checked values for propety {0}: {1}; fails:{2}; score:{3}; range constrints not exists:{4}".format(self.ref_property, self.total, self.fails, self.score,self.not_exixts)
     @property
     def score(self):
         return 1-(self.fails/self.total)
@@ -22,26 +23,33 @@ class TriplesRangeConsistencyChecker:
     def __init__(self, prop_vals: Dict, ranges: Dict = None):
         self._properties_values = prop_vals
         if ranges == None:
-            self.ranges = self.get_property_ranges_from_Wikidata()
+            self._ranges = self.get_property_ranges_from_Wikidata()
+            print(self._ranges)
         else:
-            self.ranges = ranges
+            self._ranges = ranges
     
     def check_all_value_ranges(self) -> List[RangeConsistencyResult]:
         self.results = []
         for prop in self._properties_values.keys():
             num_fails = 0
+            num_not_exists = 0
             for value in self._properties_values[str(prop)]:
+                if len(self._ranges[str(prop)]) == 0:
+                    num_not_exists += 1
+                    continue 
                 failed = True
                 for range in self._ranges[str(prop)]:
                     if self.check_range_value(value, range):
                         failed = False
                         break
                 if failed: num_fails +=1
-            self.results.append(RangeConsistencyResult(str(prop),len(self._properties_values[str(prop)]),num_fails))
+            self.results.append(RangeConsistencyResult(str(prop),len(self._properties_values[str(prop)]),num_fails,num_not_exists))
         return self.results
 
-    def check_range_value(value:str, range:str):
-        return True
+    def check_range_value(self, value:str, range:str):
+        if value==range:
+            return True
+        return False
 
     def get_property_ranges_from_Wikidata(self) -> Dict:
         ret_val = Dict.fromkeys(self._properties_values.keys())
