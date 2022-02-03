@@ -129,7 +129,7 @@ def plot_range_consistency(opts: ArgumentParser) -> int:
 
     csv_data = pd.read_csv(input_data_file, index_col=None, header=0)
     csv_data['consistency rate'] = 1 - csv_data['fails']/csv_data['total']
-    csv_data['error rate'] = csv_data['not_exixts']/csv_data['total']
+    csv_data['not exixts rate'] = csv_data['not_exixts']/csv_data['total']
     box_whisker_plot(pd.melt(csv_data[['consistency rate','not exixts rate']]), 'Range consistency of reference triples and not exist range rate', 'value', output_file, 'variable')
     
     print('Metric: Range consistency of reference triples chart(s) have been plotted in the file: {0}'.format(
