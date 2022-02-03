@@ -25,7 +25,7 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
 def box_whisker_plot(data, x_row: str, y_col: str, output: str, x_col:str = None) -> None:
     import matplotlib.pyplot as plt
     import seaborn as sns
-    box_plot = sns.boxplot(data=data, y=y_col, x=x_col, showmeans=False, showfliers=False,
+    box_plot = sns.boxplot(data=data, y=y_col, x=x_col, showmeans=True, showfliers=False,
                            meanprops={"marker": "^",
                                       "markerfacecolor": "black",
                                       "markeredgecolor": "black",
