@@ -122,6 +122,20 @@ def plot_ref_properties_consistency(opts: ArgumentParser) -> int:
         output_file))
     return 0
 
+def plot_range_consistency(opts: ArgumentParser) -> int:
+    input_data_file = os.path.join(
+        opts.result_dir + os.sep + 'range_consistency.csv')
+    output_file = os.path.join(opts.output_dir + os.sep + 'range_consistency.png')
+
+    csv_data = pd.read_csv(input_data_file, index_col=None, header=0)
+    csv_data['consistency rate'] = 1 - csv_data['fails']/csv_data['total']
+    csv_data['error rate'] = csv_data['not_exixts']/csv_data['total']
+    box_whisker_plot(pd.melt(csv_data[['consistency rate','not exixts rate']]), 'Range consistency of reference triples and not exist range rate', 'value', output_file, 'variable')
+    
+    print('Metric: Range consistency of reference triples chart(s) have been plotted in the file: {0}'.format(
+        output_file))
+    return 0
+
 def RQSS_Plot(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] = None) -> int:
     if isinstance(argv, str):
         argv = argv.split()
@@ -158,6 +172,9 @@ def RQSS_Plot(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] 
         framework_procs.append(p)
     if Path(opts.result_dir + os.sep + 'ref_properties_consistency.csv').is_file():
         p = Process(target=plot_ref_properties_consistency(opts))
+        framework_procs.append(p)
+    if Path(opts.result_dir + os.sep + 'range_consistency.csv').is_file():
+        p = Process(target=plot_range_consistency(opts))
         framework_procs.append(p)
 
 
