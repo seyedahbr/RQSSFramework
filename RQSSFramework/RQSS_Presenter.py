@@ -12,6 +12,7 @@ from Licensing.LicenseExistanceChecking import LicExistOfDom
 from Security.TLSExistanceChecking import TLSExist
 from Consistency.RefPropertiesConsistencyChecking import PropConsistencyResult
 
+
 def genargs(prog: Optional[str] = None) -> ArgumentParser:
     parser = ArgumentParser(prog)
     parser.add_argument(
@@ -22,10 +23,10 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
     return parser
 
 
-def box_whisker_plot(data, x_row: str, y_col: str, output: str, x_col:str = None) -> None:
+def box_whisker_plot(data, x_row: str, y_col: str, output: str, x_col: str = None) -> None:
     import matplotlib.pyplot as plt
     import seaborn as sns
-    box_plot = sns.boxplot(data=data, y=y_col, x=x_col, showmeans=True, showfliers=False,
+    box_plot = sns.boxplot(data=data, y=y_col, x=x_col, showmeans=False, showfliers=False,
                            meanprops={"marker": "^",
                                       "markerfacecolor": "black",
                                       "markeredgecolor": "black",
@@ -34,11 +35,20 @@ def box_whisker_plot(data, x_row: str, y_col: str, output: str, x_col:str = None
                            flierprops={"marker": "o", "markersize": "5"})
     box_plot.set_xlabel(x_row)
     box_plot.set_ylabel(y_col)
-    box_plot.text(box_plot.get_xticks()[0],data[y_col].mean(),'Avg:{0}'.format(round(data[y_col].mean(),2)), 
-            horizontalalignment='center',size='x-small',color='black',weight='semibold')
+    if len(box_plot.get_xticklabels()) > 1:
+        means = data.groupby('variable', as_index=False)['value'].mean()
+        ctr = 0
+        for col in box_plot.get_xticklabels():
+            mean = float(means.loc[means['variable'] == col.get_text(), 'value'].iloc[0])
+            box_plot.text(box_plot.get_xticks()[ctr], mean, 'Avg: {0}'.format(round(mean, 2)),
+                          horizontalalignment='center', size='x-small', color='black', weight='semibold')
+            ctr += 1
+    else:
+        box_plot.text(box_plot.get_xticks()[0], data[y_col].mean(), 'Avg:{0}'.format(round(data[y_col].mean(), 2)),
+                      horizontalalignment='center', size='x-small', color='black', weight='semibold')
     box_plot.set(ylim=(0, 1))
-    sns.despine( trim=True)
-    plt.savefig(output , format='png')
+    sns.despine(trim=True)
+    plt.savefig(output, format='png')
     plt.close()
 
 
@@ -49,12 +59,15 @@ def plot_dereferencing(opts: ArgumentParser) -> int:
 
     csv_data = pd.read_csv(input_data_file, index_col=None, header=0)
     # convert True and False to 1 and 0
-    csv_data[str(DerefOfURI._fields[1])] = (csv_data[str(DerefOfURI._fields[1])] == True).astype(int)
-    box_whisker_plot(csv_data, 'Derefrence Possibility', str(DerefOfURI._fields[1]), output_file)
-    
+    csv_data[str(DerefOfURI._fields[1])] = (
+        csv_data[str(DerefOfURI._fields[1])] == True).astype(int)
+    box_whisker_plot(csv_data, 'Derefrence Possibility',
+                     str(DerefOfURI._fields[1]), output_file)
+
     print('Metric: Dereference Possibility of the External URIs chart(s) have been plotted in the file: {0}'.format(
         output_file))
     return 0
+
 
 def plot_licensing(opts: ArgumentParser) -> int:
     input_data_file = os.path.join(
@@ -62,12 +75,15 @@ def plot_licensing(opts: ArgumentParser) -> int:
     output_file = os.path.join(opts.output_dir + os.sep + 'licensing.png')
 
     csv_data = pd.read_csv(input_data_file, index_col=None, header=0)
-    csv_data[str(LicExistOfDom._fields[1])] = (csv_data[str(LicExistOfDom._fields[1])] == True).astype(int)
-    box_whisker_plot(csv_data, 'Licensing', str(LicExistOfDom._fields[1]), output_file)
-    
+    csv_data[str(LicExistOfDom._fields[1])] = (
+        csv_data[str(LicExistOfDom._fields[1])] == True).astype(int)
+    box_whisker_plot(csv_data, 'Licensing', str(
+        LicExistOfDom._fields[1]), output_file)
+
     print('Metric: External Sources’ Datasets Licensing chart(s) have been plotted in the file: {0}'.format(
         output_file))
     return 0
+
 
 def plot_security(opts: ArgumentParser) -> int:
     input_data_file = os.path.join(
@@ -75,67 +91,84 @@ def plot_security(opts: ArgumentParser) -> int:
     output_file = os.path.join(opts.output_dir + os.sep + 'security.png')
 
     csv_data = pd.read_csv(input_data_file, index_col=None, header=0)
-    csv_data[str(TLSExist._fields[1])] = (csv_data[str(TLSExist._fields[1])] == True).astype(int)
-    box_whisker_plot(csv_data, 'Security', str(TLSExist._fields[1]), output_file)
-    
+    csv_data[str(TLSExist._fields[1])] = (
+        csv_data[str(TLSExist._fields[1])] == True).astype(int)
+    box_whisker_plot(csv_data, 'Security', str(
+        TLSExist._fields[1]), output_file)
+
     print('Metric: Link Security of the External URIs chart(s) have been plotted in the file: {0}'.format(
         output_file))
     return 0
 
+
 def plot_literal_syntax(opts: ArgumentParser) -> int:
     input_data_file = os.path.join(
         opts.result_dir + os.sep + 'ref_literal_syntax.csv')
-    output_file = os.path.join(opts.output_dir + os.sep + 'ref_literal_syntax.png')
+    output_file = os.path.join(
+        opts.output_dir + os.sep + 'ref_literal_syntax.png')
 
     csv_data = pd.read_csv(input_data_file, index_col=None, header=0)
     csv_data['accuracy rate'] = 1 - csv_data['fails']/csv_data['total']
     csv_data['error rate'] = csv_data['errors']/csv_data['total']
     csv_data['not exists rate'] = csv_data['not_exixts']/csv_data['total']
-    box_whisker_plot(pd.melt(csv_data[['accuracy rate','error rate','not exists rate']]), 'Syntax Validity of Reference Literals and Regex Errors', 'value', output_file, 'variable')
+    box_whisker_plot(pd.melt(csv_data[['accuracy rate', 'error rate', 'not exists rate']]),
+                     'Syntax Validity of Reference Literals and Regex Errors', 'value', output_file, 'variable')
 
     print('Metric: Syntactic validity of references’ literals chart(s) have been plotted in the file: {0}'.format(
         output_file))
     return 0
 
+
 def plot_semantic_accuracy(opts: ArgumentParser) -> int:
     input_data_file = os.path.join(
         opts.result_dir + os.sep + 'semantic_validity.csv')
-    output_file = os.path.join(opts.output_dir + os.sep + 'seamntic_accuracy.png')
+    output_file = os.path.join(
+        opts.output_dir + os.sep + 'seamntic_accuracy.png')
 
     csv_data = pd.read_csv(input_data_file, index_col=None, header=0)
-    csv_data['accuracy rate'] = csv_data['full_matches']/csv_data['half_matches']
-    box_whisker_plot(pd.melt(csv_data[['accuracy rate']]), 'Semantic Valididty of Reference Triples', 'value', output_file, 'variable')
+    csv_data['accuracy rate'] = csv_data['full_matches'] / \
+        csv_data['half_matches']
+    box_whisker_plot(pd.melt(csv_data[['accuracy rate']]),
+                     'Semantic Valididty of Reference Triples', 'value', output_file, 'variable')
 
     print('Metric: Semantic validity of reference triples chart(s) have been plotted in the file: {0}'.format(
         output_file))
     return 0
 
+
 def plot_ref_properties_consistency(opts: ArgumentParser) -> int:
     input_data_file = os.path.join(
         opts.result_dir + os.sep + 'ref_properties_consistency.csv')
-    output_file = os.path.join(opts.output_dir + os.sep + 'ref_properties_consistency.png')
+    output_file = os.path.join(
+        opts.output_dir + os.sep + 'ref_properties_consistency.png')
 
     csv_data = pd.read_csv(input_data_file, index_col=None, header=0)
-    csv_data[str(PropConsistencyResult._fields[1])] = (csv_data[str(PropConsistencyResult._fields[1])] == True).astype(int)
-    box_whisker_plot(csv_data, 'Reference Properties Consistency', str(PropConsistencyResult._fields[1]), output_file)
-    
+    csv_data[str(PropConsistencyResult._fields[1])] = (
+        csv_data[str(PropConsistencyResult._fields[1])] == True).astype(int)
+    box_whisker_plot(csv_data, 'Reference Properties Consistency', str(
+        PropConsistencyResult._fields[1]), output_file)
+
     print('Metric: Consistency of references’ properties chart(s) have been plotted in the file: {0}'.format(
         output_file))
     return 0
 
+
 def plot_range_consistency(opts: ArgumentParser) -> int:
     input_data_file = os.path.join(
         opts.result_dir + os.sep + 'range_consistency.csv')
-    output_file = os.path.join(opts.output_dir + os.sep + 'range_consistency.png')
+    output_file = os.path.join(
+        opts.output_dir + os.sep + 'range_consistency.png')
 
     csv_data = pd.read_csv(input_data_file, index_col=None, header=0)
     csv_data['consistency rate'] = 1 - csv_data['fails']/csv_data['total']
     csv_data['not exixts rate'] = csv_data['not_exixts']/csv_data['total']
-    box_whisker_plot(pd.melt(csv_data[['consistency rate','not exixts rate']]), 'Range consistency of reference triples and not exist range rate', 'value', output_file, 'variable')
-    
+    box_whisker_plot(pd.melt(csv_data[['consistency rate', 'not exixts rate']]),
+                     'Range consistency of reference triples and not exist range rate', 'value', output_file, 'variable')
+
     print('Metric: Range consistency of reference triples chart(s) have been plotted in the file: {0}'.format(
         output_file))
     return 0
+
 
 def RQSS_Plot(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] = None) -> int:
     if isinstance(argv, str):
@@ -177,7 +210,6 @@ def RQSS_Plot(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] 
     if Path(opts.result_dir + os.sep + 'range_consistency.csv').is_file():
         p = Process(target=plot_range_consistency(opts))
         framework_procs.append(p)
-
 
     for proc in framework_procs:
         proc.start()
