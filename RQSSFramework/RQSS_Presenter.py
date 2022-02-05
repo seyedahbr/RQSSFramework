@@ -5,7 +5,7 @@ from argparse import ArgumentParser
 from datetime import datetime
 from multiprocessing.context import Process
 from pathlib import Path
-from typing import Iterator, List, NamedTuple, Optional, Union
+from typing import List, Optional, Union
 
 from Availability.DereferencePossibility import DerefOfURI
 from Licensing.LicenseExistanceChecking import LicExistOfDom
@@ -90,7 +90,8 @@ def plot_literal_syntax(opts: ArgumentParser) -> int:
     csv_data = pd.read_csv(input_data_file, index_col=None, header=0)
     csv_data['accuracy rate'] = 1 - csv_data['fails']/csv_data['total']
     csv_data['error rate'] = csv_data['errors']/csv_data['total']
-    box_whisker_plot(pd.melt(csv_data[['accuracy rate','error rate']]), 'Syntax Validity of Reference Literals and Regex Errors', 'value', output_file, 'variable')
+    csv_data['not exists rate'] = csv_data['not_exixts']/csv_data['total']
+    box_whisker_plot(pd.melt(csv_data[['accuracy rate','error rate','not exists rate']]), 'Syntax Validity of Reference Literals and Regex Errors', 'value', output_file, 'variable')
 
     print('Metric: Syntactic validity of references’ literals chart(s) have been plotted in the file: {0}'.format(
         output_file))
