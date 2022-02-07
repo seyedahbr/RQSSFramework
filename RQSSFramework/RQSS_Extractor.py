@@ -34,7 +34,10 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
                         help="Extract all reference properties and save them on output dir. Collects data for computing Metric: Consistency of references’ properties", action='store_true')
     parser.add_argument("-rpvt", "--refpropvaluetype",
                         help="Extract all reference properties and their object value types and save them on output dir. Collects data for computing Metric: Range consistency of reference triples", action='store_true')
+    parser.add_argument("-ri", "--refincomings",
+                        help="Extract all reference nodes and the numebr of their incoming edges (prov:wasDerivedFrom) and save them on output dir. Collects data for computing Metric: Ratio of reference sharing", action='store_true')
     return parser
+
 
 def perform_query(endpoint: str, query: str) -> List[List[str]]:
     ret_val = []
@@ -64,7 +67,8 @@ def extract_external_uris(opts: ArgumentParser) -> int:
         opts.endpoint, RQSS_QUERIES["get_all_external_sources_filter_wikimedia_distinct"])
     output_file = os.path.join(opts.output_dir + os.sep + 'external_uris.data')
     with open(output_file, 'w') as file_handler:
-        csv_writer = csv.writer(file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        csv_writer = csv.writer(
+            file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for uri in external_uris:
             csv_writer.writerow(uri)
 
@@ -85,7 +89,8 @@ def extract_statement_nodes_uris(opts: ArgumentParser) -> int:
     output_file = os.path.join(
         opts.output_dir + os.sep + 'statement_nodes_uris.data')
     with open(output_file, 'w') as file_handler:
-        csv_writer = csv.writer(file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        csv_writer = csv.writer(
+            file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for uri in statement_uris:
             csv_writer.writerow(uri)
 
@@ -106,7 +111,8 @@ def extract_refrence_literals(opts: ArgumentParser) -> int:
     output_file = os.path.join(
         opts.output_dir + os.sep + 'reference_literals.data')
     with open(output_file, 'w') as file_handler:
-        csv_writer = csv.writer(file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        csv_writer = csv.writer(
+            file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for lit in ref_literals:
             csv_writer.writerow(lit)
 
@@ -127,7 +133,8 @@ def extract_fact_ref_triples(opts: ArgumentParser) -> int:
     output_file = os.path.join(
         opts.output_dir + os.sep + 'fact_ref_triples.data')
     with open(output_file, 'w') as file_handler:
-        csv_writer = csv.writer(file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        csv_writer = csv.writer(
+            file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for row in fact_ref_triples:
             csv_writer.writerow(row)
 
@@ -138,6 +145,7 @@ def extract_fact_ref_triples(opts: ArgumentParser) -> int:
         end_time - start_time))
     return 0
 
+
 def extract_reference_properties(opts: ArgumentParser) -> int:
     print('Started extracting properties that are used in references')
     start_time = datetime.now()
@@ -147,7 +155,8 @@ def extract_reference_properties(opts: ArgumentParser) -> int:
     output_file = os.path.join(
         opts.output_dir + os.sep + 'ref_properties.data')
     with open(output_file, 'w') as file_handler:
-        csv_writer = csv.writer(file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        csv_writer = csv.writer(
+            file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for row in ref_props:
             csv_writer.writerow(row)
 
@@ -158,6 +167,7 @@ def extract_reference_properties(opts: ArgumentParser) -> int:
         end_time - start_time))
     return 0
 
+
 def extract_reference_properties_value_types(opts: ArgumentParser) -> int:
     print('Started extracting reference properties and their object values types')
     start_time = datetime.now()
@@ -167,7 +177,8 @@ def extract_reference_properties_value_types(opts: ArgumentParser) -> int:
     output_file = os.path.join(
         opts.output_dir + os.sep + 'ref_properties_object_value.data')
     with open(output_file, 'w') as file_handler:
-        csv_writer = csv.writer(file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        csv_writer = csv.writer(
+            file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for row in ref_props:
             csv_writer.writerow(row)
 
@@ -177,6 +188,29 @@ def extract_reference_properties_value_types(opts: ArgumentParser) -> int:
     print('DONE. Extracting reference properties and object value types, Duration: {0}'.format(
         end_time - start_time))
     return 0
+
+
+def extract_reference_node_incomings(opts: ArgumentParser) -> int:
+    print('Started extracting reference nodes and the numebr of their incoming edges (prov:wasDerivedFrom)')
+    start_time = datetime.now()
+
+    ref_props = perform_query(
+        opts.endpoint, RQSS_QUERIES["get_ref_nodes_incomings_wikimedia"])
+    output_file = os.path.join(
+        opts.output_dir + os.sep + 'ref_nodes_incomings.data')
+    with open(output_file, 'w') as file_handler:
+        csv_writer = csv.writer(
+            file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        for row in ref_props:
+            csv_writer.writerow(row)
+
+    end_time = datetime.now()
+    print('Reference nodes and the numebr of their incoming edges (prov:wasDerivedFrom) have been written in the file: {0}'.format(
+        output_file))
+    print('DONE. Extracting reference nodes and the numebr of their incoming edges (prov:wasDerivedFrom), Duration: {0}'.format(
+        end_time - start_time))
+    return 0
+
 
 def extract_from_file(opts: ArgumentParser) -> int:
     print('Local file extraction is not supported yet. Please use local/public endpoint.')
@@ -202,12 +236,17 @@ def extract_from_endpoint(opts: ArgumentParser) -> int:
     if(opts.factreftriples):
         p = Process(target=extract_fact_ref_triples(opts))
         extractor_procs.append(p)
+    
     if(opts.refproperties):
         p = Process(target=extract_reference_properties(opts))
         extractor_procs.append(p)
     
     if(opts.refpropvaluetype):
         p = Process(target=extract_reference_properties_value_types(opts))
+        extractor_procs.append(p)
+    
+    if(opts.refincomings):
+        p = Process(target=extract_reference_node_incomings(opts))
         extractor_procs.append(p)
 
     for proc in extractor_procs:
