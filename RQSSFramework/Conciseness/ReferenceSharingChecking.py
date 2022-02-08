@@ -1,18 +1,22 @@
-from contextlib import redirect_stderr
 from typing import List, NamedTuple
+
 
 class RefSharingResult(NamedTuple):
     total: int
     shared: int
+
     def __repr__(self):
-        return "Number of reference nodes: {0}; shared references:{1}; ratio: {2}".format(self.total, self.shared, round(self.ratio,2))
+        return "Number of reference nodes: {0}; shared references:{1}; ratio: {2}".format(self.total, self.shared, round(self.ratio, 2))
+
     @property
     def ratio(self):
-        return 1-(self.shared/self.total)
+        return (self.shared/self.total)
+
 
 class RefNodeIncomings(NamedTuple):
     refnode: str
-    num_of_inconms:int
+    num_of_inconms: int
+
 
 class ReferenceSharingChecker:
     result: RefSharingResult = None
@@ -22,11 +26,12 @@ class ReferenceSharingChecker:
         self.ref_nodes = ref_nodes
 
     def count_seperate_shared_references(self) -> List[RefNodeIncomings]:
-        ret_val = List[RefNodeIncomings]
+        ret_val:List[RefNodeIncomings] = []
         for record in self.ref_nodes:
-            if record.num_of_inconms > 1:
+            if int(record.num_of_inconms) > 1:
                 ret_val.append(record)
-        self.result = RefSharingResult(len(self.ref_nodes),len(ret_val))
+        self.result = RefSharingResult(len(self.ref_nodes), len(ret_val))
+        return ret_val
 
     def print_results(self):
         """
