@@ -17,6 +17,7 @@ from Queries import RQSS_QUERIES
 from Security.TLSExistanceChecking import TLSChecker
 from Consistency.RefPropertiesConsistencyChecking import RefPropertiesConsistencyChecker
 from Consistency.TriplesRangeConsistencyChecking import TriplesRangeConsistencyChecker
+from Conciseness.ReferenceSharingChecking import *
 
 
 def genargs(prog: Optional[str] = None) -> ArgumentParser:
@@ -43,6 +44,8 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
                         help="Compute the metric: Consistency of references’ properties", action='store_true')
     parser.add_argument("-rc", "--rangeconsistency",
                         help="Compute the metric: Range consistency of reference triples", action='store_true')
+    parser.add_argument("-rs", "--refsharing",
+                        help="Compute the metric: Ratio of reference sharing", action='store_true')
     return parser
 
 
@@ -285,11 +288,13 @@ def compute_ref_triple_semantic(opts: ArgumentParser) -> int:
         end_time - start_time))
     return 0
 
+
 def compute_ref_properties_consistency(opts: ArgumentParser) -> int:
     print('Started computing Metric: Consistency of references’ properties')
     input_data_file = os.path.join(
         opts.data_dir + os.sep + 'ref_properties.data')
-    output_file = os.path.join(opts.output_dir + os.sep + 'ref_properties_consistency.csv')
+    output_file = os.path.join(
+        opts.output_dir + os.sep + 'ref_properties_consistency.csv')
 
     # reading the extracted External URIs
     print('Reading data ...')
@@ -305,7 +310,8 @@ def compute_ref_properties_consistency(opts: ArgumentParser) -> int:
     # running the framework metric function
     print('Running metric ...')
     start_time = datetime.now()
-    results = RefPropertiesConsistencyChecker(props).check_reference_specificity_from_Wikdiata()
+    results = RefPropertiesConsistencyChecker(
+        props).check_reference_specificity_from_Wikdiata()
     end_time = datetime.now()
 
     # saving the results for presentation layer
@@ -316,6 +322,7 @@ def compute_ref_properties_consistency(opts: ArgumentParser) -> int:
     print('DONE. Metric: Consistency of references’ properties, Duration: {0}'.format(
         end_time - start_time))
     return 0
+
 
 def compute_range_consistency(opts: ArgumentParser) -> int:
     print('Started computing Metric: Range consistency of reference triples')
@@ -354,6 +361,46 @@ def compute_range_consistency(opts: ArgumentParser) -> int:
     print('DONE. Metric: Range consistency of reference triples, Duration: {0}'.format(
         end_time - start_time))
     return 0
+
+
+def compute_ref_sharing_ratio(opts: ArgumentParser) -> int:
+    print('Started computing Metric: Ratio of reference sharing')
+    input_data_file = os.path.join(
+        opts.data_dir + os.sep + 'ref_nodes_incomings.data')
+    output_file_dist = os.path.join(
+        opts.output_dir + os.sep + 'ref_sharing.csv')
+    output_file_result = os.path.join(
+        opts.output_dir + os.sep + 'ref_sharing_ratio.csv')
+
+    # reading the statement nodes data
+    print('Reading data ...')
+    ref_nodes = []
+    try:
+        with open(input_data_file, encoding="utf8") as file:
+            reader = csv.reader(file)
+            for row in reader:
+                ref_nodes.append(RefNodeIncomings(row[0], row[1]))
+    except FileNotFoundError:
+        print("Error: Input data file not found. Provide data file with name: {0} in data_dir".format(
+            '"ref_nodes_incomings.data"'))
+        exit(1)
+    # running the framework metric function
+    print('Running metric ...')
+    start_time = datetime.now()
+    checker = ReferenceSharingChecker(ref_nodes)
+    shared_refs = checker.count_seperate_shared_references()
+    end_time = datetime.now()
+
+    # saving the results for presentation layer
+    write_results_to_CSV(shared_refs, output_file_dist)
+    write_results_to_CSV([checker.result], output_file_result)
+
+    print('Metric: Ratio of reference sharing results have been written in the files: {0} and {1}'.format(
+        output_file_dist, output_file_result))
+    print('DONE. Metric: Ratio of reference sharing, Duration: {0}'.format(
+        end_time - start_time))
+    return 0
+
 
 def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] = None) -> int:
     if isinstance(argv, str):
@@ -397,6 +444,9 @@ def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Op
         framework_procs.append(p)
     if opts.rangeconsistency:
         p = Process(target=compute_range_consistency(opts))
+        framework_procs.append(p)
+    if opts.refsharing:
+        p = Process(target=compute_ref_sharing_ratio(opts))
         framework_procs.append(p)
 
     for proc in framework_procs:
