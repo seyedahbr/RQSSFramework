@@ -15,7 +15,7 @@ class RefSharingResult(NamedTuple):
 
 class RefNodeIncomings(NamedTuple):
     refnode: str
-    num_of_inconms: int
+    num_of_incomes: int
 
 
 class ReferenceSharingChecker:
@@ -28,7 +28,7 @@ class ReferenceSharingChecker:
     def count_seperate_shared_references(self) -> List[RefNodeIncomings]:
         ret_val:List[RefNodeIncomings] = []
         for record in self.ref_nodes:
-            if int(record.num_of_inconms) > 1:
+            if int(record.num_of_incomes) > 1:
                 ret_val.append(record)
         self.result = RefSharingResult(len(self.ref_nodes), len(ret_val))
         return ret_val
