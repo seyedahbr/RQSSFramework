@@ -46,7 +46,7 @@ def box_whisker_plot(data, x_row: str, y_col: str, output: str, x_col: str = Non
     else:
         box_plot.text(box_plot.get_xticks()[0], data[y_col].mean(), 'Avg:{0}'.format(round(data[y_col].mean(), 2)),
                       horizontalalignment='center', size='x-small', color='black', weight='semibold')
-    box_plot.set(ylim=(0, 1))
+    #box_plot.set(ylim=(0, 1))
     sns.despine(trim=True)
     plt.savefig(output, format='png')
     plt.close()
@@ -169,6 +169,20 @@ def plot_range_consistency(opts: ArgumentParser) -> int:
         output_file))
     return 0
 
+def plot_ref_sharing_conciseness(opts: ArgumentParser) -> int:
+    input_data_file = os.path.join(
+        opts.result_dir + os.sep + 'ref_sharing.csv')
+    output_file = os.path.join(
+        opts.output_dir + os.sep + 'ref_sharing.png')
+
+    csv_data = pd.read_csv(input_data_file, index_col=None, header=0)
+    box_whisker_plot(csv_data,
+                     'Reference Sharing Ratio', 'num_of_incomes', output_file)
+
+    print('Metric: Ratio of reference sharing chart(s) have been plotted in the file: {0}'.format(
+        output_file))
+    return 0
+
 
 def RQSS_Plot(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] = None) -> int:
     if isinstance(argv, str):
@@ -209,6 +223,9 @@ def RQSS_Plot(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] 
         framework_procs.append(p)
     if Path(opts.result_dir + os.sep + 'range_consistency.csv').is_file():
         p = Process(target=plot_range_consistency(opts))
+        framework_procs.append(p)
+    if Path(opts.result_dir + os.sep + 'ref_sharing.csv').is_file():
+        p = Process(target=plot_ref_sharing_conciseness(opts))
         framework_procs.append(p)
 
     for proc in framework_procs:
