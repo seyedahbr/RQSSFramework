@@ -21,7 +21,7 @@ class DNSBLBlacklistedChecker:
     def domain_extractor(self,uris: Iterator[URIRef]) -> List[URIRef]:
         ret_list=[]
         for u in uris:
-            ret_list.append('https://'+urlparse(u).netloc)
+            ret_list.append(urlparse(u).netloc)
         return ret_list
 
     def check_domain_blacklisted(self) -> List[BlacklistedOfDom]:
