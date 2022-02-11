@@ -17,9 +17,9 @@ PREFIX prov: <http://www.w3.org/ns/prov#>
 PREFIX wdref: <http://www.wikidata.org/reference/>
 
 SELECT DISTINCT ?statementNode (COUNT(?refnode) AS ?numOfRef) WHERE{
-        ?statementNode a wikibase:Statement;
-                         prov:wasDerivedFrom ?refnode.
-}
+        ?statementNode a wikibase:Statement.
+        ?statementNode prov:wasDerivedFrom ?refnode.
+}GROUP BY ?statementNode
 ''',
 "get_ref_nodes_incomings_wikimedia":
 '''
