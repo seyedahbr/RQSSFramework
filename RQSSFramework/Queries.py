@@ -16,12 +16,10 @@ PREFIX wikibase: <http://wikiba.se/ontology#>
 PREFIX prov: <http://www.w3.org/ns/prov#>
 PREFIX wdref: <http://www.wikidata.org/reference/>
 
-SELECT ?refnode (?numOfStatements AS ?num) WHERE{
 SELECT  DISTINCT ?refnode (COUNT(?item) AS ?numOfStatements) WHERE{
         ?item a wikibase:Statement.
         ?item prov:wasDerivedFrom ?refnode.
 }GROUP BY ?refnode
-}
 ''',
 "get_ref_properties_object_value_types_wikimedia":
 '''
