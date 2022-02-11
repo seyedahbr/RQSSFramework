@@ -16,7 +16,7 @@ PREFIX wikibase: <http://wikiba.se/ontology#>
 PREFIX prov: <http://www.w3.org/ns/prov#>
 PREFIX wdref: <http://www.wikidata.org/reference/>
 
-SELECT DISTINCT ?statementNode (COUNT(?refnode) AS ?numOfRef) WHERE{
+SELECT ?statementNode (COUNT(?refnode) AS ?numOfRef) WHERE{
         ?statementNode a wikibase:Statement.
         ?statementNode prov:wasDerivedFrom ?refnode.
 }GROUP BY ?statementNode
@@ -27,7 +27,7 @@ PREFIX wikibase: <http://wikiba.se/ontology#>
 PREFIX prov: <http://www.w3.org/ns/prov#>
 PREFIX wdref: <http://www.wikidata.org/reference/>
 
-SELECT DISTINCT ?refnode (COUNT(?item) AS ?numOfStatements) WHERE{
+SELECT ?refnode (COUNT(?item) AS ?numOfStatements) WHERE{
         ?item a wikibase:Statement.
         ?item prov:wasDerivedFrom ?refnode.
 }GROUP BY ?refnode
