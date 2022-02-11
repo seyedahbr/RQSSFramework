@@ -10,13 +10,24 @@ SELECT ?to_ret WHERE
 
 Limit 3
 ''',
+"get_sattement_nodes_ref_num_wikimedia":
+'''
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+PREFIX wdref: <http://www.wikidata.org/reference/>
+
+SELECT DISTINCT ?statementNode (COUNT(?refnode) AS ?numOfRef) WHERE{
+        ?statementNode a wikibase:Statement;
+                         prov:wasDerivedFrom ?refnode.
+}
+''',
 "get_ref_nodes_incomings_wikimedia":
 '''
 PREFIX wikibase: <http://wikiba.se/ontology#>
 PREFIX prov: <http://www.w3.org/ns/prov#>
 PREFIX wdref: <http://www.wikidata.org/reference/>
 
-SELECT  DISTINCT ?refnode (COUNT(?item) AS ?numOfStatements) WHERE{
+SELECT DISTINCT ?refnode (COUNT(?item) AS ?numOfStatements) WHERE{
         ?item a wikibase:Statement.
         ?item prov:wasDerivedFrom ?refnode.
 }GROUP BY ?refnode
