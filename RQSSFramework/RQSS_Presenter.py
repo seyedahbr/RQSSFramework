@@ -200,6 +200,21 @@ def plot_dnsbl_reputation(opts: ArgumentParser) -> int:
         output_file))
     return 0
 
+def plot_multiple_reference_objectivity(opts: ArgumentParser) -> int:
+    input_data_file = os.path.join(
+        opts.result_dir + os.sep + 'multiple_refs.csv')
+    output_file = os.path.join(
+        opts.output_dir + os.sep + 'multiple_refs.png')
+
+    csv_data = pd.read_csv(input_data_file, index_col=None, header=0)
+    box_whisker_plot(csv_data,
+                     'Multiple Referenced Ratio', 'num_of_refs', output_file)
+
+    print('Metric: Multiple references for facts chart(s) have been plotted in the file: {0}'.format(
+        output_file))
+    return 0
+
+
 def RQSS_Plot(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] = None) -> int:
     if isinstance(argv, str):
         argv = argv.split()
@@ -245,6 +260,9 @@ def RQSS_Plot(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] 
         framework_procs.append(p)
     if Path(opts.result_dir + os.sep + 'dnsbl_reputation.csv').is_file():
         p = Process(target=plot_dnsbl_reputation(opts))
+        framework_procs.append(p)
+    if Path(opts.result_dir + os.sep + 'multiple_refs.csv').is_file():
+        p = Process(target=plot_multiple_reference_objectivity(opts))
         framework_procs.append(p)
 
     for proc in framework_procs:
