@@ -12,13 +12,16 @@ from Accuracy.TripleSemanticChecking import (FactReference,
                                              RefTripleSemanticChecker)
 from Accuracy.TripleSyntaxChecking import WikibaseRefTripleSyntaxChecker
 from Availability.DereferencePossibility import DerefrenceExplorer
-from Licensing.LicenseExistanceChecking import LicenseChecker
-from Queries import RQSS_QUERIES
-from Security.TLSExistanceChecking import TLSChecker
-from Consistency.RefPropertiesConsistencyChecking import RefPropertiesConsistencyChecker
-from Consistency.TriplesRangeConsistencyChecking import TriplesRangeConsistencyChecker
 from Conciseness.ReferenceSharingChecking import *
+from Consistency.RefPropertiesConsistencyChecking import \
+    RefPropertiesConsistencyChecker
+from Consistency.TriplesRangeConsistencyChecking import \
+    TriplesRangeConsistencyChecker
+from Licensing.LicenseExistanceChecking import LicenseChecker
+from Objectivity.MultipleReferenceChecking import *
+from Queries import RQSS_QUERIES
 from Reputation.DNSBLBlacklistedChecking import DNSBLBlacklistedChecker
+from Security.TLSExistanceChecking import TLSChecker
 
 
 def genargs(prog: Optional[str] = None) -> ArgumentParser:
@@ -49,6 +52,8 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
                         help="Compute the metric: Ratio of reference sharing", action='store_true')
     parser.add_argument("-rdns", "--reputation",
                         help="Compute the metric: External sources’ domain reputation", action='store_true')
+    parser.add_argument("-mr", "--mulipleref",
+                        help="Compute the metric: Multiple references for facts", action='store_true')
     return parser
 
 
@@ -404,11 +409,13 @@ def compute_ref_sharing_ratio(opts: ArgumentParser) -> int:
         end_time - start_time))
     return 0
 
+
 def compute_dnsbl_reputation(opts: ArgumentParser) -> int:
     print('Started computing Metric: External sources’ domain reputation')
     input_data_file = os.path.join(
         opts.data_dir + os.sep + 'external_uris.data')
-    output_file = os.path.join(opts.output_dir + os.sep + 'dnsbl_reputation.csv')
+    output_file = os.path.join(
+        opts.output_dir + os.sep + 'dnsbl_reputation.csv')
 
     # reading the extracted External URIs
     print('Reading data ...')
@@ -435,6 +442,46 @@ def compute_dnsbl_reputation(opts: ArgumentParser) -> int:
     print('DONE. Metric: External sources’ domain reputation, Duration: {0}'.format(
         end_time - start_time))
     return 0
+
+
+def compute_multiple_referenced(opts: ArgumentParser) -> int:
+    print('Started computing Metric: Multiple references for facts')
+    input_data_file = os.path.join(
+        opts.data_dir + os.sep + 'statement_node_ref_num.data')
+    output_file_dist = os.path.join(
+        opts.output_dir + os.sep + 'multiple_refs.csv')
+    output_file_result = os.path.join(
+        opts.output_dir + os.sep + 'multiple_refs_ratio.csv')
+
+    # reading the statement nodes data
+    print('Reading data ...')
+    statements = []
+    try:
+        with open(input_data_file, encoding="utf8") as file:
+            reader = csv.reader(file)
+            for row in reader:
+                statements.append(StatementRefNum(row[0], row[1]))
+    except FileNotFoundError:
+        print("Error: Input data file not found. Provide data file with name: {0} in data_dir".format(
+            '"statement_node_ref_num.data"'))
+        exit(1)
+    # running the framework metric function
+    print('Running metric ...')
+    start_time = datetime.now()
+    checker = MultipleReferenceChecker(statements)
+    shared_refs = checker.count_seperate_multiple_referenced_statements()
+    end_time = datetime.now()
+
+    # saving the results for presentation layer
+    write_results_to_CSV(shared_refs, output_file_dist)
+    write_results_to_CSV([checker.result], output_file_result)
+
+    print('Metric: Multiple references for facts results have been written in the files: {0} and {1}'.format(
+        output_file_dist, output_file_result))
+    print('DONE. Metric: Multiple references for facts, Duration: {0}'.format(
+        end_time - start_time))
+    return 0
+
 
 def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] = None) -> int:
     if isinstance(argv, str):
@@ -484,6 +531,9 @@ def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Op
         framework_procs.append(p)
     if opts.reputation:
         p = Process(target=compute_dnsbl_reputation(opts))
+        framework_procs.append(p)
+    if opts.mulipleref:
+        p = Process(target=compute_multiple_referenced(opts))
         framework_procs.append(p)
 
     for proc in framework_procs:
