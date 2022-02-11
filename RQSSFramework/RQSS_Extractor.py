@@ -36,6 +36,9 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
                         help="Extract all reference properties and their object value types and save them on output dir. Collects data for computing Metric: Range consistency of reference triples", action='store_true')
     parser.add_argument("-ri", "--refincomings",
                         help="Extract all reference nodes and the numebr of their incoming edges (prov:wasDerivedFrom) and save them on output dir. Collects data for computing Metric: Ratio of reference sharing", action='store_true')
+    parser.add_argument("-sr", "--statementrefs",
+                        help="Extract all sattement nodes and the numebr of their references and save them on output dir. Collects data for computing Metric: Multiple references for facts", action='store_true')
+    
     return parser
 
 
@@ -211,6 +214,26 @@ def extract_reference_node_incomings(opts: ArgumentParser) -> int:
         end_time - start_time))
     return 0
 
+def extract_statement_node_references(opts: ArgumentParser) -> int:
+    print('Started extracting statement nodes and the numebr of their references')
+    start_time = datetime.now()
+
+    ref_props = perform_query(
+        opts.endpoint, RQSS_QUERIES["get_sattement_nodes_ref_num_wikimedia"])
+    output_file = os.path.join(
+        opts.output_dir + os.sep + 'statement_node_ref_num.data')
+    with open(output_file, 'w') as file_handler:
+        csv_writer = csv.writer(
+            file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        for row in ref_props:
+            csv_writer.writerow(row)
+
+    end_time = datetime.now()
+    print('Statement nodes and the numebr of their references have been written in the file: {0}'.format(
+        output_file))
+    print('DONE. Extracting statement nodes and the numebr of their references, Duration: {0}'.format(
+        end_time - start_time))
+    return 0
 
 def extract_from_file(opts: ArgumentParser) -> int:
     print('Local file extraction is not supported yet. Please use local/public endpoint.')
@@ -247,6 +270,10 @@ def extract_from_endpoint(opts: ArgumentParser) -> int:
     
     if(opts.refincomings):
         p = Process(target=extract_reference_node_incomings(opts))
+        extractor_procs.append(p)
+    
+    if(opts.statementrefs):
+        p = Process(target=extract_statement_node_references(opts))
         extractor_procs.append(p)
 
     for proc in extractor_procs:
