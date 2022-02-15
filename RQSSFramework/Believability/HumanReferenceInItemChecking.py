@@ -1,4 +1,6 @@
+import datetime
 from typing import Dict, List, NamedTuple
+
 import requests
 from lxml import html
 
@@ -19,9 +21,11 @@ class HumanAddedResult(NamedTuple):
 class HumanReferenceInItemChecker:
     results: List[HumanAddedResult] = None
     _item_refed_facts: Dict
+    _upper_time_limit: datetime.datetime
 
-    def __init__(self, item_referenced_facts: Dict) -> None:
+    def __init__(self, item_referenced_facts: Dict, upper_time_limit:datetime.datetime) -> None:
         self._item_refed_facts = item_referenced_facts
+        self._upper_time_limit = upper_time_limit
 
     def check_referenced_facts_human_added(self) -> List[HumanAddedResult]:
         self.results = []
@@ -30,13 +34,31 @@ class HumanReferenceInItemChecker:
             history_page = requests.get('https://www.wikidata.org/w/index.php?title={}&offset=&limit=5000&action=history'.format(str(item)))
             tree = html.fromstring(history_page.content)
             for prop in self._item_refed_facts[str(item)]:
-                revisions_adder = tree.xpath('//*[@id="pagehistory"]/li[./span/span/span/text()="Added reference to claim: " and ./span/a/span/span/text()="({})"]/span[@class="history-user"]/a/bdi/text()'.format(prop))
-                revisions_chanr = tree.xpath('//*[@id="pagehistory"]/li[./span/span/span/text()="Changed reference of claim: " and ./span/a/span/span/text()="({})"]/span[@class="history-user"]/a/bdi/text()'.format(prop))
+                xpath_1='//*[@id="pagehistory"]/li[./span/span/span/text()="Added reference to claim: " and ./span/a/span/span/text()="({0})"]/span[@class="history-user"]/a/bdi/text() | //*[@id="pagehistory"]/li[./span/span/span/text()="Added reference to claim: " and ./span/a/span/span/text()="({1})"]/a[@class="mw-changeslist-date"]/text()'.format(str(prop),str(prop))
+                xpath_2='//*[@id="pagehistory"]/li[./span/span/span/text()="Changed reference of claim: " and ./span/a/span/span/text()="({0})"]/span[@class="history-user"]/a/bdi/text() | //*[@id="pagehistory"]/li[./span/span/span/text()="Changed reference of claim: " and ./span/a/span/span/text()="({1})"]/a[@class="mw-changeslist-date"]/text()'.format(str(prop),str(prop))
+                revisions_adder = tree.xpath(xpath_1)
+                revisions_chanr = tree.xpath(xpath_2)
                 revisions_adder.extend(revisions_chanr)
-                for editor in revisions_adder:
-                    if 'bot' not in editor.lower():
+                it = iter(revisions_adder)
+                editor_time_pairs= [(i,next(it)) for i in it]
+                for pair in editor_time_pairs:
+                    pair_date = pair[0]
+                    pair_editor = pair[1]
+                    pair_date_datetime = None
+                    try:
+                        pair_date_datetime = datetime.datetime.strptime(pair_date,'%H:%M, %d %B %Y')
+                    except:
+                        pair_date = pair[1]
+                        pair_editor = pair[0]
+                        pair_date_datetime = datetime.datetime.strptime(pair_date,'%H:%M, %d %B %Y')
+                    if pair_date_datetime > self._upper_time_limit:
+                        print ('time is higer than till in pair:',pair)
+                        continue
+                    if 'bot' not in pair_editor.lower():
+                        print('MATCH!! in pair:', pair)
                         num_human_added += 1
                         break
+                    
             self.results.append(HumanAddedResult(str(item),len(self._item_refed_facts[str(item)]),num_human_added))
         return self.results
 
