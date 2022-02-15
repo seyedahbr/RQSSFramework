@@ -10,6 +10,16 @@ SELECT ?to_ret WHERE
 
 Limit 3
 ''',
+"get_item_refed_facts_wikimedia":
+'''
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+SELECT DISTINCT (REPLACE(STR(?item),".*Q","Q") AS ?ret1)
+                (REPLACE(STR(?refedProperty),".*P","P") AS ?ret2) WHERE{
+  ?item a wikibase:Item;
+          ?refedProperty [prov:wasDerivedFrom ?refNode].
+}
+''',
 "get_sattement_nodes_ref_num_wikimedia":
 '''
 PREFIX wikibase: <http://wikiba.se/ontology#>
