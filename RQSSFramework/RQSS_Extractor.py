@@ -38,6 +38,8 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
                         help="Extract all reference nodes and the numebr of their incoming edges (prov:wasDerivedFrom) and save them on output dir. Collects data for computing Metric: Ratio of reference sharing", action='store_true')
     parser.add_argument("-sr", "--statementrefs",
                         help="Extract all sattement nodes and the numebr of their references and save them on output dir. Collects data for computing Metric: Multiple references for facts", action='store_true')
+    parser.add_argument("-irf", "--itemrefedfacts",
+                        help="Extract all items and their referenced facts and save them on output dir. Collects data for computing Metric: Human-added references ratio", action='store_true')
     
     return parser
 
@@ -235,6 +237,27 @@ def extract_statement_node_references(opts: ArgumentParser) -> int:
         end_time - start_time))
     return 0
 
+def extract_item_referenced_facts(opts: ArgumentParser) -> int:
+    print('Started extracting items and their referenced facts')
+    start_time = datetime.now()
+
+    item_refed_facts = perform_query(
+        opts.endpoint, RQSS_QUERIES["get_item_refed_facts_wikimedia"])
+    output_file = os.path.join(
+        opts.output_dir + os.sep + 'item_refed_facts.data')
+    with open(output_file, 'w') as file_handler:
+        csv_writer = csv.writer(
+            file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        for row in item_refed_facts:
+            csv_writer.writerow(row)
+
+    end_time = datetime.now()
+    print('Items and their referenced facts have been written in the file: {0}'.format(
+        output_file))
+    print('DONE. Extracting items and their referenced facts, Duration: {0}'.format(
+        end_time - start_time))
+    return 0
+
 def extract_from_file(opts: ArgumentParser) -> int:
     print('Local file extraction is not supported yet. Please use local/public endpoint.')
     return 1
@@ -274,6 +297,10 @@ def extract_from_endpoint(opts: ArgumentParser) -> int:
     
     if(opts.statementrefs):
         p = Process(target=extract_statement_node_references(opts))
+        extractor_procs.append(p)
+    
+    if(opts.itemrefedfacts):
+        p = Process(target=extract_item_referenced_facts(opts))
         extractor_procs.append(p)
 
     for proc in extractor_procs:
