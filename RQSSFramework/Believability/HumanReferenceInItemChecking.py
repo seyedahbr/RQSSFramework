@@ -58,5 +58,4 @@ class HumanReferenceInItemChecker:
         if self.results == None:
             return 'Results are not computed'            
         return """num of items, num of referenced facts, score
-        {0},{1},{2}
-        """.format(len(self.results),sum([x.total for x in self.results]),self.score)
+{0},{1},{2}""".format(len(self.results),sum([x.total for x in self.results]),self.score)
