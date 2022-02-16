@@ -34,11 +34,12 @@ class HumanReferenceInItemChecker:
             history_page = requests.get('https://www.wikidata.org/w/index.php?title={}&offset=&limit=5000&action=history'.format(str(item)))
             tree = html.fromstring(history_page.content)
             for prop in self._item_refed_facts[str(item)]:
-                xpath_1='//*[@id="pagehistory"]/li[./span/span/span/text()="Added reference to claim: " and ./span/a/span/span/text()="({0})"]/span[@class="history-user"]/a/bdi/text() | //*[@id="pagehistory"]/li[./span/span/span/text()="Added reference to claim: " and ./span/a/span/span/text()="({1})"]/a[@class="mw-changeslist-date"]/text()'.format(str(prop),str(prop))
-                xpath_2='//*[@id="pagehistory"]/li[./span/span/span/text()="Changed reference of claim: " and ./span/a/span/span/text()="({0})"]/span[@class="history-user"]/a/bdi/text() | //*[@id="pagehistory"]/li[./span/span/span/text()="Changed reference of claim: " and ./span/a/span/span/text()="({1})"]/a[@class="mw-changeslist-date"]/text()'.format(str(prop),str(prop))
+                xpath_1='//*[@id="pagehistory"]/li[./span/span/span/text()="Added reference to claim: " and ./span/a/span/span/text()="({0})"]/span[@class="history-user"]/a/bdi/text() | //*[@id="pagehistory"]/li[./span/span/span/text()="Added reference to claim: " and ./span/a/span/span/text()="({1})"]/a[contains(@class,\'mw-changeslist-date\')]/text()'.format(str(prop),str(prop))
+                xpath_2='//*[@id="pagehistory"]/li[./span/span/span/text()="Changed reference of claim: " and ./span/a/span/span/text()="({0})"]/span[@class="history-user"]/a/bdi/text() | //*[@id="pagehistory"]/li[./span/span/span/text()="Changed reference of claim: " and ./span/a/span/span/text()="({1})"]/a[contains(@class,\'mw-changeslist-date\')]/text()'.format(str(prop),str(prop))
                 revisions_adder = tree.xpath(xpath_1)
                 revisions_chanr = tree.xpath(xpath_2)
                 revisions_adder.extend(revisions_chanr)
+                print(item,' : ',prop,' : ' ,revisions_adder)
                 it = iter(revisions_adder)
                 editor_time_pairs= [(i,next(it)) for i in it]
                 for pair in editor_time_pairs:
@@ -52,10 +53,10 @@ class HumanReferenceInItemChecker:
                         pair_editor = pair[0]
                         pair_date_datetime = datetime.datetime.strptime(pair_date,'%H:%M, %d %B %Y')
                     if pair_date_datetime > self._upper_time_limit:
-                        print ('time is higer than till in pair:',pair)
+                        # print ('time is higer than till in pair:',pair)
                         continue
                     if 'bot' not in pair_editor.lower():
-                        print('MATCH!! in pair:', pair)
+                        # print('MATCH!! in pair:', pair)
                         num_human_added += 1
                         break
                     
