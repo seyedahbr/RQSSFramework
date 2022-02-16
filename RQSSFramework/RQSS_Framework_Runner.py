@@ -516,7 +516,7 @@ def compute_human_added_references_per_item(opts: ArgumentParser) -> int:
     start_time = datetime.datetime.now()
     human_added_checker = HumanReferenceInItemChecker(
         item_refed_facts,opts.upperdate)
-    dist = human_added_checker.check_all_value_ranges()
+    dist = human_added_checker.check_referenced_facts_human_added()
     end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
