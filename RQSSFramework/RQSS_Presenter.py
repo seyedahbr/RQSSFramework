@@ -214,6 +214,21 @@ def plot_multiple_reference_objectivity(opts: ArgumentParser) -> int:
         output_file))
     return 0
 
+def plot_human_added_references_believbility(opts: ArgumentParser) -> int:
+    input_data_file = os.path.join(
+        opts.result_dir + os.sep + 'human_added.csv')
+    output_file = os.path.join(
+        opts.output_dir + os.sep + 'believbility.png')
+
+    csv_data = pd.read_csv(input_data_file, index_col=None, header=0)
+    csv_data['believbility rate'] = csv_data['human_added'] / \
+        csv_data['total']
+    box_whisker_plot(pd.melt(csv_data[['believbility rate']]),
+                     'Semantic Valididty of Reference Triples', 'value', output_file, 'variable')
+
+    print('Metric: Human-added references ratio chart(s) have been plotted in the file: {0}'.format(
+        output_file))
+    return 0
 
 def RQSS_Plot(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] = None) -> int:
     if isinstance(argv, str):
@@ -263,6 +278,9 @@ def RQSS_Plot(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] 
         framework_procs.append(p)
     if Path(opts.result_dir + os.sep + 'multiple_refs.csv').is_file():
         p = Process(target=plot_multiple_reference_objectivity(opts))
+        framework_procs.append(p)
+    if Path(opts.result_dir + os.sep + 'human_added.csv').is_file():
+        p = Process(target=plot_human_added_references_believbility(opts))
         framework_procs.append(p)
 
     for proc in framework_procs:
