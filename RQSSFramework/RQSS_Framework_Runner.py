@@ -93,9 +93,9 @@ def compute_dereferencing(opts: ArgumentParser) -> int:
 
     # running the framework metric function
     print('Running metric ...')
-    start_time = datetime.now()
+    start_time = datetime.datetime.now()
     results = DerefrenceExplorer(uris).check_dereferencies()
-    end_time = datetime.now()
+    end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
     write_results_to_CSV(results, output_file)
@@ -126,9 +126,9 @@ def compute_licensing(opts: ArgumentParser) -> int:
         exit(1)
     # running the framework metric function
     print('Running metric ...')
-    start_time = datetime.now()
+    start_time = datetime.datetime.now()
     results = LicenseChecker(uris).check_license_existance()
-    end_time = datetime.now()
+    end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
     write_results_to_CSV(results, output_file)
@@ -159,9 +159,9 @@ def compute_security(opts: ArgumentParser) -> int:
         exit(1)
     # running the framework metric function
     print('Running metric ...')
-    start_time = datetime.now()
+    start_time = datetime.datetime.now()
     results = TLSChecker(uris).check_support_tls()
-    end_time = datetime.now()
+    end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
     write_results_to_CSV(results, output_file)
@@ -193,12 +193,12 @@ def compute_ref_triple_syntax(opts: ArgumentParser) -> int:
         exit(1)
     # running the framework metric function
     print('Running metric ...')
-    start_time = datetime.now()
+    start_time = datetime.datetime.now()
     results = []
     if(opts.endpoint):
         results = WikibaseRefTripleSyntaxChecker(
             statements, opts.endpoint, None).check_shex_over_endpoint()
-    end_time = datetime.now()
+    end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
     write_results_to_CSV([results], output_file)
@@ -234,10 +234,10 @@ def compute_ref_literal_syntax(opts: ArgumentParser) -> int:
 
     # running the framework metric function
     print('Running metric ...')
-    start_time = datetime.now()
+    start_time = datetime.datetime.now()
     results = WikibaseRefLiteralSyntaxChecker(
         prop_values).check_literals_regex()
-    end_time = datetime.now()
+    end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
     write_results_to_CSV(results, output_file)
@@ -287,10 +287,10 @@ def compute_ref_triple_semantic(opts: ArgumentParser) -> int:
 
     # running the framework metric function
     print('Running metric ...')
-    start_time = datetime.now()
+    start_time = datetime.datetime.now()
     results = RefTripleSemanticChecker(
         gs_fact_refs, fact_refs).check_semantic_to_gold_standard()
-    end_time = datetime.now()
+    end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
     write_results_to_CSV(results, output_file)
@@ -322,10 +322,10 @@ def compute_ref_properties_consistency(opts: ArgumentParser) -> int:
         exit(1)
     # running the framework metric function
     print('Running metric ...')
-    start_time = datetime.now()
+    start_time = datetime.datetime.now()
     results = RefPropertiesConsistencyChecker(
         props).check_reference_specificity_from_Wikdiata()
-    end_time = datetime.now()
+    end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
     write_results_to_CSV(results, output_file)
@@ -361,10 +361,10 @@ def compute_range_consistency(opts: ArgumentParser) -> int:
 
     # running the framework metric function
     print('Running metric ...')
-    start_time = datetime.now()
+    start_time = datetime.datetime.now()
     results = TriplesRangeConsistencyChecker(
         prop_values).check_all_value_ranges()
-    end_time = datetime.now()
+    end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
     write_results_to_CSV(results, output_file)
@@ -399,10 +399,10 @@ def compute_ref_sharing_ratio(opts: ArgumentParser) -> int:
         exit(1)
     # running the framework metric function
     print('Running metric ...')
-    start_time = datetime.now()
+    start_time = datetime.datetime.now()
     checker = ReferenceSharingChecker(ref_nodes)
     shared_refs = checker.count_seperate_shared_references()
-    end_time = datetime.now()
+    end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
     write_results_to_CSV(shared_refs, output_file_dist)
@@ -435,9 +435,9 @@ def compute_dnsbl_reputation(opts: ArgumentParser) -> int:
         exit(1)
     # running the framework metric function
     print('Running metric ...')
-    start_time = datetime.now()
+    start_time = datetime.datetime.now()
     results = DNSBLBlacklistedChecker(uris).check_domain_blacklisted()
-    end_time = datetime.now()
+    end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
     write_results_to_CSV(results, output_file)
@@ -472,10 +472,10 @@ def compute_multiple_referenced(opts: ArgumentParser) -> int:
         exit(1)
     # running the framework metric function
     print('Running metric ...')
-    start_time = datetime.now()
+    start_time = datetime.datetime.now()
     checker = MultipleReferenceChecker(statements)
     shared_refs = checker.count_seperate_multiple_referenced_statements()
-    end_time = datetime.now()
+    end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
     write_results_to_CSV(shared_refs, output_file_dist)
@@ -513,11 +513,11 @@ def compute_human_added_references_per_item(opts: ArgumentParser) -> int:
 
     # running the framework metric function
     print('Running metric ...')
-    start_time = datetime.now()
+    start_time = datetime.datetime.now()
     human_added_checker = HumanReferenceInItemChecker(
         item_refed_facts,opts.upperdate)
     dist = human_added_checker.check_all_value_ranges()
-    end_time = datetime.now()
+    end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
     write_results_to_CSV(dist, output_file_dist)
