@@ -32,7 +32,7 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
     parser.add_argument(
         "--endpoint", help="The local/public endpoint of the dataset for shex-based metrics", required=False)
     parser.add_argument(
-        "--uppertime", help="The upper date-time limit for reivision history checker metrics. The deafult is now()", required=False)
+        "--upperdate", help="The upper date (Format DD-MM-YYYY) limit for reivision history checker metrics. The deafult is now()", required=False, type=lambda d: datetime.datetime.strptime(d, "%d-%m-%Y"),default=datetime.datetime.now())
     parser.add_argument(
         "-o", "--output_dir", help="Output destination directory to store computed metrics details", default=os.getcwd()+os.sep+'rqss_framework_output')
     parser.add_argument("-dp", "--dereferencing",
@@ -515,7 +515,7 @@ def compute_human_added_references_per_item(opts: ArgumentParser) -> int:
     print('Running metric ...')
     start_time = datetime.now()
     human_added_checker = HumanReferenceInItemChecker(
-        item_refed_facts)
+        item_refed_facts,opts.upperdate)
     dist = human_added_checker.check_all_value_ranges()
     end_time = datetime.now()
 
