@@ -521,7 +521,7 @@ def compute_human_added_references_per_item(opts: ArgumentParser) -> int:
 
     # saving the results for presentation layer
     write_results_to_CSV(dist, output_file_dist)
-    write_results_to_CSV(str(human_added_checker))
+    write_results_to_CSV(str(human_added_checker),output_file_result)
 
 
     print('Metric: Human-added references ratio results have been written in the files: {0} and {1}'.format(
