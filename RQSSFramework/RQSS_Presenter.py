@@ -224,7 +224,7 @@ def plot_human_added_references_believbility(opts: ArgumentParser) -> int:
     csv_data['believbility rate'] = csv_data['human_added'] / \
         csv_data['total']
     box_whisker_plot(pd.melt(csv_data[['believbility rate']]),
-                     'Semantic Valididty of Reference Triples', 'value', output_file, 'variable')
+                     'Human-Added Reference Ratio', 'value', output_file, 'variable')
 
     print('Metric: Human-added references ratio chart(s) have been plotted in the file: {0}'.format(
         output_file))
