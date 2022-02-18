@@ -29,15 +29,17 @@ class HumanReferenceInItemChecker:
 
     def check_referenced_facts_human_added(self) -> List[HumanAddedResult]:
         self.results = []
+        wikidata_item_history_url = 'https://www.wikidata.org/w/index.php?title={}&offset=&limit=5000&action=history'
+        xpath_added='//*[@id="pagehistory"]/li[./span/span/span/text()="Added reference to claim: " and ./span/a/span/span/text()="({0})"]/span[@class="history-user"]/a/bdi/text() | //*[@id="pagehistory"]/li[./span/span/span/text()="Added reference to claim: " and ./span/a/span/span/text()="({1})"]/a[contains(@class,\'mw-changeslist-date\')]/text()'
+        xpath_changed='//*[@id="pagehistory"]/li[./span/span/span/text()="Changed reference of claim: " and ./span/a/span/span/text()="({0})"]/span[@class="history-user"]/a/bdi/text() | //*[@id="pagehistory"]/li[./span/span/span/text()="Changed reference of claim: " and ./span/a/span/span/text()="({1})"]/a[contains(@class,\'mw-changeslist-date\')]/text()'
         for item in self._item_refed_facts.keys():
             num_human_added = 0
-            history_page = requests.get('https://www.wikidata.org/w/index.php?title={}&offset=&limit=5000&action=history'.format(str(item)))
+            history_page = requests.get(wikidata_item_history_url.format(str(item)))
             tree = html.fromstring(history_page.content)
             for prop in self._item_refed_facts[str(item)]:
-                xpath_1='//*[@id="pagehistory"]/li[./span/span/span/text()="Added reference to claim: " and ./span/a/span/span/text()="({0})"]/span[@class="history-user"]/a/bdi/text() | //*[@id="pagehistory"]/li[./span/span/span/text()="Added reference to claim: " and ./span/a/span/span/text()="({1})"]/a[contains(@class,\'mw-changeslist-date\')]/text()'.format(str(prop),str(prop))
-                xpath_2='//*[@id="pagehistory"]/li[./span/span/span/text()="Changed reference of claim: " and ./span/a/span/span/text()="({0})"]/span[@class="history-user"]/a/bdi/text() | //*[@id="pagehistory"]/li[./span/span/span/text()="Changed reference of claim: " and ./span/a/span/span/text()="({1})"]/a[contains(@class,\'mw-changeslist-date\')]/text()'.format(str(prop),str(prop))
-                revisions_adder = tree.xpath(xpath_1)
-                revisions_chanr = tree.xpath(xpath_2)
+                
+                revisions_adder = tree.xpath(xpath_added.format(str(prop),str(prop)))
+                revisions_chanr = tree.xpath(xpath_changed.format(str(prop),str(prop)))
                 revisions_adder.extend(revisions_chanr)
                 print(item,' : ',prop,' : ' ,revisions_adder)
                 it = iter(revisions_adder)
