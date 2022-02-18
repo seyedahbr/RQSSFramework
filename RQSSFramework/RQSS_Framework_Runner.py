@@ -64,6 +64,9 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
 
 def write_results_to_CSV(results: List[NamedTuple], output_file: str) -> None:
     with open(output_file, 'w', newline='') as f:
+        if isinstance(results, str):
+            f.write(results)
+            return
         w = csv.writer(f)
         # write header from NamedTuple fields
         w.writerow([field for field in results[0]._fields])
