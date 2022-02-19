@@ -16,21 +16,26 @@ class ReferenceFreshnessResult(NamedTuple):
 
 class ReferenceFreshnessInItemChecker:
     results: List[ReferenceFreshnessResult] = None
+    # because of the nature of the metric (average of ratios) we compute
+    # keep a total average of entire dataset (beside the average of self.results) 
+    num_checked_facts = None
+    total_freshness = None
     _item_refed_facts: Dict
     _upper_time_limit: datetime.datetime
 
-    def __init__(self, item_referenced_facts: Dict) -> None:
+    def __init__(self, item_referenced_facts: Dict, upper_time_limit:datetime.datetime) -> None:
         self._item_refed_facts = item_referenced_facts
+        self._upper_time_limit = upper_time_limit
 
     def check_referenced_facts_freshness(self) -> List[ReferenceFreshnessResult]:
+        self.results = []
         t_now = datetime.datetime.now()
         xpath_create='//*[@id="pagehistory"]/li[./span/span/span/text()="Created claim: " and ./span/a/span/span/text()="({})"]/a[contains(@class,\'mw-changeslist-date\')]/text()'
         xpath_add='//*[@id="pagehistory"]/li[./span/span/span/text()="Added reference to claim: " and ./span/a/span/span/text()="({})"]/a[contains(@class,\'mw-changeslist-date\')]/text()'
         xpath_change='//*[@id="pagehistory"]/li[./span/span/span/text()="Changed reference of claim: " and ./span/a/span/span/text()="({})"]/a[contains(@class,\'mw-changeslist-date\')]/text()'
-        item_ctr = 0
-        item_total_freshness = 0
+        self.num_checked_facts = 0
+        self.total_freshness = 0
         for item in self._item_refed_facts.keys():
-            print('for item: {0}'.format(str(item)))
             page = requests.get('https://www.wikidata.org/w/index.php?title={}&offset=&limit=5000&action=history'.format(str(item)))
             tree = html.fromstring(page.content)
             prop_ctr = 0
@@ -45,18 +50,17 @@ class ReferenceFreshnessInItemChecker:
                 revisions_added_time = self.remove_upper_than_base_time(sorted([datetime.datetime.strptime(i,'%H:%M, %d %B %Y') for i in revisions_added_time], reverse=True))
                 revisions_chaned_times = self.remove_upper_than_base_time(sorted([datetime.datetime.strptime(i,'%H:%M, %d %B %Y') for i in revisions_chaned_times], reverse=True))
                 if not fact_created_time or (not revisions_added_time and not revisions_chaned_times):
-                    print('Empty')
                     continue
                 t_base = fact_created_time[0]
                 t_modif = revisions_chaned_times[0] if revisions_chaned_times else revisions_added_time[0]
                 prop_total_freshness += (t_now-t_modif).total_seconds()/(t_now-t_base).total_seconds()
                 prop_ctr += 1
                 
-            item_ctr += prop_ctr
-            item_total_freshness += prop_total_freshness
+            self.num_checked_facts += prop_ctr
+            self.total_freshness += prop_total_freshness
             self.results.append(ReferenceFreshnessResult(str(item),prop_ctr,prop_total_freshness/prop_ctr))
             
-        return self.results, item_ctr, item_total_freshness
+        return self.results, self.num_checked_facts, self.total_freshness/self.num_checked_facts
 
     def remove_upper_than_base_time(self, times: List[datetime.datetime]) -> List[datetime.datetime]:
         return [i for i in times if i <= self._upper_time_limit]
@@ -73,10 +77,10 @@ class ReferenceFreshnessInItemChecker:
 
     @property
     def score(self):
-        return sum([x.freshness for x in self.results])/len(self.results)
+        return self.total_freshness/self.num_checked_facts
     
     def __repr__(self):
         if self.results == None:
             return 'Results are not computed'            
-        return """num of items, num of referenced facts, score
-{0},{1},{2}""".format(len(self.results),sum([x.total for x in self.results]),self.score)
+        return """num of items, num of checked referenced facts, score
+{0},{1},{2}""".format(len(self.results),self.num_checked_facts,self.score)
