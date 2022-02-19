@@ -61,9 +61,9 @@ class HumanReferenceInItemChecker:
                     print(
                         '\t fact {0} : latest edited by a human account'.format(prop))
                     num_human_added += 1
-
-            self.results.append(HumanAddedResult(str(item), len(
-                self._item_refed_facts[str(item)])-num_not_found, num_human_added))
+            if num_human_added:
+                self.results.append(HumanAddedResult(str(item), len(
+                    self._item_refed_facts[str(item)])-num_not_found, num_human_added))
         return self.results
 
     def remove_upper_than_base_time_sort(self, tuples: List[Tuple[datetime.datetime, str]]) -> List[Tuple[datetime.datetime, str]]:

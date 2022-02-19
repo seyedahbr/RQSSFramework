@@ -58,10 +58,10 @@ class ReferenceFreshnessInItemChecker:
                 print('\t fact {0} : Ref Freshness = {1}'.format(prop,(t_now-t_modif).total_seconds()/(t_now-t_base).total_seconds()))
                 prop_total_freshness += (t_now-t_modif).total_seconds()/(t_now-t_base).total_seconds()
                 prop_ctr += 1
-                
-            self.num_checked_facts += prop_ctr
-            self.total_freshness += prop_total_freshness
-            self.results.append(ReferenceFreshnessResult(str(item),prop_ctr,prop_total_freshness/prop_ctr))
+            if prop_ctr:    
+                self.num_checked_facts += prop_ctr
+                self.total_freshness += prop_total_freshness
+                self.results.append(ReferenceFreshnessResult(str(item),prop_ctr,prop_total_freshness/prop_ctr))
             
         return self.results, self.num_checked_facts, self.total_freshness/self.num_checked_facts
 
