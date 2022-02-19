@@ -1,5 +1,5 @@
 import datetime
-from typing import Dict, List, NamedTuple
+from typing import Dict, List, NamedTuple, Tuple
 
 import requests
 from lxml import html
@@ -7,6 +7,7 @@ from lxml import html
 
 class HumanAddedResult(NamedTuple):
     item: str
+    # numbers that historical info was found for them
     total: int
     human_added: int
 
@@ -23,47 +24,63 @@ class HumanReferenceInItemChecker:
     _item_refed_facts: Dict
     _upper_time_limit: datetime.datetime
 
-    def __init__(self, item_referenced_facts: Dict, upper_time_limit:datetime.datetime) -> None:
+    def __init__(self, item_referenced_facts: Dict, upper_time_limit: datetime.datetime) -> None:
         self._item_refed_facts = item_referenced_facts
         self._upper_time_limit = upper_time_limit
 
     def check_referenced_facts_human_added(self) -> List[HumanAddedResult]:
         self.results = []
         wikidata_item_history_url = 'https://www.wikidata.org/w/index.php?title={}&offset=&limit=5000&action=history'
-        xpath_added='//*[@id="pagehistory"]/li[./span/span/span/text()="Added reference to claim: " and ./span/a/span/span/text()="({0})"]/span[@class="history-user"]/a/bdi/text() | //*[@id="pagehistory"]/li[./span/span/span/text()="Added reference to claim: " and ./span/a/span/span/text()="({1})"]/a[contains(@class,\'mw-changeslist-date\')]/text()'
-        xpath_changed='//*[@id="pagehistory"]/li[./span/span/span/text()="Changed reference of claim: " and ./span/a/span/span/text()="({0})"]/span[@class="history-user"]/a/bdi/text() | //*[@id="pagehistory"]/li[./span/span/span/text()="Changed reference of claim: " and ./span/a/span/span/text()="({1})"]/a[contains(@class,\'mw-changeslist-date\')]/text()'
+        xpath_added = '//*[@id="pagehistory"]/li[./span/span/span/text()="Added reference to claim: " and ./span/a/span/span/text()="({0})"]/span[@class="history-user"]/a/bdi/text() | //*[@id="pagehistory"]/li[./span/span/span/text()="Added reference to claim: " and ./span/a/span/span/text()="({1})"]/a[contains(@class,\'mw-changeslist-date\')]/text()'
+        xpath_changed = '//*[@id="pagehistory"]/li[./span/span/span/text()="Changed reference of claim: " and ./span/a/span/span/text()="({0})"]/span[@class="history-user"]/a/bdi/text() | //*[@id="pagehistory"]/li[./span/span/span/text()="Changed reference of claim: " and ./span/a/span/span/text()="({1})"]/a[contains(@class,\'mw-changeslist-date\')]/text()'
         for item in self._item_refed_facts.keys():
+            num_not_found = 0
+            print('getting history of item: {0}'.format(str(item)))
             num_human_added = 0
-            history_page = requests.get(wikidata_item_history_url.format(str(item)))
+            history_page = requests.get(
+                wikidata_item_history_url.format(str(item)))
             tree = html.fromstring(history_page.content)
             for prop in self._item_refed_facts[str(item)]:
-                
-                revisions_adder = tree.xpath(xpath_added.format(str(prop),str(prop)))
-                revisions_chanr = tree.xpath(xpath_changed.format(str(prop),str(prop)))
+                # we get both added and edited times, combine them,
+                # then will pick up the latest time/user pair
+                revisions_adder = tree.xpath(
+                    xpath_added.format(str(prop), str(prop)))
+                revisions_chanr = tree.xpath(
+                    xpath_changed.format(str(prop), str(prop)))
                 revisions_adder.extend(revisions_chanr)
-                print(item,' : ',prop,' : ' ,revisions_adder)
                 it = iter(revisions_adder)
-                editor_time_pairs= [(i,next(it)) for i in it]
-                for pair in editor_time_pairs:
-                    pair_date = pair[0]
-                    pair_editor = pair[1]
-                    pair_date_datetime = None
-                    try:
-                        pair_date_datetime = datetime.datetime.strptime(pair_date,'%H:%M, %d %B %Y')
-                    except:
-                        pair_date = pair[1]
-                        pair_editor = pair[0]
-                        pair_date_datetime = datetime.datetime.strptime(pair_date,'%H:%M, %d %B %Y')
-                    if pair_date_datetime > self._upper_time_limit:
-                        # print ('time is higer than till in pair:',pair)
-                        continue
-                    if 'bot' not in pair_editor.lower():
-                        # print('MATCH!! in pair:', pair)
-                        num_human_added += 1
-                        break
-                    
-            self.results.append(HumanAddedResult(str(item),len(self._item_refed_facts[str(item)]),num_human_added))
+                editor_time_pairs = [(i, next(it)) for i in it]
+                editor_time_pairs = self.remove_upper_than_base_time_sort(
+                    editor_time_pairs)
+                if not editor_time_pairs:
+                    print(
+                        '\t fact {0} : found NO historical info'.format(prop))
+                    num_not_found += 1
+                    continue
+                if 'bot' not in editor_time_pairs[0][1].lower():
+                    print(
+                        '\t fact {0} : latest edited by a human account'.format(prop))
+                    num_human_added += 1
+
+            self.results.append(HumanAddedResult(str(item), len(
+                self._item_refed_facts[str(item)])-num_not_found, num_human_added))
         return self.results
+
+    def remove_upper_than_base_time_sort(self, tuples: List[Tuple[datetime.datetime, str]]) -> List[Tuple[datetime.datetime, str]]:
+        ret_val = []
+        for pair in tuples:
+            # error handler in case of date/user pair be user/pair !!
+            try:
+                pair_date_datetime = datetime.datetime.strptime(
+                    pair[0], '%H:%M, %d %B %Y')
+                if pair_date_datetime <= self._upper_time_limit:
+                    ret_val.append((pair_date_datetime, pair[1]))
+            except:
+                pair_date_datetime = datetime.datetime.strptime(
+                    pair[1], '%H:%M, %d %B %Y')
+                if pair_date_datetime <= self._upper_time_limit:
+                    ret_val.append((pair_date_datetime, pair[0]))
+        return sorted(ret_val, key=lambda a: a[0], reverse=True)
 
     def print_results(self):
         """
@@ -78,9 +95,9 @@ class HumanReferenceInItemChecker:
     @property
     def score(self):
         return sum([x.score for x in self.results])/len(self.results)
-    
+
     def __repr__(self):
         if self.results == None:
-            return 'Results are not computed'            
+            return 'Results are not computed'
         return """num of items, num of referenced facts, score
-{0},{1},{2}""".format(len(self.results),sum([x.total for x in self.results]),self.score)
+{0},{1},{2}""".format(len(self.results), sum([x.total for x in self.results]), self.score)
