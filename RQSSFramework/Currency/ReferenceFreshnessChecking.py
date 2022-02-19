@@ -36,6 +36,7 @@ class ReferenceFreshnessInItemChecker:
         self.num_checked_facts = 0
         self.total_freshness = 0
         for item in self._item_refed_facts.keys():
+            print('getting history of item: {0}'.format(str(item)))
             page = requests.get('https://www.wikidata.org/w/index.php?title={}&offset=&limit=5000&action=history'.format(str(item)))
             tree = html.fromstring(page.content)
             prop_ctr = 0
@@ -43,16 +44,18 @@ class ReferenceFreshnessInItemChecker:
             for prop in self._item_refed_facts[str(item)]:
                 fact_created_time = tree.xpath(xpath_create.format(str(prop)))
                 revisions_added_time = tree.xpath(xpath_add.format(str(prop)))
-                revisions_chaned_times = tree.xpath(xpath_change.format(str(prop)))
+                revisions_changed_times = tree.xpath(xpath_change.format(str(prop)))
                 # the earlies creation time is neaded
                 fact_created_time = self.remove_upper_than_base_time(sorted([datetime.datetime.strptime(i,'%H:%M, %d %B %Y') for i in fact_created_time]))
                 # the latest reference addition/change time is needed 
                 revisions_added_time = self.remove_upper_than_base_time(sorted([datetime.datetime.strptime(i,'%H:%M, %d %B %Y') for i in revisions_added_time], reverse=True))
-                revisions_chaned_times = self.remove_upper_than_base_time(sorted([datetime.datetime.strptime(i,'%H:%M, %d %B %Y') for i in revisions_chaned_times], reverse=True))
-                if not fact_created_time or (not revisions_added_time and not revisions_chaned_times):
+                revisions_changed_times = self.remove_upper_than_base_time(sorted([datetime.datetime.strptime(i,'%H:%M, %d %B %Y') for i in revisions_changed_times], reverse=True))
+                if not fact_created_time or (not revisions_added_time and not revisions_changed_times):
+                    print('\t fact {0} : found NO historical info'.format(prop))
                     continue
                 t_base = fact_created_time[0]
-                t_modif = revisions_chaned_times[0] if revisions_chaned_times else revisions_added_time[0]
+                t_modif = revisions_changed_times[0] if revisions_changed_times else revisions_added_time[0]
+                print('\t fact {0} : Ref Freshness = {1}'.format(prop,(t_now-t_modif).total_seconds()/(t_now-t_base).total_seconds()))
                 prop_total_freshness += (t_now-t_modif).total_seconds()/(t_now-t_base).total_seconds()
                 prop_ctr += 1
                 
