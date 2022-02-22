@@ -12,18 +12,19 @@ from Accuracy.TripleSemanticChecking import (FactReference,
                                              RefTripleSemanticChecker)
 from Accuracy.TripleSyntaxChecking import WikibaseRefTripleSyntaxChecker
 from Availability.DereferencePossibility import DerefrenceExplorer
+from Believability.HumanReferenceInItemChecking import *
 from Conciseness.ReferenceSharingChecking import *
 from Consistency.RefPropertiesConsistencyChecking import \
     RefPropertiesConsistencyChecker
 from Consistency.TriplesRangeConsistencyChecking import \
     TriplesRangeConsistencyChecker
+from Currency.ExternalURIsFreshnessChecking import *
+from Currency.ReferenceFreshnessChecking import *
 from Licensing.LicenseExistanceChecking import LicenseChecker
 from Objectivity.MultipleReferenceChecking import *
 from Queries import RQSS_QUERIES
 from Reputation.DNSBLBlacklistedChecking import DNSBLBlacklistedChecker
 from Security.TLSExistanceChecking import TLSChecker
-from Believability.HumanReferenceInItemChecking import *
-from Currency.ReferenceFreshnessChecking import *
 
 
 def genargs(prog: Optional[str] = None) -> ArgumentParser:
@@ -33,7 +34,7 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
     parser.add_argument(
         "--endpoint", help="The local/public endpoint of the dataset for shex-based metrics", required=False)
     parser.add_argument(
-        "--upperdate", help="The upper date (Format DD-MM-YYYY) limit for reivision history checker metrics. The deafult is now()", required=False, type=lambda d: datetime.datetime.strptime(d, "%d-%m-%Y"),default=datetime.datetime.now())
+        "--upper-date", help="The upper date (Format DD-MM-YYYY) limit for reivision history checker metrics. The deafult is now()", required=False, type=lambda d: datetime.datetime.strptime(d, "%d-%m-%Y"), default=datetime.datetime.now())
     parser.add_argument(
         "-o", "--output_dir", help="Output destination directory to store computed metrics details", default=os.getcwd()+os.sep+'rqss_framework_output')
     parser.add_argument("-dp", "--dereferencing",
@@ -42,27 +43,34 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
                         help="Compute the metric: External Sources’ Datasets Licensing", action='store_true')
     parser.add_argument("-sec", "--security",
                         help="Compute the metric: Link Security of the External URIs", action='store_true')
-    parser.add_argument("-rts", "--reftriplesyntax",
+    parser.add_argument("-rts", "--ref-triple-syntax",
                         help="Compute the metric: Syntactic Validity of Reference Triples", action='store_true')
-    parser.add_argument("-rls", "--refliteralsyntax",
+    parser.add_argument("-rls", "--ref-literal-syntax",
                         help="Compute the metric: Syntactic validity of references’ literals", action='store_true')
-    parser.add_argument("-rtm", "--reftriplesemantic",
+    parser.add_argument("-rtm", "--ref-triple-semantic",
                         help="Compute the metric: Semantic validity of reference triples", action='store_true')
-    parser.add_argument("-rpc", "--refpropertyconsistency",
+    parser.add_argument("-rpc", "--ref-property-consistency",
                         help="Compute the metric: Consistency of references’ properties", action='store_true')
-    parser.add_argument("-rc", "--rangeconsistency",
+    parser.add_argument("-rc", "--range-consistency",
                         help="Compute the metric: Range consistency of reference triples", action='store_true')
-    parser.add_argument("-rs", "--refsharing",
+    parser.add_argument("-rs", "--ref-sharing",
                         help="Compute the metric: Ratio of reference sharing", action='store_true')
     parser.add_argument("-rdns", "--reputation",
                         help="Compute the metric: External sources’ domain reputation", action='store_true')
-    parser.add_argument("-mr", "--mulipleref",
+    parser.add_argument("-mr", "--multiple-ref",
                         help="Compute the metric: Multiple references for facts", action='store_true')
-    parser.add_argument("-ha", "--humanadded",
+    parser.add_argument("-ha", "--human-added",
                         help="Compute the metric: Human-added references ratio", action='store_true')
-    parser.add_argument("-rf", "--reffreshness",
+    parser.add_argument("-rf", "--ref-freshness",
                         help="Compute the metric: Freshness of fact referencing", action='store_true')
+    parser.add_argument("-ef", "--ext-uris-freshness",
+                        help="Compute the metric: Freshness of external sources", action='store_true')
+    freshness_group = parser.add_argument_group(
+        title='options for computing freshness of external sources')
+    freshness_group.add_argument(
+        "--extract-google-cache", help="Set to extract google cache info for freshness of external sources", action='store_true')
     return parser
+
 
 def write_results_to_CSV(results: List[NamedTuple], output_file: str) -> None:
     with open(output_file, 'w', newline='') as f:
@@ -492,6 +500,7 @@ def compute_multiple_referenced(opts: ArgumentParser) -> int:
         end_time - start_time))
     return 0
 
+
 def compute_human_added_references_per_item(opts: ArgumentParser) -> int:
     print('Started computing Metric: Human-added references ratio')
     input_data_file = os.path.join(
@@ -520,20 +529,20 @@ def compute_human_added_references_per_item(opts: ArgumentParser) -> int:
     print('Running metric ...')
     start_time = datetime.datetime.now()
     human_added_checker = HumanReferenceInItemChecker(
-        item_refed_facts,opts.upperdate)
+        item_refed_facts, opts.upper_date)
     dist = human_added_checker.check_referenced_facts_human_added()
     end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
     write_results_to_CSV(dist, output_file_dist)
-    write_results_to_CSV(str(human_added_checker),output_file_result)
-
+    write_results_to_CSV(str(human_added_checker), output_file_result)
 
     print('Metric: Human-added references ratio results have been written in the files: {0} and {1}'.format(
         output_file_dist, output_file_result))
     print('DONE. Metric: Human-added references ratio, Duration: {0}'.format(
         end_time - start_time))
     return 0
+
 
 def compute_referenced_facts_reference_freshness_per_item(opts: ArgumentParser) -> int:
     print('Started computing Metric: Freshness of fact referencing')
@@ -563,18 +572,56 @@ def compute_referenced_facts_reference_freshness_per_item(opts: ArgumentParser) 
     print('Running metric ...')
     start_time = datetime.datetime.now()
     freshness_checker = ReferenceFreshnessInItemChecker(
-        item_refed_facts,opts.upperdate)
+        item_refed_facts, opts.upper_date)
     dist = freshness_checker.check_referenced_facts_freshness()
     end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
     write_results_to_CSV(freshness_checker.results, output_file_dist)
-    write_results_to_CSV(str(freshness_checker),output_file_result)
-
+    write_results_to_CSV(str(freshness_checker), output_file_result)
 
     print('Metric: Freshness of fact referencing results have been written in the files: {0} and {1}'.format(
         output_file_dist, output_file_result))
-    print('DONE. Metric: Freshness of fact referencing Duration: {0}'.format(
+    print('DONE. Metric: Freshness of fact referencing, Duration: {0}'.format(
+        end_time - start_time))
+    return 0
+
+
+def compute_external_uris_freshness(opts: ArgumentParser) -> int:
+    print('Started computing Metric: Freshness of external sources')
+    input_data_file = os.path.join(
+        opts.data_dir + os.sep + 'external_uris.data')
+    output_file_dist = os.path.join(
+        opts.output_dir + os.sep + 'external_uris_freshness.csv')
+    output_file_result = os.path.join(
+        opts.output_dir + os.sep + 'external_uris_freshness_ratio.csv')
+
+    # reading the extracted External URIs
+    print('Reading data ...')
+    uris = []
+    try:
+        with open(input_data_file, encoding="utf8") as file:
+            for line in file:
+                uris.append(line.rstrip())
+    except FileNotFoundError:
+        print("Error: Input data file not found. Provide data file with name: {0} in data_dir".format(
+            '"external_uris.data"'))
+        exit(1)
+
+    # running the framework metric function
+    print('Running metric ...')
+    start_time = datetime.datetime.now()
+    freshness_checker = ExternalURIsFreshnessChecker(uris,extract_google_cache=opts.extract_google_cache)
+    results = freshness_checker.check_external_uris_freshness()
+    end_time = datetime.datetime.now()
+
+    # saving the results for presentation layer
+    write_results_to_CSV(freshness_checker.results, output_file_dist)
+    write_results_to_CSV(str(freshness_checker), output_file_result)
+
+    print('Metric: Freshness of external sources results have been written in the file: {0} and {1}'.format(
+        output_file_dist, output_file_result))
+    print('DONE. Metric: Dereference Possibility of the External URIs, Duration: {0}'.format(
         end_time - start_time))
     return 0
 
@@ -606,35 +653,39 @@ def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Op
     if opts.security:
         p = Process(target=compute_security(opts))
         framework_procs.append(p)
-    if opts.reftriplesyntax:
+    if opts.ref_triple_syntax:
         p = Process(target=compute_ref_triple_syntax(opts))
         framework_procs.append(p)
-    if opts.refliteralsyntax:
+    if opts.ref_literal_syntax:
         p = Process(target=compute_ref_literal_syntax(opts))
         framework_procs.append(p)
-    if opts.reftriplesemantic:
+    if opts.ref_triple_semantic:
         p = Process(target=compute_ref_triple_semantic(opts))
         framework_procs.append(p)
-    if opts.refpropertyconsistency:
+    if opts.ref_property_consistency:
         p = Process(target=compute_ref_properties_consistency(opts))
         framework_procs.append(p)
-    if opts.rangeconsistency:
+    if opts.range_consistency:
         p = Process(target=compute_range_consistency(opts))
         framework_procs.append(p)
-    if opts.refsharing:
+    if opts.ref_sharing:
         p = Process(target=compute_ref_sharing_ratio(opts))
         framework_procs.append(p)
     if opts.reputation:
         p = Process(target=compute_dnsbl_reputation(opts))
         framework_procs.append(p)
-    if opts.mulipleref:
+    if opts.multiple_ref:
         p = Process(target=compute_multiple_referenced(opts))
         framework_procs.append(p)
-    if opts.humanadded:
+    if opts.human_added:
         p = Process(target=compute_human_added_references_per_item(opts))
         framework_procs.append(p)
-    if opts.reffreshness:
-        p = Process(target=compute_referenced_facts_reference_freshness_per_item(opts))
+    if opts.ref_freshness:
+        p = Process(
+            target=compute_referenced_facts_reference_freshness_per_item(opts))
+        framework_procs.append(p)
+    if opts.ext_uris_freshness:
+        p = Process(target=compute_external_uris_freshness(opts))
         framework_procs.append(p)
 
     for proc in framework_procs:
