@@ -6,6 +6,7 @@ from datetime import datetime
 from multiprocessing.context import Process
 from pathlib import Path
 from typing import List, Optional, Union
+import numpy as np
 
 from Availability.DereferencePossibility import DerefOfURI
 from Licensing.LicenseExistanceChecking import LicExistOfDom
@@ -17,9 +18,9 @@ from Reputation.DNSBLBlacklistedChecking import BlacklistedOfDom
 def genargs(prog: Optional[str] = None) -> ArgumentParser:
     parser = ArgumentParser(prog)
     parser.add_argument(
-        "result_dir", help="Input data directory that includes the results of the framework metrics in CSV files")
+        "--result-dir", help="Input data directory that includes the results of the framework metrics in CSV files")
     parser.add_argument(
-        "-o", "--output_dir", help="Output destination directory to store charts", default=os.getcwd()+os.sep+'rqss_presenter_output')
+        "-o", "--output-dir", help="Output destination directory to store charts", default=os.getcwd()+os.sep+'rqss_presenter_output')
 
     return parser
 
@@ -246,6 +247,33 @@ def plot_fact_referencing_freshness_currency(opts: ArgumentParser) -> int:
         output_file))
     return 0
 
+def plot_external_uris_freshness_currency(opts: ArgumentParser) -> int:
+    input_data_file = os.path.join(
+        opts.result_dir + os.sep + 'external_uris_freshness.csv')
+    output_file = os.path.join(
+        opts.output_dir + os.sep + 'external_uris_freshness.png')
+
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    csv_data = pd.read_csv(input_data_file, index_col=None, header=0)
+    csv_data.replace('<None>', np.nan, inplace=True)
+    print(pd.melt(csv_data.head(5)))
+    #pd.melt(csv_data[['freshness_last_modif','freshness_google_cache']])
+    box_plot = sns.boxplot(palette=["#3498db", "#2ecc71"],
+            data=csv_data,showmeans=True,showfliers=False,
+            meanprops={"marker":"^",
+            "markerfacecolor":"black", 
+            "markeredgecolor":"black",
+            "markersize":"5"},medianprops={'color':'red'},flierprops={"marker":"o", "markersize":"5"})
+    box_plot.set_xlabel('Freshness of External URIs')
+    box_plot.set_ylabel('Freshness')
+    sns.despine(trim=True)
+    plt.savefig(output_file, format='png')
+    plt.close()
+    print('Metric: Freshness of external sources chart(s) have been plotted in the file: {0}'.format(
+        output_file))
+    return 0
+
 def RQSS_Plot(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] = None) -> int:
     if isinstance(argv, str):
         argv = argv.split()
@@ -300,6 +328,9 @@ def RQSS_Plot(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] 
         framework_procs.append(p)
     if Path(opts.result_dir + os.sep + 'fact_freshness.csv').is_file():
         p = Process(target=plot_fact_referencing_freshness_currency(opts))
+        framework_procs.append(p)
+    if Path(opts.result_dir + os.sep + 'external_uris_freshness.csv').is_file():
+        p = Process(target=plot_external_uris_freshness_currency(opts))
         framework_procs.append(p)
 
     for proc in framework_procs:
