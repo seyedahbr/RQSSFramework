@@ -622,7 +622,7 @@ def compute_external_uris_freshness(opts: ArgumentParser) -> int:
 
     print('Metric: Freshness of external sources results have been written in the file: {0} and {1}'.format(
         output_file_dist, output_file_result))
-    print('DONE. Metric: Dereference Possibility of the External URIs, Duration: {0}'.format(
+    print('DONE. Metric: Freshness of external sources, Duration: {0}'.format(
         end_time - start_time))
     return 0
 
