@@ -1,7 +1,10 @@
+import csv
 import unittest
 from unittest import result
+
 from rdflib import URIRef
 from RQSSFramework.Security.TLSExistanceChecking import TLSChecker
+
 
 class TestTLSChecking(unittest.TestCase):
 
@@ -35,11 +38,14 @@ class TestTLSChecking(unittest.TestCase):
         """
         test_class = TLSChecker(self.test_data)
         result = test_class.check_support_tls()
-        self.assertFalse(result[0].support)
-        self.assertFalse(test_class.results[0].support)
-        self.assertTrue(result[1].support)
-        self.assertTrue(test_class.results[1].support)
-        self.assertFalse(result[2].support)
-        self.assertFalse(test_class.results[2].support)
-        self.assertTrue(result[3].support)
-        self.assertTrue(test_class.results[3].support)
+        self.assertGreaterEqual(test_class.score, 0)
+        self.assertLessEqual(test_class.score, 1)
+        with open('security_ratio.test.csv', 'w') as file_handler:
+            file_handler.write(str(test_class))
+        with open('security.test.csv', 'w', newline='') as f:
+            w = csv.writer(f)
+            # write header from NamedTuple fields
+            w.writerow([field for field in test_class.results[0]._fields])
+            for result in test_class.results:
+                row = [result._asdict()[field] for field in result._fields]
+                w.writerow(row)
