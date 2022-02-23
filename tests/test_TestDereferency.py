@@ -1,33 +1,36 @@
+import csv
 import unittest
 from unittest import result
+
 from rdflib import URIRef
-from RQSSFramework.Availability.DereferencePossibility import DerefrenceExplorer
-import csv
+from RQSSFramework.Availability.DereferencePossibility import \
+    DerefrenceExplorer
+
 
 class TestDereferency(unittest.TestCase):
 
     def setUp(self):
-        self.test_data = [URIRef("https://www.wikidata.org/wiki/Q1"),\
-            URIRef("https://www.wikidata.org/wiki/Q1"),\
-            URIRef("https://www.wikidata.org/wiki/Qabc"),\
-            URIRef("https://www2.macs.hw.ac.uk/~sh200/")] # dereference of redirects
+        self.test_data = [URIRef("https://www.wikidata.org/wiki/Q1"),
+                          URIRef("https://www.wikidata.org/wiki/Q1"),
+                          URIRef("https://www.wikidata.org/wiki/Qabc"),
+                          URIRef("https://www2.macs.hw.ac.uk/~sh200/")]  # dereference of redirects
 
     def test_not_computed(self):
         """
         Test the type of a non computed class be NoneType
         """
         test_class = DerefrenceExplorer(self.test_data)
-        self.assertEqual(test_class.results,None)
-        self.assertEqual(test_class.score,None)
-    
+        self.assertEqual(test_class.results, None)
+        self.assertEqual(test_class.score, None)
+
     def test_remove_duplication(self):
         """
         Test that the constructor will remove the duplicated URIs
         """
         test_class = DerefrenceExplorer(self.test_data)
         result = test_class.check_dereferencies()
-        self.assertEqual(len(result),3)
-        self.assertEqual(len(test_class.results),3)
+        self.assertEqual(len(result), 3)
+        self.assertEqual(len(test_class.results), 3)
 
     def test_check_dereferencies(self):
         """
