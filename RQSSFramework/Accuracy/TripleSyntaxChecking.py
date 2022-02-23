@@ -43,6 +43,18 @@ class WikibaseRefTripleSyntaxChecker:
         self.result = SyntxResult(num_total, num_fails)
         return self.result
     
+    @property
+    def score(self):
+        if self.result != None:
+            return self.result.score
+        return None
+
+    def __repr__(self):
+        if self.result == None:
+            return 'Results are not computed'
+        return """num of ref nodes, num of fails, score
+{0},{1},{2}""".format(self.result.total, self.result.fails, self.score)
+    
     def print_results(self):
         """
         print self.result if it is already computed

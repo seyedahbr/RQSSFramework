@@ -2,7 +2,8 @@ import re
 import sys
 from typing import Dict, List, NamedTuple
 
-from Queries import RQSS_QUERIES
+import numpy as np
+from RQSSFramework.Queries import RQSS_QUERIES
 from SPARQLWrapper import JSON, SPARQLWrapper
 
 
@@ -11,10 +12,10 @@ class LiteralSyntaxResult(NamedTuple):
     total: int
     fails: int
     errors: int
-    not_exixts: int
+    regexes: int
 
     def __repr__(self):
-        return "Number of checked values for propety {0}: {1}; fails:{2}; score:{3}; regex errors:{4}; regex not exists:{5}".format(self.ref_property, self.total, self.fails, self.score, self.errors, self.not_exixts)
+        return "Number of checked values for propety {0}: {1}; fails:{2}; score:{3}; regex errors:{4}; regex not exists:{5}".format(self.ref_property, self.total, self.fails, self.score, self.errors, self.regexes)
 
     @property
     def score(self):
@@ -36,27 +37,30 @@ class WikibaseRefLiteralSyntaxChecker:
     def check_literals_regex(self) -> List[LiteralSyntaxResult]:
         self.results = []
         for prop in self._properties_values.keys():
+            # return an empty result (only not_exists tag=true) for properties that have not any regex in Wikidata
+            if len(self._regexes[str(prop)]) == 0:
+                self.results.append(LiteralSyntaxResult(str(prop), len(
+                    self._properties_values[str(prop)]), np.nan, np.nan, 0))
+                continue
+
             num_fails = 0
-            num_errors = 0
-            num_not_exists = 0
+            errors = []
             for value in self._properties_values[str(prop)]:
-                if len(self._regexes[str(prop)]) == 0:
-                    num_not_exists += 1
-                    continue
-                failed = True
                 for regex in self._regexes[str(prop)]:
+                    if regex in errors:
+                        continue
                     try:
                         pattern = re.compile(regex)
                         if bool(re.match(pattern, value)):
                             failed = False
                             break
                     except re.error as err:
-                        num_errors += 1
+                        errors.append(regex)
                         continue
                 if failed:
                     num_fails += 1
             self.results.append(LiteralSyntaxResult(str(prop), len(
-                self._properties_values[str(prop)]), num_fails, num_errors, num_not_exists))
+                self._properties_values[str(prop)]), num_fails, len(errors), len(self._regexes[str(prop)])))
         return self.results
 
     def get_property_regex_from_Wikidata(self) -> Dict:
@@ -75,6 +79,25 @@ class WikibaseRefLiteralSyntaxChecker:
                 value = result["to_ret"]["value"]
                 ret_val[str(prop)].append(value)
         return ret_val
+
+    @property
+    def score(self):
+        if self.results != None:
+            return 1 - sum([0 if np.isnan(i.fails) else i.fails for i in self.results])/sum([i.total for i in self.results])
+        return None
+
+    def __repr__(self):
+        if self.results == None:
+            return 'Results are not computed'
+        return """num of properties, total literals, total regexes, total fails, total errors, total not exists regex, score
+{0},{1},{2},{3},{4},{5},{6}""".format(len(self.results),
+                                      sum([i.total for i in self.results]),
+                                      sum([i.regexes for i in self.results]),
+                                      sum([
+                                          0 if np.isnan(i.fails) else i.fails for i in self.results]),
+                                      sum([
+                                          0 if np.isnan(i.errors) else i.errors for i in self.results]),
+                                      sum([i.total for i in self.results if i.regexes == 0]), self.score)
 
     def print_results(self):
         """

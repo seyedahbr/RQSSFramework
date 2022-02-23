@@ -103,7 +103,19 @@ class LicenseChecker:
     
     def html_contains_license(self, html: str):
         return any(licensing_keyword in html for licensing_keyword in licensing_keywords)
-                
+
+    @property
+    def score(self):
+        if self.results != None:
+            return sum([1 for i in self.results if i.license])/len(self.results)
+        return None
+
+    def __repr__(self):
+        if self.results == None:
+            return 'Results are not computed'
+        return """num of domains, have human-readable license
+{0},{1}""".format(len(self.results), self.score)
+
     def print_results(self):
         """
         print self.results if it is already computed

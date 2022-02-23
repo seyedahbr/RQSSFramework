@@ -91,7 +91,8 @@ def compute_dereferencing(opts: ArgumentParser) -> int:
     print('Started computing Metric: Dereference Possibility of the External URIs')
     input_data_file = os.path.join(
         opts.data_dir + os.sep + 'external_uris.data')
-    output_file = os.path.join(opts.output_dir + os.sep + 'dereferencing.csv')
+    output_file_dist = os.path.join(opts.output_dir + os.sep + 'dereferencing.csv')
+    output_file_result = os.path.join(opts.output_dir + os.sep + 'dereferencing_ratio.csv')
 
     # reading the extracted External URIs
     print('Reading data ...')
@@ -108,14 +109,16 @@ def compute_dereferencing(opts: ArgumentParser) -> int:
     # running the framework metric function
     print('Running metric ...')
     start_time = datetime.datetime.now()
-    results = DerefrenceExplorer(uris).check_dereferencies()
+    deref_checker = DerefrenceExplorer(uris)
+    results = deref_checker.check_dereferencies()
     end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
-    write_results_to_CSV(results, output_file)
+    write_results_to_CSV(results, output_file_dist)
+    write_results_to_CSV(str(deref_checker), output_file_result)
 
-    print('Metric: Dereference Possibility of the External URIs results have been written in the file: {0}'.format(
-        output_file))
+    print('Metric: Dereference Possibility of the External URIs results have been written in the file: {0} and {1}'.format(
+        output_file_dist, output_file_result))
     print('DONE. Metric: Dereference Possibility of the External URIs, Duration: {0}'.format(
         end_time - start_time))
     return 0
@@ -125,7 +128,8 @@ def compute_licensing(opts: ArgumentParser) -> int:
     print('Started computing Metric: External Sources’ Datasets Licensing')
     input_data_file = os.path.join(
         opts.data_dir + os.sep + 'external_uris.data')
-    output_file = os.path.join(opts.output_dir + os.sep + 'licensing.csv')
+    output_file_dist = os.path.join(opts.output_dir + os.sep + 'licensing.csv')
+    output_file_result = os.path.join(opts.output_dir + os.sep + 'licensing_ratio.csv')
 
     # reading the extracted External URIs
     print('Reading data ...')
@@ -141,14 +145,16 @@ def compute_licensing(opts: ArgumentParser) -> int:
     # running the framework metric function
     print('Running metric ...')
     start_time = datetime.datetime.now()
-    results = LicenseChecker(uris).check_license_existance()
+    lic_checker = LicenseChecker(uris) 
+    results = lic_checker.check_license_existance()
     end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
-    write_results_to_CSV(results, output_file)
+    write_results_to_CSV(results, output_file_dist)
+    write_results_to_CSV(str(lic_checker), output_file_result)
 
-    print('Metric: External Sources’ Datasets Licensing results have been written in the file: {0}'.format(
-        output_file))
+    print('Metric: External Sources’ Datasets Licensing results have been written in the file: {0} and {1}'.format(
+        output_file_dist, output_file_result))
     print('DONE. Metric: External Sources’ Datasets Licensing, Duration: {0}'.format(
         end_time - start_time))
     return 0
@@ -158,7 +164,8 @@ def compute_security(opts: ArgumentParser) -> int:
     print('Started computing Metric: Link Security of the External URIs')
     input_data_file = os.path.join(
         opts.data_dir + os.sep + 'external_uris.data')
-    output_file = os.path.join(opts.output_dir + os.sep + 'security.csv')
+    output_file_dist = os.path.join(opts.output_dir + os.sep + 'security.csv')
+    output_file_result = os.path.join(opts.output_dir + os.sep + 'security_ratio.csv')
 
     # reading the extracted External URIs
     print('Reading data ...')
@@ -174,14 +181,16 @@ def compute_security(opts: ArgumentParser) -> int:
     # running the framework metric function
     print('Running metric ...')
     start_time = datetime.datetime.now()
-    results = TLSChecker(uris).check_support_tls()
+    sec_checker = TLSChecker(uris)
+    results = sec_checker.check_support_tls()
     end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
-    write_results_to_CSV(results, output_file)
+    write_results_to_CSV(results, output_file_dist)
+    write_results_to_CSV(str(sec_checker), output_file_result)
 
-    print('Metric: Link Security of the External URIs results have been written in the file: {0}'.format(
-        output_file))
+    print('Metric: Link Security of the External URIs results have been written in the file: {0} and {1}'.format(
+        output_file_dist, output_file_result))
     print('DONE. Metric: Link Security of the External URIs, Duration: {0}'.format(
         end_time - start_time))
     return 0
@@ -192,7 +201,7 @@ def compute_ref_triple_syntax(opts: ArgumentParser) -> int:
     input_data_file = os.path.join(
         opts.data_dir + os.sep + 'statement_nodes_uris.data')
     output_file = os.path.join(
-        opts.output_dir + os.sep + 'ref_triple_syntax.csv')
+        opts.output_dir + os.sep + 'ref_triple_syntax_result.csv')
 
     # reading the statement nodes data
     print('Reading data ...')
@@ -208,14 +217,15 @@ def compute_ref_triple_syntax(opts: ArgumentParser) -> int:
     # running the framework metric function
     print('Running metric ...')
     start_time = datetime.datetime.now()
-    results = []
+    shex_checker = None
     if(opts.endpoint):
-        results = WikibaseRefTripleSyntaxChecker(
-            statements, opts.endpoint, None).check_shex_over_endpoint()
+        shex_checker = WikibaseRefTripleSyntaxChecker(
+            statements, opts.endpoint, None)
+        results = shex_checker.check_shex_over_endpoint()
     end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
-    write_results_to_CSV([results], output_file)
+    write_results_to_CSV(str(shex_checker), output_file)
 
     print('Metric: Syntactic Validity of Reference Triples results have been written in the file: {0}'.format(
         output_file))
@@ -228,8 +238,10 @@ def compute_ref_literal_syntax(opts: ArgumentParser) -> int:
     print('Started computing Metric: Syntactic validity of references’ literals')
     input_data_file = os.path.join(
         opts.data_dir + os.sep + 'reference_literals.data')
-    output_file = os.path.join(
+    output_file_dist = os.path.join(
         opts.output_dir + os.sep + 'ref_literal_syntax.csv')
+    output_file_result = os.path.join(
+        opts.output_dir + os.sep + 'ref_literal_syntax_ratio.csv')
 
     # reading the properties/literals
     print('Reading data ...')
@@ -249,15 +261,16 @@ def compute_ref_literal_syntax(opts: ArgumentParser) -> int:
     # running the framework metric function
     print('Running metric ...')
     start_time = datetime.datetime.now()
-    results = WikibaseRefLiteralSyntaxChecker(
-        prop_values).check_literals_regex()
+    lit_checker =WikibaseRefLiteralSyntaxChecker(prop_values) 
+    results = lit_checker.check_literals_regex()
     end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
-    write_results_to_CSV(results, output_file)
+    write_results_to_CSV(results, output_file_dist)
+    write_results_to_CSV(str(lit_checker), output_file_result)
 
-    print('Metric: Syntactic validity of references’ literals results have been written in the file: {0}'.format(
-        output_file))
+    print('Metric: Syntactic validity of references’ literals results have been written in the file: {0} and {1}'.format(
+        output_file_dist, output_file_result))
     print('DONE. Metric: Syntactic validity of references’ literals, Duration: {0}'.format(
         end_time - start_time))
     return 0
