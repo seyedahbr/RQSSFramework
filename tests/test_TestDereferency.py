@@ -2,6 +2,7 @@ import unittest
 from unittest import result
 from rdflib import URIRef
 from RQSSFramework.Availability.DereferencePossibility import DerefrenceExplorer
+import csv
 
 class TestDereferency(unittest.TestCase):
 
@@ -17,6 +18,7 @@ class TestDereferency(unittest.TestCase):
         """
         test_class = DerefrenceExplorer(self.test_data)
         self.assertEqual(test_class.results,None)
+        self.assertEqual(test_class.score,None)
     
     def test_remove_duplication(self):
         """
@@ -33,10 +35,15 @@ class TestDereferency(unittest.TestCase):
         set of URIs 
         """
         test_class = DerefrenceExplorer(self.test_data)
-        result = test_class.check_dereferencies()
-        self.assertTrue(result[0].deref)
-        self.assertTrue(test_class.results[0].deref)
-        self.assertFalse(result[1].deref)
-        self.assertFalse(test_class.results[1].deref)
-        self.assertTrue(result[2].deref)
-        self.assertTrue(test_class.results[2].deref)
+        test_ret = test_class.check_dereferencies()
+        self.assertGreaterEqual(test_class.score, 0)
+        self.assertLessEqual(test_class.score, 1)
+        with open('dereferencing_ratio.test.csv', 'w') as file_handler:
+            file_handler.write(str(test_class))
+        with open('dereferencing.test.csv', 'w', newline='') as f:
+            w = csv.writer(f)
+            # write header from NamedTuple fields
+            w.writerow([field for field in test_class.results[0]._fields])
+            for result in test_class.results:
+                row = [result._asdict()[field] for field in result._fields]
+                w.writerow(row)
