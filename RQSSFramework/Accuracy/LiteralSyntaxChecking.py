@@ -3,7 +3,7 @@ import sys
 from typing import Dict, List, NamedTuple
 
 import numpy as np
-from RQSSFramework.Queries import RQSS_QUERIES
+from Queries import RQSS_QUERIES
 from SPARQLWrapper import JSON, SPARQLWrapper
 
 
