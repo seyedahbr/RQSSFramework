@@ -86,27 +86,35 @@ class ExternalURIsFreshnessChecker:
 
     @property
     def last_modif_score(self):
-        scored_list = [
-            i.freshness_last_modif for i in self.results if i.freshness_last_modif != None]
-        return sum(scored_list)/len(scored_list) if len(scored_list) > 0 else '<None>'
+        if self.results != None:
+            scored_list = [
+                i.freshness_last_modif for i in self.results if i.freshness_last_modif != None]
+            return sum(scored_list)/len(scored_list) if len(scored_list) > 0 else '<None>'
+        return None
 
     @property
     def google_cache_score(self):
-        scored_list = [
-            i.freshness_google_cache for i in self.results if i.freshness_google_cache != None]
-        return sum(scored_list)/len(scored_list) if len(scored_list) > 0 else '<None>'
+        if self.results != None:
+            scored_list = [
+                i.freshness_google_cache for i in self.results if i.freshness_google_cache != None]
+            return sum(scored_list)/len(scored_list) if len(scored_list) > 0 else '<None>'
+        return None
 
     @property
     def num_last_modif_tag(self):
-        scored_list = [
-            i.freshness_last_modif for i in self.results if i.freshness_last_modif != None]
-        return len(scored_list) if len(scored_list) > 0 else '<None>'
+        if self.results != None:        
+            scored_list = [
+                i.freshness_last_modif for i in self.results if i.freshness_last_modif != None]
+            return len(scored_list) if len(scored_list) > 0 else '<None>'
+        return None
 
     @property
     def num_google_cache(self):
-        scored_list = [
-            i.freshness_google_cache for i in self.results if i.freshness_google_cache != None]
-        return len(scored_list) if len(scored_list) > 0 else '<None>'
+        if self.results != None:
+            scored_list = [
+                i.freshness_google_cache for i in self.results if i.freshness_google_cache != None]
+            return len(scored_list) if len(scored_list) > 0 else '<None>'
+        return None
 
     def __repr__(self):
         if self.results == None:
