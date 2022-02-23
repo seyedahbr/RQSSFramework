@@ -21,24 +21,24 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
     parser.add_argument(
         "-f", "--format", help="Input file RDF format (nt, ttl)", default='nt')
     parser.add_argument(
-        "-o", "--output_dir", help="Output destination directory to store extarcted components from the RDF input file", default=os.getcwd()+os.sep+'rqss_extractor_output')
-    parser.add_argument("-eExt", "--extract_external",
+        "-o", "--output-dir", help="Output destination directory to store extarcted components from the RDF input file", default=os.getcwd()+os.sep+'rqss_extractor_output')
+    parser.add_argument("-eExt", "--extract-external",
                         help="Extract all external sources uris (Wikibase referencing model) and save them on output dir. Collects data for computing Dimensions: Availability, Licensing, Security", action='store_true')
-    parser.add_argument("-sn", "--statement_nodes",
+    parser.add_argument("-sn", "--statement-nodes",
                         help="Extract all statement nodes uris (Wikibase referencing model) and save them on output dir. Collects data for computing Metric: Syntactic validity of reference triples", action='store_true')
     parser.add_argument("-l", "--literals",
                         help="Extract all literal values in reference triples and save them on output dir. Collects data for computing Metric: Syntactic validity of references’ literals", action='store_true')
-    parser.add_argument("-fr", "--factreftriples",
+    parser.add_argument("-fr", "--fact-ref-triples",
                         help="Extract all facts and their reference triples and save them on output dir. Collects data for computing Metric: Semantic validity of reference triples", action='store_true')
-    parser.add_argument("-rp", "--refproperties",
+    parser.add_argument("-rp", "--ref-properties",
                         help="Extract all reference properties and save them on output dir. Collects data for computing Metric: Consistency of references’ properties", action='store_true')
-    parser.add_argument("-rpvt", "--refpropvaluetype",
+    parser.add_argument("-rpvt", "--ref-prop-value-type",
                         help="Extract all reference properties and their object value types and save them on output dir. Collects data for computing Metric: Range consistency of reference triples", action='store_true')
-    parser.add_argument("-ri", "--refincomings",
+    parser.add_argument("-ri", "--ref-incomings",
                         help="Extract all reference nodes and the numebr of their incoming edges (prov:wasDerivedFrom) and save them on output dir. Collects data for computing Metric: Ratio of reference sharing", action='store_true')
-    parser.add_argument("-sr", "--statementrefs",
+    parser.add_argument("-sr", "--statement-refs",
                         help="Extract all sattement nodes and the numebr of their references and save them on output dir. Collects data for computing Metric: Multiple references for facts", action='store_true')
-    parser.add_argument("-irf", "--itemrefedfacts",
+    parser.add_argument("-irf", "--item-refed-facts",
                         help="Extract all items and their referenced facts and save them on output dir. Collects data for computing Metric: Human-added references ratio", action='store_true')
     
     return parser
@@ -279,27 +279,27 @@ def extract_from_endpoint(opts: ArgumentParser) -> int:
         p = Process(target=extract_refrence_literals(opts))
         extractor_procs.append(p)
 
-    if(opts.factreftriples):
+    if(opts.fact_ref_triples):
         p = Process(target=extract_fact_ref_triples(opts))
         extractor_procs.append(p)
     
-    if(opts.refproperties):
+    if(opts.ref_properties):
         p = Process(target=extract_reference_properties(opts))
         extractor_procs.append(p)
     
-    if(opts.refpropvaluetype):
+    if(opts.ref_prop_value_type):
         p = Process(target=extract_reference_properties_value_types(opts))
         extractor_procs.append(p)
     
-    if(opts.refincomings):
+    if(opts.ref_incomings):
         p = Process(target=extract_reference_node_incomings(opts))
         extractor_procs.append(p)
     
-    if(opts.statementrefs):
+    if(opts.statement_refs):
         p = Process(target=extract_statement_node_references(opts))
         extractor_procs.append(p)
     
-    if(opts.itemrefedfacts):
+    if(opts.item_refed_facts):
         p = Process(target=extract_item_referenced_facts(opts))
         extractor_procs.append(p)
 
