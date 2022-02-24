@@ -77,15 +77,15 @@ def write_results_to_CSV(results: List[NamedTuple], output_file: str) -> None:
         if isinstance(results, str):
             f.write(results)
             return
-        if len(results) > 0:
-            w = csv.writer(
-                f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-            # write header from NamedTuple fields
-            w.writerow([field for field in results[0]._fields])
-            for result in results:
-                row = ['<None>' if result._asdict()[field] == None else result._asdict()[
-                    field] for field in result._fields]
-                w.writerow(row)
+        
+        w = csv.writer(
+            f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        # write header from NamedTuple fields
+        w.writerow([field for field in results[0]._fields])
+        for result in results:
+            row = ['<None>' if result._asdict()[field] == None else result._asdict()[
+                field] for field in result._fields]
+            w.writerow(row)
     return
 
 
@@ -118,8 +118,9 @@ def compute_dereferencing(opts: ArgumentParser) -> int:
     end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
-    write_results_to_CSV(results, output_file_dist)
-    write_results_to_CSV(str(deref_checker), output_file_result)
+    if len(results) > 0:
+        write_results_to_CSV(results, output_file_dist)
+        write_results_to_CSV(str(deref_checker), output_file_result)
 
     print('Metric: Dereference Possibility of the External URIs results have been written in the file: {0} and {1}'.format(
         output_file_dist, output_file_result))
@@ -155,8 +156,9 @@ def compute_licensing(opts: ArgumentParser) -> int:
     end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
-    write_results_to_CSV(results, output_file_dist)
-    write_results_to_CSV(str(lic_checker), output_file_result)
+    if len(results) > 0:
+        write_results_to_CSV(results, output_file_dist)
+        write_results_to_CSV(str(lic_checker), output_file_result)
 
     print('Metric: External Sources’ Datasets Licensing results have been written in the file: {0} and {1}'.format(
         output_file_dist, output_file_result))
@@ -192,8 +194,9 @@ def compute_security(opts: ArgumentParser) -> int:
     end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
-    write_results_to_CSV(results, output_file_dist)
-    write_results_to_CSV(str(sec_checker), output_file_result)
+    if len(results) > 0:
+        write_results_to_CSV(results, output_file_dist)
+        write_results_to_CSV(str(sec_checker), output_file_result)
 
     print('Metric: Link Security of the External URIs results have been written in the file: {0} and {1}'.format(
         output_file_dist, output_file_result))
@@ -231,7 +234,8 @@ def compute_ref_triple_syntax(opts: ArgumentParser) -> int:
     end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
-    write_results_to_CSV(str(shex_checker), output_file)
+    if len(results) > 0:
+        write_results_to_CSV(str(shex_checker), output_file)
 
     print('Metric: Syntactic Validity of Reference Triples results have been written in the file: {0}'.format(
         output_file))
@@ -272,8 +276,9 @@ def compute_ref_literal_syntax(opts: ArgumentParser) -> int:
     end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
-    write_results_to_CSV(results, output_file_dist)
-    write_results_to_CSV(str(lit_checker), output_file_result)
+    if len(results) > 0:
+        write_results_to_CSV(results, output_file_dist)
+        write_results_to_CSV(str(lit_checker), output_file_result)
 
     print('Metric: Syntactic validity of references’ literals results have been written in the file: {0} and {1}'.format(
         output_file_dist, output_file_result))
@@ -326,7 +331,8 @@ def compute_ref_triple_semantic(opts: ArgumentParser) -> int:
     end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
-    write_results_to_CSV(results, output_file)
+    if len(results) > 0:
+        write_results_to_CSV(results, output_file)
 
     print('Metric: Syntactic validity of references’ literals results have been written in the file: {0}'.format(
         output_file))
@@ -363,8 +369,9 @@ def compute_ref_properties_consistency(opts: ArgumentParser) -> int:
     end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
-    write_results_to_CSV(results, output_file_dist)
-    write_results_to_CSV(str(cons_checker), output_file_result)
+    if len(results) > 0:
+        write_results_to_CSV(results, output_file_dist)
+        write_results_to_CSV(str(cons_checker), output_file_result)
 
     print('Metric: Consistency of references’ properties results have been written in the file: {0} and {1}'.format(
         output_file_dist, output_file_result))
@@ -405,8 +412,9 @@ def compute_range_consistency(opts: ArgumentParser) -> int:
     end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
-    write_results_to_CSV(results, output_file_dist)
-    write_results_to_CSV(str(range_checker), output_file_result)
+    if len(results) > 0:
+        write_results_to_CSV(results, output_file_dist)
+        write_results_to_CSV(str(range_checker), output_file_result)
 
     print('Metric: Range consistency of reference triples results have been written in the file: {0} and {1}'.format(
         output_file_dist, output_file_result))
@@ -444,8 +452,9 @@ def compute_ref_sharing_ratio(opts: ArgumentParser) -> int:
     end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
-    write_results_to_CSV(shared_refs, output_file_dist)
-    write_results_to_CSV(str(checker), output_file_result)
+    if len(shared_refs) > 0:
+        write_results_to_CSV(shared_refs, output_file_dist)
+        write_results_to_CSV(str(checker), output_file_result)
 
     print('Metric: Ratio of reference sharing results have been written in the files: {0} and {1}'.format(
         output_file_dist, output_file_result))
@@ -482,8 +491,9 @@ def compute_dnsbl_reputation(opts: ArgumentParser) -> int:
     end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
-    write_results_to_CSV(results, output_file_dist)
-    write_results_to_CSV(str(dnsbl_checker), output_file_result)
+    if len(results)>0:
+        write_results_to_CSV(results, output_file_dist)
+        write_results_to_CSV(str(dnsbl_checker), output_file_result)
 
     print('Metric: External sources’ domain reputation results have been written in the file: {0} and {1}'.format(
         output_file_dist, output_file_result))
@@ -521,8 +531,9 @@ def compute_multiple_referenced(opts: ArgumentParser) -> int:
     end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
-    write_results_to_CSV(multiples, output_file_dist)
-    write_results_to_CSV(str(checker), output_file_result)
+    if len(multiples) > 0:
+        write_results_to_CSV(multiples, output_file_dist)
+        write_results_to_CSV(str(checker), output_file_result)
 
     print('Metric: Multiple references for facts results have been written in the files: {0} and {1}'.format(
         output_file_dist, output_file_result))
@@ -564,8 +575,9 @@ def compute_human_added_references_per_item(opts: ArgumentParser) -> int:
     end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
-    write_results_to_CSV(dist, output_file_dist)
-    write_results_to_CSV(str(human_added_checker), output_file_result)
+    if len(dist) > 0:
+        write_results_to_CSV(dist, output_file_dist)
+        write_results_to_CSV(str(human_added_checker), output_file_result)
 
     print('Metric: Human-added references ratio results have been written in the files: {0} and {1}'.format(
         output_file_dist, output_file_result))
@@ -607,8 +619,9 @@ def compute_referenced_facts_reference_freshness_per_item(opts: ArgumentParser) 
     end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
-    write_results_to_CSV(freshness_checker.results, output_file_dist)
-    write_results_to_CSV(str(freshness_checker), output_file_result)
+    if len(dist) > 0:
+        write_results_to_CSV(freshness_checker.results, output_file_dist)
+        write_results_to_CSV(str(freshness_checker), output_file_result)
 
     print('Metric: Freshness of fact referencing results have been written in the files: {0} and {1}'.format(
         output_file_dist, output_file_result))
@@ -647,8 +660,9 @@ def compute_external_uris_freshness(opts: ArgumentParser) -> int:
     end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
-    write_results_to_CSV(freshness_checker.results, output_file_dist)
-    write_results_to_CSV(str(freshness_checker), output_file_result)
+    if len(results) > 0:
+        write_results_to_CSV(freshness_checker.results, output_file_dist)
+        write_results_to_CSV(str(freshness_checker), output_file_result)
 
     print('Metric: Freshness of external sources results have been written in the file: {0} and {1}'.format(
         output_file_dist, output_file_result))
