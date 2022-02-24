@@ -40,7 +40,7 @@ class MultipleReferenceChecker:
         return None
 
     def __repr__(self):
-        if self.results == None:
+        if self.result == None:
             return 'Results are not computed'
         return """num of statements,num of multiple refed,score
 {0},{1},{2}""".format(self.result.total_statement, self.result.multiple_referenced, self.score)
