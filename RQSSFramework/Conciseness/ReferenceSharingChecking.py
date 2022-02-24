@@ -35,12 +35,12 @@ class ReferenceSharingChecker:
 
     @property
     def score(self):
-        if self.results != None:
+        if self.result != None:
             return self.result.ratio
         return None
 
     def __repr__(self):
-        if self.results == None:
+        if self.result == None:
             return 'Results are not computed'
         return """num of ref nodes, shared noes, score
 {0},{1}""".format(self.result.total, self.result.shared, self.score)
