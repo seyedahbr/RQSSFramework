@@ -1,5 +1,6 @@
 import datetime
 from typing import Dict, List, NamedTuple, Tuple
+from urllib import response
 
 import requests
 from lxml import html
@@ -31,8 +32,8 @@ class HumanReferenceInItemChecker:
     def check_referenced_facts_human_added(self) -> List[HumanAddedResult]:
         self.results = []
         wikidata_item_history_url = 'https://www.wikidata.org/w/index.php?title={}&offset=&limit=5000&action=history'
-        xpath_added = '//*[@id="pagehistory"]/li[./span/span/span/text()="Added reference to claim: " and ./span/a/span/span/text()="({0})"]/span[@class="history-user"]/a/bdi/text() | //*[@id="pagehistory"]/li[./span/span/span/text()="Added reference to claim: " and ./span/a/span/span/text()="({1})"]/a[contains(@class,\'mw-changeslist-date\')]/text()'
-        xpath_changed = '//*[@id="pagehistory"]/li[./span/span/span/text()="Changed reference of claim: " and ./span/a/span/span/text()="({0})"]/span[@class="history-user"]/a/bdi/text() | //*[@id="pagehistory"]/li[./span/span/span/text()="Changed reference of claim: " and ./span/a/span/span/text()="({1})"]/a[contains(@class,\'mw-changeslist-date\')]/text()'
+        xpath_added = '//*[@id="pagehistory"]/ul/li[./span/span/span/text()="Added reference to claim: " and ./span/a/span/span/text()="({0})"]/span[@class="history-user"]/a/bdi/text() | //*[@id="pagehistory"]/ul/li[./span/span/span/text()="Added reference to claim: " and ./span/a/span/span/text()="({1})"]/a[contains(@class,\'mw-changeslist-date\')]/text()'
+        xpath_changed = '//*[@id="pagehistory"]/ul/li[./span/span/span/text()="Changed reference of claim: " and ./span/a/span/span/text()="({0})"]/span[@class="history-user"]/a/bdi/text() | //*[@id="pagehistory"]/ul/li[./span/span/span/text()="Changed reference of claim: " and ./span/a/span/span/text()="({1})"]/a[contains(@class,\'mw-changeslist-date\')]/text()'
         for item in self._item_refed_facts.keys():
             print('getting history of item: {0}'.format(str(item)))
             num_not_found = 0

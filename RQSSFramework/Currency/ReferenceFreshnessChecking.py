@@ -9,9 +9,10 @@ class ReferenceFreshnessResult(NamedTuple):
     item: str
     total: int
     freshness: float
+    not_found: int
 
     def __repr__(self):
-        return "Number of referenced facts in item {0}: {1}; freshness of references: {2}".format(self.item, self.total, self.freshness)
+        return "Number of referenced facts in item {0}: {1}; not found facts:{2}; freshness of references: {3}".format(self.item, self.total, self.not_found, self.freshness)
 
 
 class ReferenceFreshnessInItemChecker:
@@ -30,12 +31,13 @@ class ReferenceFreshnessInItemChecker:
     def check_referenced_facts_freshness(self) -> List[ReferenceFreshnessResult]:
         self.results = []
         t_now = datetime.datetime.now()
-        xpath_create='//*[@id="pagehistory"]/li[./span/span/span/text()="Created claim: " and ./span/a/span/span/text()="({})"]/a[contains(@class,\'mw-changeslist-date\')]/text()'
-        xpath_add='//*[@id="pagehistory"]/li[./span/span/span/text()="Added reference to claim: " and ./span/a/span/span/text()="({})"]/a[contains(@class,\'mw-changeslist-date\')]/text()'
-        xpath_change='//*[@id="pagehistory"]/li[./span/span/span/text()="Changed reference of claim: " and ./span/a/span/span/text()="({})"]/a[contains(@class,\'mw-changeslist-date\')]/text()'
+        xpath_create='//*[@id="pagehistory"]/ul/li[./span/span/span/text()="Created claim: " and ./span/a/span/span/text()="({})"]/a[contains(@class,\'mw-changeslist-date\')]/text()'
+        xpath_add='//*[@id="pagehistory"]/ul/li[./span/span/span/text()="Added reference to claim: " and ./span/a/span/span/text()="({})"]/a[contains(@class,\'mw-changeslist-date\')]/text()'
+        xpath_change='//*[@id="pagehistory"]/ul/li[./span/span/span/text()="Changed reference of claim: " and ./span/a/span/span/text()="({})"]/a[contains(@class,\'mw-changeslist-date\')]/text()'
         self.num_checked_facts = 0
         self.total_freshness = 0
         for item in self._item_refed_facts.keys():
+            not_found_facts = 0
             print('getting history of item: {0}'.format(str(item)))
             page = requests.get('https://www.wikidata.org/w/index.php?title={}&offset=&limit=5000&action=history'.format(str(item)))
             tree = html.fromstring(page.content)
@@ -52,6 +54,7 @@ class ReferenceFreshnessInItemChecker:
                 revisions_changed_times = self.remove_upper_than_base_time(sorted([datetime.datetime.strptime(i,'%H:%M, %d %B %Y') for i in revisions_changed_times], reverse=True))
                 if not fact_created_time or (not revisions_added_time and not revisions_changed_times):
                     print('\t fact {0} : found NO historical info'.format(prop))
+                    not_found_facts += 1
                     continue
                 t_base = fact_created_time[0]
                 t_modif = revisions_changed_times[0] if revisions_changed_times else revisions_added_time[0]
@@ -61,8 +64,8 @@ class ReferenceFreshnessInItemChecker:
             if prop_ctr:    
                 self.num_checked_facts += prop_ctr
                 self.total_freshness += prop_total_freshness
-                self.results.append(ReferenceFreshnessResult(str(item),prop_ctr,prop_total_freshness/prop_ctr))
             
+            self.results.append(ReferenceFreshnessResult(str(item),prop_ctr,prop_total_freshness/prop_ctr if prop_ctr > 0 else 1.0,not_found_facts))
         return self.results, self.num_checked_facts, self.total_freshness/self.num_checked_facts
 
     def remove_upper_than_base_time(self, times: List[datetime.datetime]) -> List[datetime.datetime]:
@@ -80,10 +83,10 @@ class ReferenceFreshnessInItemChecker:
 
     @property
     def score(self):
-        return self.total_freshness/self.num_checked_facts
+        return self.total_freshness/self.num_checked_facts if self.num_checked_facts > 0 else 1
     
     def __repr__(self):
         if self.results == None:
             return 'Results are not computed'            
-        return """num of items,num of checked referenced facts,score
-{0},{1},{2}""".format(len(self.results),self.num_checked_facts,self.score)
+        return """num of items,num of checked referenced facts,num of not found,score
+{0},{1},{2},{3}""".format(len(self.results),self.num_checked_facts,sum([i.not_found for i in self.results]),self.score)
