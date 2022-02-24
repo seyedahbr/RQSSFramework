@@ -8,8 +8,10 @@ from RQSSFramework.Believability.HumanReferenceInItemChecking import *
 class TestHumanReferenceInItemChecking(unittest.TestCase):
 
     def setUp(self):
-        self.data = {'Q4822345': ['P279', 'P1402', 'P1343', 'P1403', 'P2581', 'P3720'], 'Q2': [
-            'P910', 'P571', 'P610', 'P1589', 'P1082', 'P2067']}
+        self.data = {'Q35715216': ['P698', 'P2860', 'P2093', 'P1433', 'P356', 'P31'], 'Q4713960': [
+            'P1412', 'P102', 'P8172', 'P39', 'P31', 'P569']} 
+        #self.data = {'Q4822345': ['P279', 'P1402', 'P1343', 'P1403', 'P2581', 'P3720'], 'Q2': [
+        #    'P910', 'P571', 'P610', 'P1589', 'P1082', 'P2067']}
         self.till = datetime.datetime.strptime(
             '06:41, 15 December 2021', '%H:%M, %d %B %Y')
 
