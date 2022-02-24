@@ -45,8 +45,8 @@ class DerefrenceExplorer:
     def __repr__(self):
         if self.results == None:
             return 'Results are not computed'
-        return """num of uris, dereference possibility
-{0},{1}""".format(len(self.results), self.score)
+        return """num of uris,available uris,score
+{0},{1},{2}""".format(len(self.results), sum([1 for i in self.results if i.deref]), self.score)
 
     def print_results(self):
         """

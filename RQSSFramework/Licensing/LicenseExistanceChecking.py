@@ -73,7 +73,7 @@ licensing_keywords=[
 
 class LicenseChecker:
     _domains=[]
-    results=None
+    results:List[LicExistOfDom]=None
     def __init__(self, uris: Iterator[URIRef]):
         _uris = list(dict.fromkeys(uris)) # remove duplicated URIs
         self._domains = dict.fromkeys(self.domain_extractor(_uris)) # compute and remove duplicated domains
@@ -113,8 +113,8 @@ class LicenseChecker:
     def __repr__(self):
         if self.results == None:
             return 'Results are not computed'
-        return """num of domains, have human-readable license
-{0},{1}""".format(len(self.results), self.score)
+        return """num of domains,num of licenseds,score
+{0},{1},{2}""".format(len(self.results), sum([1 for i in self.results if i.license]),self.score)
 
     def print_results(self):
         """

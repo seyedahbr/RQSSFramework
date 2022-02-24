@@ -89,7 +89,7 @@ class WikibaseRefLiteralSyntaxChecker:
     def __repr__(self):
         if self.results == None:
             return 'Results are not computed'
-        return """num of properties, total literals, total regexes, total fails, total errors, total not exists regex, score
+        return """num of properties,total literals,total regexes,total fails,total errors,total not exists regex,score
 {0},{1},{2},{3},{4},{5},{6}""".format(len(self.results),
                                       sum([i.total for i in self.results]),
                                       sum([i.regexes for i in self.results]),

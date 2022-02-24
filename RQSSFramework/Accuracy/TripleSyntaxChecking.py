@@ -52,7 +52,7 @@ class WikibaseRefTripleSyntaxChecker:
     def __repr__(self):
         if self.result == None:
             return 'Results are not computed'
-        return """num of ref nodes, num of fails, score
+        return """num of ref nodes,num of fails,score
 {0},{1},{2}""".format(self.result.total, self.result.fails, self.score)
     
     def print_results(self):

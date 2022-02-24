@@ -14,7 +14,7 @@ class TLSExist(NamedTuple):
 
 class TLSChecker:
     _uris = []
-    results = None
+    results: List[TLSExist] = None
 
     def __init__(self, uris: Iterator[URIRef]):
         _tmp_uri = list(dict.fromkeys(uris))  # remove duplicated URIs
@@ -48,8 +48,8 @@ class TLSChecker:
     def __repr__(self):
         if self.results == None:
             return 'Results are not computed'
-        return """num of uris, TLS support
-{0},{1}""".format(len(self.results), self.score)
+        return """num of uris,num of TLS supports,score
+{0},{1},{2}""".format(len(self.results), sum([1 for i in self.results if i.support]), self.score)
 
     def print_results(self):
         """
