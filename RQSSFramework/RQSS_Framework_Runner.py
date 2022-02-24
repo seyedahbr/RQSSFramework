@@ -77,14 +77,15 @@ def write_results_to_CSV(results: List[NamedTuple], output_file: str) -> None:
         if isinstance(results, str):
             f.write(results)
             return
-        w = csv.writer(
-            f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        # write header from NamedTuple fields
-        w.writerow([field for field in results[0]._fields])
-        for result in results:
-            row = ['<None>' if result._asdict()[field] == None else result._asdict()[
-                field] for field in result._fields]
-            w.writerow(row)
+        if len(results) > 0:
+            w = csv.writer(
+                f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            # write header from NamedTuple fields
+            w.writerow([field for field in results[0]._fields])
+            for result in results:
+                row = ['<None>' if result._asdict()[field] == None else result._asdict()[
+                    field] for field in result._fields]
+                w.writerow(row)
     return
 
 
