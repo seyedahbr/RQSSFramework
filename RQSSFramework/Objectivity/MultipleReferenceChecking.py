@@ -33,6 +33,18 @@ class MultipleReferenceChecker:
         self.result = MultipleRefResult(len(self.statements), len(ret_val))
         return ret_val
 
+    @property
+    def score(self):
+        if self.result != None:
+            return self.result.ratio
+        return None
+
+    def __repr__(self):
+        if self.results == None:
+            return 'Results are not computed'
+        return """num of statements,num of multiple refed,score
+{0},{1},{2}""".format(self.result.total_statement, self.result.multiple_referenced, self.score)
+
     def print_results(self):
         """
         print self.result if it is already computed

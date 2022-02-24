@@ -82,7 +82,8 @@ def write_results_to_CSV(results: List[NamedTuple], output_file: str) -> None:
         # write header from NamedTuple fields
         w.writerow([field for field in results[0]._fields])
         for result in results:
-            row = ['<None>' if result._asdict()[field] == None else result._asdict()[field] for field in result._fields]
+            row = ['<None>' if result._asdict()[field] == None else result._asdict()[
+                field] for field in result._fields]
             w.writerow(row)
     return
 
@@ -91,8 +92,10 @@ def compute_dereferencing(opts: ArgumentParser) -> int:
     print('Started computing Metric: Dereference Possibility of the External URIs')
     input_data_file = os.path.join(
         opts.data_dir + os.sep + 'external_uris.data')
-    output_file_dist = os.path.join(opts.output_dir + os.sep + 'dereferencing.csv')
-    output_file_result = os.path.join(opts.output_dir + os.sep + 'dereferencing_ratio.csv')
+    output_file_dist = os.path.join(
+        opts.output_dir + os.sep + 'dereferencing.csv')
+    output_file_result = os.path.join(
+        opts.output_dir + os.sep + 'dereferencing_ratio.csv')
 
     # reading the extracted External URIs
     print('Reading data ...')
@@ -129,7 +132,8 @@ def compute_licensing(opts: ArgumentParser) -> int:
     input_data_file = os.path.join(
         opts.data_dir + os.sep + 'external_uris.data')
     output_file_dist = os.path.join(opts.output_dir + os.sep + 'licensing.csv')
-    output_file_result = os.path.join(opts.output_dir + os.sep + 'licensing_ratio.csv')
+    output_file_result = os.path.join(
+        opts.output_dir + os.sep + 'licensing_ratio.csv')
 
     # reading the extracted External URIs
     print('Reading data ...')
@@ -145,7 +149,7 @@ def compute_licensing(opts: ArgumentParser) -> int:
     # running the framework metric function
     print('Running metric ...')
     start_time = datetime.datetime.now()
-    lic_checker = LicenseChecker(uris) 
+    lic_checker = LicenseChecker(uris)
     results = lic_checker.check_license_existance()
     end_time = datetime.datetime.now()
 
@@ -165,7 +169,8 @@ def compute_security(opts: ArgumentParser) -> int:
     input_data_file = os.path.join(
         opts.data_dir + os.sep + 'external_uris.data')
     output_file_dist = os.path.join(opts.output_dir + os.sep + 'security.csv')
-    output_file_result = os.path.join(opts.output_dir + os.sep + 'security_ratio.csv')
+    output_file_result = os.path.join(
+        opts.output_dir + os.sep + 'security_ratio.csv')
 
     # reading the extracted External URIs
     print('Reading data ...')
@@ -261,7 +266,7 @@ def compute_ref_literal_syntax(opts: ArgumentParser) -> int:
     # running the framework metric function
     print('Running metric ...')
     start_time = datetime.datetime.now()
-    lit_checker =WikibaseRefLiteralSyntaxChecker(prop_values) 
+    lit_checker = WikibaseRefLiteralSyntaxChecker(prop_values)
     results = lit_checker.check_literals_regex()
     end_time = datetime.datetime.now()
 
@@ -333,8 +338,10 @@ def compute_ref_properties_consistency(opts: ArgumentParser) -> int:
     print('Started computing Metric: Consistency of references’ properties')
     input_data_file = os.path.join(
         opts.data_dir + os.sep + 'ref_properties.data')
-    output_file = os.path.join(
+    output_file_dist = os.path.join(
         opts.output_dir + os.sep + 'ref_properties_consistency.csv')
+    output_file_result = os.path.join(
+        opts.output_dir + os.sep + 'ref_properties_consistency_ratio.csv')
 
     # reading the extracted External URIs
     print('Reading data ...')
@@ -350,15 +357,16 @@ def compute_ref_properties_consistency(opts: ArgumentParser) -> int:
     # running the framework metric function
     print('Running metric ...')
     start_time = datetime.datetime.now()
-    results = RefPropertiesConsistencyChecker(
-        props).check_reference_specificity_from_Wikdiata()
+    cons_checker = RefPropertiesConsistencyChecker(props)
+    results = cons_checker.check_reference_specificity_from_Wikdiata()
     end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
-    write_results_to_CSV(results, output_file)
+    write_results_to_CSV(results, output_file_dist)
+    write_results_to_CSV(str(cons_checker), output_file_result)
 
-    print('Metric: Consistency of references’ properties results have been written in the file: {0}'.format(
-        output_file))
+    print('Metric: Consistency of references’ properties results have been written in the file: {0} and {1}'.format(
+        output_file_dist, output_file_result))
     print('DONE. Metric: Consistency of references’ properties, Duration: {0}'.format(
         end_time - start_time))
     return 0
@@ -368,8 +376,10 @@ def compute_range_consistency(opts: ArgumentParser) -> int:
     print('Started computing Metric: Range consistency of reference triples')
     input_data_file = os.path.join(
         opts.data_dir + os.sep + 'ref_properties_object_value.data')
-    output_file = os.path.join(
+    output_file_dist = os.path.join(
         opts.output_dir + os.sep + 'range_consistency.csv')
+    output_file_result = os.path.join(
+        opts.output_dir + os.sep + 'range_consistency_ratio.csv')
 
     # reading the properties/literals
     print('Reading data ...')
@@ -389,15 +399,16 @@ def compute_range_consistency(opts: ArgumentParser) -> int:
     # running the framework metric function
     print('Running metric ...')
     start_time = datetime.datetime.now()
-    results = TriplesRangeConsistencyChecker(
-        prop_values).check_all_value_ranges()
+    range_checker = TriplesRangeConsistencyChecker(prop_values)
+    results = range_checker.check_all_value_ranges()
     end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
-    write_results_to_CSV(results, output_file)
+    write_results_to_CSV(results, output_file_dist)
+    write_results_to_CSV(str(range_checker), output_file_result)
 
-    print('Metric: Range consistency of reference triples results have been written in the file: {0}'.format(
-        output_file))
+    print('Metric: Range consistency of reference triples results have been written in the file: {0} and {1}'.format(
+        output_file_dist, output_file_result))
     print('DONE. Metric: Range consistency of reference triples, Duration: {0}'.format(
         end_time - start_time))
     return 0
@@ -433,7 +444,7 @@ def compute_ref_sharing_ratio(opts: ArgumentParser) -> int:
 
     # saving the results for presentation layer
     write_results_to_CSV(shared_refs, output_file_dist)
-    write_results_to_CSV([checker.result], output_file_result)
+    write_results_to_CSV(str(checker), output_file_result)
 
     print('Metric: Ratio of reference sharing results have been written in the files: {0} and {1}'.format(
         output_file_dist, output_file_result))
@@ -446,8 +457,10 @@ def compute_dnsbl_reputation(opts: ArgumentParser) -> int:
     print('Started computing Metric: External sources’ domain reputation')
     input_data_file = os.path.join(
         opts.data_dir + os.sep + 'external_uris.data')
-    output_file = os.path.join(
+    output_file_dist = os.path.join(
         opts.output_dir + os.sep + 'dnsbl_reputation.csv')
+    output_file_result = os.path.join(
+        opts.output_dir + os.sep + 'dnsbl_reputation_ratio.csv')
 
     # reading the extracted External URIs
     print('Reading data ...')
@@ -463,14 +476,16 @@ def compute_dnsbl_reputation(opts: ArgumentParser) -> int:
     # running the framework metric function
     print('Running metric ...')
     start_time = datetime.datetime.now()
-    results = DNSBLBlacklistedChecker(uris).check_domain_blacklisted()
+    dnsbl_checker = DNSBLBlacklistedChecker(uris) 
+    results = dnsbl_checker.check_domain_blacklisted()
     end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
-    write_results_to_CSV(results, output_file)
+    write_results_to_CSV(results, output_file_dist)
+    write_results_to_CSV(str(dnsbl_checker), output_file_result)
 
-    print('Metric: External sources’ domain reputation results have been written in the file: {0}'.format(
-        output_file))
+    print('Metric: External sources’ domain reputation results have been written in the file: {0} and {1}'.format(
+        output_file_dist, output_file_result))
     print('DONE. Metric: External sources’ domain reputation, Duration: {0}'.format(
         end_time - start_time))
     return 0
@@ -501,12 +516,12 @@ def compute_multiple_referenced(opts: ArgumentParser) -> int:
     print('Running metric ...')
     start_time = datetime.datetime.now()
     checker = MultipleReferenceChecker(statements)
-    shared_refs = checker.count_seperate_multiple_referenced_statements()
+    multiples = checker.count_seperate_multiple_referenced_statements()
     end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
-    write_results_to_CSV(shared_refs, output_file_dist)
-    write_results_to_CSV([checker.result], output_file_result)
+    write_results_to_CSV(multiples, output_file_dist)
+    write_results_to_CSV(str(checker), output_file_result)
 
     print('Metric: Multiple references for facts results have been written in the files: {0} and {1}'.format(
         output_file_dist, output_file_result))
@@ -625,7 +640,8 @@ def compute_external_uris_freshness(opts: ArgumentParser) -> int:
     # running the framework metric function
     print('Running metric ...')
     start_time = datetime.datetime.now()
-    freshness_checker = ExternalURIsFreshnessChecker(uris,extract_google_cache=opts.extract_google_cache)
+    freshness_checker = ExternalURIsFreshnessChecker(
+        uris, extract_google_cache=opts.extract_google_cache)
     results = freshness_checker.check_external_uris_freshness()
     end_time = datetime.datetime.now()
 
@@ -638,6 +654,7 @@ def compute_external_uris_freshness(opts: ArgumentParser) -> int:
     print('DONE. Metric: Freshness of external sources, Duration: {0}'.format(
         end_time - start_time))
     return 0
+
 
 def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] = None) -> int:
     if isinstance(argv, str):

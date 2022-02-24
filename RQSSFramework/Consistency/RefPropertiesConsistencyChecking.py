@@ -39,6 +39,19 @@ class RefPropertiesConsistencyChecker:
                     self.results.append(PropConsistencyResult(prop, False))
         return self.results
 
+    @property
+    def score(self):
+        if self.results != None:
+            return sum([1 for i in self.results if i.is_ref_specific])/len(self.results)
+        return None
+
+    def __repr__(self):
+        if self.results == None:
+            return 'Results are not computed'
+        return """num of properties,num of refspecifics,score
+{0},{1},{2}""".format(len(self.results), sum([1 for i in self.results if i.is_ref_specific]),self.score)
+
+
     def print_results(self):
         """
         print self.result if it is already computed

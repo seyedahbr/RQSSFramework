@@ -85,5 +85,5 @@ class ReferenceFreshnessInItemChecker:
     def __repr__(self):
         if self.results == None:
             return 'Results are not computed'            
-        return """num of items, num of checked referenced facts, score
+        return """num of items,num of checked referenced facts,score
 {0},{1},{2}""".format(len(self.results),self.num_checked_facts,self.score)

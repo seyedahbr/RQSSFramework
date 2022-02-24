@@ -7,12 +7,12 @@ from lxml import html
 
 class HumanAddedResult(NamedTuple):
     item: str
-    # numbers that historical info was found for them
     total: int
     human_added: int
+    not_found: int      # numbers that historical info was found for them
 
     def __repr__(self):
-        return "Number of references in item {0}: {1}; human_added references:{2}; score: {3}".format(self.item, self.total, self.human_added, self.score)
+        return "Number of references in item {0}: {1}; human_added references:{2}; Not found facts: {3};score: {4}".format(self.item, self.total, self.human_added, self.not_found, self.score)
 
     @property
     def score(self):
@@ -34,8 +34,8 @@ class HumanReferenceInItemChecker:
         xpath_added = '//*[@id="pagehistory"]/li[./span/span/span/text()="Added reference to claim: " and ./span/a/span/span/text()="({0})"]/span[@class="history-user"]/a/bdi/text() | //*[@id="pagehistory"]/li[./span/span/span/text()="Added reference to claim: " and ./span/a/span/span/text()="({1})"]/a[contains(@class,\'mw-changeslist-date\')]/text()'
         xpath_changed = '//*[@id="pagehistory"]/li[./span/span/span/text()="Changed reference of claim: " and ./span/a/span/span/text()="({0})"]/span[@class="history-user"]/a/bdi/text() | //*[@id="pagehistory"]/li[./span/span/span/text()="Changed reference of claim: " and ./span/a/span/span/text()="({1})"]/a[contains(@class,\'mw-changeslist-date\')]/text()'
         for item in self._item_refed_facts.keys():
-            num_not_found = 0
             print('getting history of item: {0}'.format(str(item)))
+            num_not_found = 0
             num_human_added = 0
             history_page = requests.get(
                 wikidata_item_history_url.format(str(item)))
@@ -61,9 +61,8 @@ class HumanReferenceInItemChecker:
                     print(
                         '\t fact {0} : latest edited by a human account'.format(prop))
                     num_human_added += 1
-            if num_human_added:
-                self.results.append(HumanAddedResult(str(item), len(
-                    self._item_refed_facts[str(item)])-num_not_found, num_human_added))
+            self.results.append(HumanAddedResult(str(item), len(
+                self._item_refed_facts[str(item)]), num_human_added, num_not_found))
         return self.results
 
     def remove_upper_than_base_time_sort(self, tuples: List[Tuple[datetime.datetime, str]]) -> List[Tuple[datetime.datetime, str]]:
@@ -82,6 +81,22 @@ class HumanReferenceInItemChecker:
                     ret_val.append((pair_date_datetime, pair[0]))
         return sorted(ret_val, key=lambda a: a[0], reverse=True)
 
+    @property
+    def score(self):
+        total_found = sum([x.total - x.not_found for x in self.results])
+        total_human_added = sum([x.human_added for x in self.results])
+        return total_human_added/total_found if total_found > 0 else 1
+
+    def __repr__(self):
+        if self.results == None:
+            return 'Results are not computed'
+        return """num of items,num of referenced facts,num of human-added refed facts,num of not found facts,score
+{0},{1},{2},{3},{4}""".format(len(self.results),
+sum([x.total for x in self.results]),
+sum([x.human_added for x in self.results]),
+sum([x.not_found for x in self.results]),
+self.score)
+
     def print_results(self):
         """
         print self.result if it is already computed
@@ -91,13 +106,3 @@ class HumanReferenceInItemChecker:
             return
         for result in self.results:
             print(result)
-
-    @property
-    def score(self):
-        return sum([x.score for x in self.results])/len(self.results)
-
-    def __repr__(self):
-        if self.results == None:
-            return 'Results are not computed'
-        return """num of items, num of referenced facts, score
-{0},{1},{2}""".format(len(self.results), sum([x.total for x in self.results]), self.score)

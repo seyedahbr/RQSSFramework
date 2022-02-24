@@ -119,7 +119,7 @@ class ExternalURIsFreshnessChecker:
     def __repr__(self):
         if self.results == None:
             return 'Results are not computed'
-        return """num of uris, last modif score, google cache score, num of uris with last modif, num of uris with google cache
+        return """num of uris,last modif score,google cache score,num of uris with last modif,num of uris with google cache
 {0},{1},{2},{3},{4}""".format(len(self.results), self.last_modif_score, self.google_cache_score, self.num_last_modif_tag, self.num_google_cache)
 
     def print_results(self):
