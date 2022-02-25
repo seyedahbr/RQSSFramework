@@ -66,7 +66,7 @@ class ReferenceFreshnessInItemChecker:
                 self.total_freshness += prop_total_freshness
             
             self.results.append(ReferenceFreshnessResult(str(item),prop_ctr,prop_total_freshness/prop_ctr if prop_ctr > 0 else 1.0,not_found_facts))
-        return self.results, self.num_checked_facts, self.total_freshness/self.num_checked_facts
+        return self.results, self.num_checked_facts, self.total_freshness/self.num_checked_facts if self.num_checked_facts > 0 else 1.0
 
     def remove_upper_than_base_time(self, times: List[datetime.datetime]) -> List[datetime.datetime]:
         return [i for i in times if i <= self._upper_time_limit]
