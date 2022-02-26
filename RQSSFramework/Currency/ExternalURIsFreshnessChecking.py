@@ -38,8 +38,10 @@ class ExternalURIsFreshnessChecker:
         for uri in self._uris:
             last_modif_freshness = None
             google_cache_freshness = None
-
-            last_modif_time = self.get_last_modified_tag(uri)
+            try:
+                last_modif_time = self.get_last_modified_tag(uri)
+            except:
+                last_modif_time = None
             if last_modif_time != None:
                 last_modif_freshness = (
                     t_now - last_modif_time).total_seconds()/t_base
