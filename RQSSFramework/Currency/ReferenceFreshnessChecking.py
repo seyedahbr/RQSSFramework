@@ -39,7 +39,12 @@ class ReferenceFreshnessInItemChecker:
         for item in self._item_refed_facts.keys():
             not_found_facts = 0
             print('getting history of item: {0}'.format(str(item)))
-            page = requests.get('https://www.wikidata.org/w/index.php?title={}&offset=&limit=5000&action=history'.format(str(item)))
+            try:
+                page = requests.get('https://www.wikidata.org/w/index.php?title={}&offset=&limit=5000&action=history'.format(str(item)))
+            except:
+                print('FAILED: getting history of item: {0}'.format(str(item)))
+                self.results.append(ReferenceFreshnessResult(str(item),prop_ctr,1.0,len(self._item_refed_facts[str(item)])))
+                continue
             tree = html.fromstring(page.content)
             prop_ctr = 0
             prop_total_freshness = 0

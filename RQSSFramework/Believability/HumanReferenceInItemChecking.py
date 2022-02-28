@@ -38,8 +38,13 @@ class HumanReferenceInItemChecker:
             print('getting history of item: {0}'.format(str(item)))
             num_not_found = 0
             num_human_added = 0
-            history_page = requests.get(
-                wikidata_item_history_url.format(str(item)))
+            try:
+                history_page = requests.get(
+                    wikidata_item_history_url.format(str(item)))
+            except:
+                print('FAILED: getting history of item: {0}'.format(str(item)))
+                self.results.append(HumanAddedResult(str(item), len(self._item_refed_facts[str(item)]), 0, 0))
+                continue
             tree = html.fromstring(history_page.content)
             for prop in self._item_refed_facts[str(item)]:
                 # we get both added and edited times, combine them,
