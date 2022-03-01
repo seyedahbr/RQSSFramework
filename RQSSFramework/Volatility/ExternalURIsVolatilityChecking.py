@@ -1,10 +1,8 @@
-import datetime
 from typing import Iterator, List, NamedTuple
 
-import requests
-from usp.tree import sitemap_tree_for_homepage
-from usp.objects.page import SitemapPageChangeFrequency 
 from rdflib import URIRef
+from usp.objects.page import SitemapPageChangeFrequency
+from usp.tree import sitemap_tree_for_homepage
 
 
 class VolatilityOfURI(NamedTuple):
@@ -31,22 +29,28 @@ class ExternalURIsVolatilityChecker:
             for page in tree.all_pages():
                 if str(uri) in str(page):
                     not_found = False
-                    self.results.append(VolatilityOfURI(uri,self.get_volatility_from_change_freq(page.change_frequency) if page.change_frequency != None else None))
+                    self.results.append(VolatilityOfURI(uri, self.get_volatility_from_change_freq(
+                        page.change_frequency) if page.change_frequency != None else None))
                     break
             if not_found:
                 self.results.append(VolatilityOfURI(uri, None))
-
 
         return self.results
 
     def get_volatility_from_change_freq(self, change_freq: SitemapPageChangeFrequency) -> float:
         print('** A change_freq value is found **')
-        if change_freq.has_value('always'): return 1.0
-        if change_freq.has_value('hourly'): return 0.9
-        if change_freq.has_value('daily'): return 0.8
-        if change_freq.has_value('weekly'): return  0.6
-        if change_freq.has_value('monthly'): return 0.4
-        if change_freq.has_value('yearly'): return 0.1
+        if change_freq.has_value('always'):
+            return 1.0
+        if change_freq.has_value('hourly'):
+            return 0.9
+        if change_freq.has_value('daily'):
+            return 0.8
+        if change_freq.has_value('weekly'):
+            return 0.6
+        if change_freq.has_value('monthly'):
+            return 0.4
+        if change_freq.has_value('yearly'):
+            return 0.1
         return 0
 
     @property
@@ -61,7 +65,7 @@ class ExternalURIsVolatilityChecker:
         if self.results == None:
             return 'Results are not computed'
         return """num of uris,volatility score,not found
-{0},{1},{2}""".format(len(self.results), self.score,len([i.volatility for i in self.results if i.volatility == None]))
+{0},{1},{2}""".format(len(self.results), self.score, len([i.volatility for i in self.results if i.volatility == None]))
 
     def print_results(self):
         """
