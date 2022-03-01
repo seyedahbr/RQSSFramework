@@ -9,13 +9,15 @@ from RQSSFramework.Volatility.ExternalURIsVolatilityChecking import *
 class TestExternalURIsFreshness(unittest.TestCase):
 
     def setUp(self):
-        self.test_data = [URIRef('https://understandingdata.com/')]
-        # self.test_data = [URIRef("https://web.archive.org/web/20130910154049/www.navsource.org/archives/09/08/0801.htm"),
-        #                   URIRef(
-        #                       "https://www.vesseltracking.net/ship/mexico-star-9138800"),
-        #                   URIRef("https://uboat.net/boats/u558.htm"),
-        #                   URIRef("https://uboat.net/boats/u136.htm"),
-        #                   URIRef("https://www.carnival.com/cruise-ships/carnival-dream.aspx")]
+        #self.test_data = [URIRef('https://understandingdata.com/')]
+        self.test_data = [URIRef("https://web.archive.org/web/20130910154049/www.navsource.org/archives/09/08/0801.htm"),
+                          URIRef(
+                              "https://www.vesseltracking.net/ship/mexico-star-9138800"),
+                          URIRef("https://uboat.net/boats/u558.htm"),
+                          URIRef("https://uboat.net/boats/u136.htm"),
+                          URIRef(
+                              "https://www.carnival.com/cruise-ships/carnival-dream.aspx"),
+                          URIRef('https://understandingdata.com/')]
 
     def test_check_external_uris_freshness(self):
         test_class = ExternalURIsVolatilityChecker(self.test_data)
