@@ -36,6 +36,6 @@ class TestExternalURIsFreshness(unittest.TestCase):
             # write header from NamedTuple fields
             w.writerow([field for field in test_class.results[0]._fields])
             for result in test_class.results:
-                row = [result._NONE if result._asdict()[field] == None else result._asdict()[
+                row = ['<None>' if result._asdict()[field] == None else result._asdict()[
                     field] for field in result._fields]
                 w.writerow(row)

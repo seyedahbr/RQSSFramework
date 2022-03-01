@@ -14,14 +14,13 @@ class FreshnessOfURI(NamedTuple):
     uri: URIRef
     freshness_last_modif: float = None
     freshness_google_cache: float = None
-    _NONE = '<None>'
 
     def __repr__(self):
         return "URI:{0:40}, freshness from lastModified tag:{1}; freshness from Google Cache:{2}".format(self.uri, self.freshness_last_modif, self.freshness_google_cache)
 
 
 class ExternalURIsFreshnessChecker:
-    _uris = []
+    _uris: List[URIRef] = []
     _base_time: datetime.datetime
     _extract_google_cache: bool
     results: List[FreshnessOfURI] = None
@@ -104,7 +103,7 @@ class ExternalURIsFreshnessChecker:
 
     @property
     def num_last_modif_tag(self):
-        if self.results != None:        
+        if self.results != None:
             scored_list = [
                 i.freshness_last_modif for i in self.results if i.freshness_last_modif != None]
             return len(scored_list) if len(scored_list) > 0 else '<None>'

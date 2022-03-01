@@ -8,14 +8,13 @@ from usp.tree import sitemap_tree_for_homepage
 class VolatilityOfURI(NamedTuple):
     uri: URIRef
     volatility: float = None
-    _NONE = '<None>'
 
     def __repr__(self):
         return "URI:{0:40}, voltility:{1}".format(self.uri, self.volatility)
 
 
 class ExternalURIsVolatilityChecker:
-    _uris = []
+    _uris: List[URIRef] = []
     results: List[VolatilityOfURI] = None
 
     def __init__(self, uris: Iterator[URIRef]):
