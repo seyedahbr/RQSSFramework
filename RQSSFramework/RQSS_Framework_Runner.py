@@ -25,6 +25,8 @@ from Objectivity.MultipleReferenceChecking import *
 from Queries import RQSS_QUERIES
 from Reputation.DNSBLBlacklistedChecking import DNSBLBlacklistedChecker
 from Security.TLSExistanceChecking import TLSChecker
+from Volatility.ExternalURIsVolatilityChecking import \
+    ExternalURIsVolatilityChecker
 
 
 def genargs(prog: Optional[str] = None) -> ArgumentParser:
@@ -69,6 +71,8 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
         title='options for computing freshness of external sources')
     freshness_group.add_argument(
         "--extract-google-cache", help="Set to extract google cache info for freshness of external sources", action='store_true')
+    parser.add_argument("-ev", "--ext-uris-volatility",
+                        help="Compute the metric: Volatility of external sources", action='store_true')
     return parser
 
 
@@ -77,7 +81,7 @@ def write_results_to_CSV(results: List[NamedTuple], output_file: str) -> None:
         if isinstance(results, str):
             f.write(results)
             return
-        
+
         w = csv.writer(
             f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         # write header from NamedTuple fields
@@ -486,12 +490,12 @@ def compute_dnsbl_reputation(opts: ArgumentParser) -> int:
     # running the framework metric function
     print('Running metric ...')
     start_time = datetime.datetime.now()
-    dnsbl_checker = DNSBLBlacklistedChecker(uris) 
+    dnsbl_checker = DNSBLBlacklistedChecker(uris)
     results = dnsbl_checker.check_domain_blacklisted()
     end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
-    if len(results)>0:
+    if len(results) > 0:
         write_results_to_CSV(results, output_file_dist)
         write_results_to_CSV(str(dnsbl_checker), output_file_result)
 
@@ -671,6 +675,46 @@ def compute_external_uris_freshness(opts: ArgumentParser) -> int:
     return 0
 
 
+def compute_external_uris_volatility(opts: ArgumentParser) -> int:
+    print('Started computing Metric: Volatility of external sources')
+    input_data_file = os.path.join(
+        opts.data_dir + os.sep + 'external_uris.data')
+    output_file_dist = os.path.join(
+        opts.output_dir + os.sep + 'external_uris_volatility.csv')
+    output_file_result = os.path.join(
+        opts.output_dir + os.sep + 'external_uris_volatility_ratio.csv')
+
+    # reading the extracted External URIs
+    print('Reading data ...')
+    uris = []
+    try:
+        with open(input_data_file, encoding="utf8") as file:
+            for line in file:
+                uris.append(line.rstrip())
+    except FileNotFoundError:
+        print("Error: Input data file not found. Provide data file with name: {0} in data_dir".format(
+            '"external_uris.data"'))
+        exit(1)
+
+    # running the framework metric function
+    print('Running metric ...')
+    start_time = datetime.datetime.now()
+    volatility_checker = ExternalURIsVolatilityChecker(uris)
+    results = volatility_checker.check_external_uris_volatility()
+    end_time = datetime.datetime.now()
+
+    # saving the results for presentation layer
+    if len(results) > 0:
+        write_results_to_CSV(volatility_checker.results, output_file_dist)
+        write_results_to_CSV(str(volatility_checker), output_file_result)
+
+    print('Metric: volatility of external sources results have been written in the file: {0} and {1}'.format(
+        output_file_dist, output_file_result))
+    print('DONE. Metric: Volatility of external sources, Duration: {0}'.format(
+        end_time - start_time))
+    return 0
+
+
 def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] = None) -> int:
     if isinstance(argv, str):
         argv = argv.split()
@@ -732,6 +776,9 @@ def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Op
         framework_procs.append(p)
     if opts.ext_uris_freshness:
         p = Process(target=compute_external_uris_freshness(opts))
+        framework_procs.append(p)
+    if opts.ext_uris_volatility:
+        p = Process(target=compute_external_uris_volatility(opts))
         framework_procs.append(p)
 
     for proc in framework_procs:
