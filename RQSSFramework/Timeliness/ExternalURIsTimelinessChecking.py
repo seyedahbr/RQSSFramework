@@ -1,9 +1,10 @@
 from typing import Iterator, List, NamedTuple
 
+from Currency.ExternalURIsFreshnessChecking import FreshnessOfURI
 from rdflib import URIRef
 from usp.objects.page import SitemapPageChangeFrequency
-from RQSSFramework.Currency.ExternalURIsFreshnessChecking import FreshnessOfURI
-from RQSSFramework.Volatility.ExternalURIsVolatilityChecking import VolatilityOfURI
+from Volatility.ExternalURIsVolatilityChecking import VolatilityOfURI
+
 
 class TimelinessOfURI(NamedTuple):
     uri: URIRef
@@ -14,8 +15,8 @@ class TimelinessOfURI(NamedTuple):
 
 
 class ExternalURIsTimelinessChecker:
-    _freshnesses:List[FreshnessOfURI] = []
-    _volatilities:List[VolatilityOfURI] = []
+    _freshnesses: List[FreshnessOfURI] = []
+    _volatilities: List[VolatilityOfURI] = []
     results: List[TimelinessOfURI] = None
 
     def __init__(self, freshness_list: Iterator[FreshnessOfURI], volatility_list: Iterator[VolatilityOfURI]):
@@ -34,7 +35,8 @@ class ExternalURIsTimelinessChecker:
                     if uv.volatility == None:
                         self.results.append(TimelinessOfURI(uf.uri, None))
                         break
-                    self.results.append(TimelinessOfURI(uf.uri, uf.freshness_last_modif/uv.volatility if uv.volatility > 0 and uv.volatility > uf.freshness_last_modif else 1.0))
+                    self.results.append(TimelinessOfURI(
+                        uf.uri, uf.freshness_last_modif/uv.volatility if uv.volatility > 0 and uv.volatility > uf.freshness_last_modif else 1.0))
         return self.results
 
     def get_volatility_from_change_freq(self, change_freq: SitemapPageChangeFrequency) -> float:
