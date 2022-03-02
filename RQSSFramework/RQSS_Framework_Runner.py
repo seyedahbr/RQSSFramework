@@ -25,8 +25,8 @@ from Objectivity.MultipleReferenceChecking import *
 from Queries import RQSS_QUERIES
 from Reputation.DNSBLBlacklistedChecking import DNSBLBlacklistedChecker
 from Security.TLSExistanceChecking import TLSChecker
-from Volatility.ExternalURIsVolatilityChecking import \
-    ExternalURIsVolatilityChecker
+from Timeliness.ExternalURIsTimelinessChecking import *
+from Volatility.ExternalURIsVolatilityChecking import *
 
 
 def genargs(prog: Optional[str] = None) -> ArgumentParser:
@@ -38,7 +38,7 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
     parser.add_argument(
         "--upper-date", help="The upper date (Format DD-MM-YYYY) limit for reivision history checker metrics. The deafult is now()", required=False, type=lambda d: datetime.datetime.strptime(d, "%d-%m-%Y"), default=datetime.datetime.now())
     parser.add_argument(
-        "-o", "--output_dir", help="Output destination directory to store computed metrics details", default=os.getcwd()+os.sep+'rqss_framework_output')
+        "-o", "--output-dir", help="Output destination directory to store computed metrics details", default=os.getcwd()+os.sep+'rqss_framework_output')
     parser.add_argument("-dp", "--dereferencing",
                         help="Compute the metric: Dereference Possibility of the External URIs", action='store_true')
     parser.add_argument("-l", "--licensing",
@@ -73,6 +73,8 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
         "--extract-google-cache", help="Set to extract google cache info for freshness of external sources", action='store_true')
     parser.add_argument("-ev", "--ext-uris-volatility",
                         help="Compute the metric: Volatility of external sources", action='store_true')
+    parser.add_argument("-et", "--ext-uris-timeliness",
+                        help="Compute the metric: Timeliness of external sources. The metric will use the results of the metrics Freshness of external sources and Volatility of external sources. Make sure the results of the two metric is in the --output-dir argument", action='store_true')
     return parser
 
 
@@ -708,9 +710,68 @@ def compute_external_uris_volatility(opts: ArgumentParser) -> int:
         write_results_to_CSV(volatility_checker.results, output_file_dist)
         write_results_to_CSV(str(volatility_checker), output_file_result)
 
-    print('Metric: volatility of external sources results have been written in the file: {0} and {1}'.format(
+    print('Metric: Volatility of external sources results have been written in the file: {0} and {1}'.format(
         output_file_dist, output_file_result))
     print('DONE. Metric: Volatility of external sources, Duration: {0}'.format(
+        end_time - start_time))
+    return 0
+
+
+def compute_external_uris_timeliness(opts: ArgumentParser) -> int:
+    print('Started computing Metric: Timeliness of external sources')
+    input_data_file_freshness = os.path.join(
+        opts.output_dir + os.sep + 'external_uris_freshness.csv')
+    input_data_file_volatility = os.path.join(
+        opts.output_dir + os.sep + 'external_uris_volatility.csv')
+    output_file_dist = os.path.join(
+        opts.output_dir + os.sep + 'external_uris_timeliness.csv')
+    output_file_result = os.path.join(
+        opts.output_dir + os.sep + 'external_uris_timeliness_ratio.csv')
+
+    # reading the freshness input data
+    print('Reading data ...')
+    freshnesses = []
+    volatilities = []
+    try:
+        with open(input_data_file_freshness, encoding="utf8") as file:
+            reader = csv.reader(file)
+            next(reader, None)  # skip the headers
+            for row in reader:
+                freshnesses.append(FreshnessOfURI(URIRef(str(row[0])), freshness_last_modif=float(
+                    row[1]) if row[1] != '<None>' else None))
+    except FileNotFoundError:
+        print("Error: Input data file of freshness scores not found. Provide data file with name: {0} in --output-dir".format(
+            '"external_uris_freshness.csv"'))
+        exit(1)
+    # reading the volatility input data
+    try:
+        with open(input_data_file_volatility, encoding="utf8") as file:
+            reader = csv.reader(file)
+            next(reader, None)  # skip the headers
+            for row in reader:
+                volatilities.append(VolatilityOfURI(
+                    URIRef(str(row[0])), float(row[1]) if row[1] != '<None>' else None))
+    except FileNotFoundError:
+        print("Error: Input data file of volatility scores not found. Provide data file with name: {0} in --output-dir".format(
+            '"external_uris_volatility.csv"'))
+        exit(1)
+
+    # running the framework metric function
+    print('Running metric ...')
+    start_time = datetime.datetime.now()
+    timeliness_checker = ExternalURIsTimelinessChecker(
+        freshnesses, volatilities)
+    results = timeliness_checker.check_external_uris_timeliness()
+    end_time = datetime.datetime.now()
+
+    # saving the results for presentation layer
+    if len(results) > 0:
+        write_results_to_CSV(timeliness_checker.results, output_file_dist)
+        write_results_to_CSV(str(timeliness_checker), output_file_result)
+
+    print('Metric: Timeliness of external sources results have been written in the file: {0} and {1}'.format(
+        output_file_dist, output_file_result))
+    print('DONE. Metric: Timeliness of external sources, Duration: {0}'.format(
         end_time - start_time))
     return 0
 
@@ -779,6 +840,9 @@ def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Op
         framework_procs.append(p)
     if opts.ext_uris_volatility:
         p = Process(target=compute_external_uris_volatility(opts))
+        framework_procs.append(p)
+    if opts.ext_uris_timeliness:
+        p = Process(target=compute_external_uris_timeliness(opts))
         framework_procs.append(p)
 
     for proc in framework_procs:
