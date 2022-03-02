@@ -42,7 +42,8 @@ def box_whisker_plot(data, x_row: str, y_col: str, output: str, x_col: str = Non
         means = data.groupby('variable', as_index=False)['value'].mean()
         ctr = 0
         for col in box_plot.get_xticklabels():
-            mean = float(means.loc[means['variable'] == col.get_text(), 'value'].iloc[0])
+            mean = float(means.loc[means['variable'] ==
+                                   col.get_text(), 'value'].iloc[0])
             box_plot.text(box_plot.get_xticks()[ctr], mean, 'Avg: {0}'.format(round(mean, 2)),
                           horizontalalignment='center', size='x-small', color='black', weight='semibold')
             ctr += 1
@@ -172,6 +173,7 @@ def plot_range_consistency(opts: ArgumentParser) -> int:
         output_file))
     return 0
 
+
 def plot_ref_sharing_conciseness(opts: ArgumentParser) -> int:
     input_data_file = os.path.join(
         opts.result_dir + os.sep + 'ref_sharing.csv')
@@ -186,21 +188,24 @@ def plot_ref_sharing_conciseness(opts: ArgumentParser) -> int:
         output_file))
     return 0
 
+
 def plot_dnsbl_reputation(opts: ArgumentParser) -> int:
     input_data_file = os.path.join(
         opts.result_dir + os.sep + 'dnsbl_reputation.csv')
-    output_file = os.path.join(opts.output_dir + os.sep + 'dnsbl_reputation.png')
+    output_file = os.path.join(
+        opts.output_dir + os.sep + 'dnsbl_reputation.png')
 
     csv_data = pd.read_csv(input_data_file, index_col=None, header=0)
     csv_data[str(BlacklistedOfDom._fields[1])] = (
-        csv_data[str(BlacklistedOfDom._fields[1])] == False).astype(int) # consider False as good result
-                                                                         # note: False means the domain is not blacklisted 
+        csv_data[str(BlacklistedOfDom._fields[1])] == False).astype(int)  # consider False as good result
+    # note: False means the domain is not blacklisted
     box_whisker_plot(csv_data, 'DNS Reputation', str(
         BlacklistedOfDom._fields[1]), output_file)
 
     print('Metric: External sources’ domain reputation chart(s) have been plotted in the file: {0}'.format(
         output_file))
     return 0
+
 
 def plot_multiple_reference_objectivity(opts: ArgumentParser) -> int:
     input_data_file = os.path.join(
@@ -215,6 +220,7 @@ def plot_multiple_reference_objectivity(opts: ArgumentParser) -> int:
     print('Metric: Multiple references for facts chart(s) have been plotted in the file: {0}'.format(
         output_file))
     return 0
+
 
 def plot_human_added_references_believbility(opts: ArgumentParser) -> int:
     input_data_file = os.path.join(
@@ -232,6 +238,7 @@ def plot_human_added_references_believbility(opts: ArgumentParser) -> int:
         output_file))
     return 0
 
+
 def plot_fact_referencing_freshness_currency(opts: ArgumentParser) -> int:
     input_data_file = os.path.join(
         opts.result_dir + os.sep + 'fact_freshness.csv')
@@ -248,6 +255,7 @@ def plot_fact_referencing_freshness_currency(opts: ArgumentParser) -> int:
         output_file))
     return 0
 
+
 def plot_external_uris_freshness_currency(opts: ArgumentParser) -> int:
     input_data_file = os.path.join(
         opts.result_dir + os.sep + 'external_uris_freshness.csv')
@@ -259,11 +267,11 @@ def plot_external_uris_freshness_currency(opts: ArgumentParser) -> int:
     csv_data = pd.read_csv(input_data_file, index_col=None, header=0)
     csv_data.replace('<None>', np.nan, inplace=True)
     box_plot = sns.boxplot(palette=["#3498db", "#2ecc71"],
-            data=csv_data,showmeans=True,showfliers=False,
-            meanprops={"marker":"^",
-            "markerfacecolor":"black", 
-            "markeredgecolor":"black",
-            "markersize":"5"},medianprops={'color':'red'},flierprops={"marker":"o", "markersize":"5"})
+                           data=csv_data, showmeans=True, showfliers=False,
+                           meanprops={"marker": "^",
+                                      "markerfacecolor": "black",
+                                      "markeredgecolor": "black",
+                                      "markersize": "5"}, medianprops={'color': 'red'}, flierprops={"marker": "o", "markersize": "5"})
     box_plot.set_xlabel('Freshness of External URIs')
     box_plot.set_ylabel('Freshness')
     sns.despine(trim=True)
@@ -272,6 +280,7 @@ def plot_external_uris_freshness_currency(opts: ArgumentParser) -> int:
     print('Metric: Freshness of external sources chart(s) have been plotted in the file: {0}'.format(
         output_file))
     return 0
+
 
 def plot_external_uris_volatility(opts: ArgumentParser) -> int:
     input_data_file = os.path.join(
@@ -284,11 +293,11 @@ def plot_external_uris_volatility(opts: ArgumentParser) -> int:
     csv_data = pd.read_csv(input_data_file, index_col=None, header=0)
     csv_data.replace('<None>', np.nan, inplace=True)
     box_plot = sns.boxplot(palette=["#3498db", "#2ecc71"],
-            data=csv_data,showmeans=True,showfliers=False,
-            meanprops={"marker":"^",
-            "markerfacecolor":"black", 
-            "markeredgecolor":"black",
-            "markersize":"5"},medianprops={'color':'red'},flierprops={"marker":"o", "markersize":"5"})
+                           data=csv_data, showmeans=True, showfliers=False,
+                           meanprops={"marker": "^",
+                                      "markerfacecolor": "black",
+                                      "markeredgecolor": "black",
+                                      "markersize": "5"}, medianprops={'color': 'red'}, flierprops={"marker": "o", "markersize": "5"})
     box_plot.set_xlabel('Volatility of External URIs')
     box_plot.set_ylabel('Volatility')
     sns.despine(trim=True)
@@ -297,6 +306,33 @@ def plot_external_uris_volatility(opts: ArgumentParser) -> int:
     print('Metric: Volatility of external sources chart(s) have been plotted in the file: {0}'.format(
         output_file))
     return 0
+
+
+def plot_external_uris_timeliness(opts: ArgumentParser) -> int:
+    input_data_file = os.path.join(
+        opts.result_dir + os.sep + 'external_uris_timeliness.csv')
+    output_file = os.path.join(
+        opts.output_dir + os.sep + 'external_uris_timeliness.png')
+
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    csv_data = pd.read_csv(input_data_file, index_col=None, header=0)
+    csv_data.replace('<None>', np.nan, inplace=True)
+    box_plot = sns.boxplot(palette=["#3498db", "#2ecc71"],
+                           data=csv_data, showmeans=True, showfliers=False,
+                           meanprops={"marker": "^",
+                                      "markerfacecolor": "black",
+                                      "markeredgecolor": "black",
+                                      "markersize": "5"}, medianprops={'color': 'red'}, flierprops={"marker": "o", "markersize": "5"})
+    box_plot.set_xlabel('Timeliness of External URIs')
+    box_plot.set_ylabel('Timeliness')
+    sns.despine(trim=True)
+    plt.savefig(output_file, format='png')
+    plt.close()
+    print('Metric: Timeliness of external sources chart(s) have been plotted in the file: {0}'.format(
+        output_file))
+    return 0
+
 
 def RQSS_Plot(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] = None) -> int:
     if isinstance(argv, str):
@@ -358,6 +394,9 @@ def RQSS_Plot(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] 
         framework_procs.append(p)
     if Path(opts.result_dir + os.sep + 'external_uris_volatility.csv').is_file():
         p = Process(target=plot_external_uris_volatility(opts))
+        framework_procs.append(p)
+    if Path(opts.result_dir + os.sep + 'external_uris_timeliness.csv').is_file():
+        p = Process(target=plot_external_uris_timeliness(opts))
         framework_procs.append(p)
 
     for proc in framework_procs:
