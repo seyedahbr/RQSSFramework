@@ -1,12 +1,14 @@
-from multiprocessing.context import Process
+import csv
 import os
 import sys
-import csv
 from argparse import ArgumentParser
 from datetime import datetime
+from multiprocessing.context import Process
 from pathlib import Path
 from typing import List, Optional, Union
 
+import requests
+from lxml import html
 from SPARQLWrapper import JSON, SPARQLWrapper
 
 from Queries import RQSS_QUERIES
@@ -40,7 +42,8 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
                         help="Extract all sattement nodes and the numebr of their references and save them on output dir. Collects data for computing Metric: Multiple references for facts", action='store_true')
     parser.add_argument("-irf", "--item-refed-facts",
                         help="Extract all items and their referenced facts and save them on output dir. Collects data for computing Metric: Human-added references ratio", action='store_true')
-    
+    parser.add_argument("-wes", "--wikidata-eschema-data",
+                        help="Extract most up-to-date Wikidata EntitySchemas data from Wikidata directory and save them on output dir. Collects data for computing COMPLETENESS metrics", action='store_true')
     return parser
 
 
@@ -216,6 +219,7 @@ def extract_reference_node_incomings(opts: ArgumentParser) -> int:
         end_time - start_time))
     return 0
 
+
 def extract_statement_node_references(opts: ArgumentParser) -> int:
     print('Started extracting statement nodes and the numebr of their references')
     start_time = datetime.now()
@@ -237,6 +241,7 @@ def extract_statement_node_references(opts: ArgumentParser) -> int:
         end_time - start_time))
     return 0
 
+
 def extract_item_referenced_facts(opts: ArgumentParser) -> int:
     print('Started extracting items and their referenced facts')
     start_time = datetime.now()
@@ -257,6 +262,43 @@ def extract_item_referenced_facts(opts: ArgumentParser) -> int:
     print('DONE. Extracting items and their referenced facts, Duration: {0}'.format(
         end_time - start_time))
     return 0
+
+
+def extract_wikidata_entityschemas_data(opts: ArgumentParser) -> int:
+    output_file = os.path.join(
+        opts.output_dir + os.sep + 'eschemas_references.data')
+    schema_dir = 'https://www.wikidata.org/wiki/Wikidata:Database_reports/EntitySchema_directory'
+    xpath_query = '/html/body/div[3]/div[3]/div[5]/div[1]/table[contains(@class,"wikitable")]'
+    print('Getting EntitySchemas directory page data from: ', schema_dir)
+    page = requests.get(schema_dir)
+    tree = html.fromstring(page.content)
+    tables = tree.xpath(xpath_query)
+    tables_info = []
+    print('Parsing data')
+    for table in tables:
+        rows = table.xpath('./tbody/tr')
+        for row in rows:
+            cols = row.xpath('./td')
+            if len(cols) != 5:
+                continue
+            e_id = cols[0].xpath('./text()')[0]
+            e_id = e_id[e_id.find("(")+1:e_id.find(")")]
+            q_ids = cols[3].xpath('./text()')
+            for index, item in enumerate(q_ids):
+                q_ids[index] = item[item.find("(")+1:item.find(")")]
+            classes = ';'.join([i for i in q_ids if i[0] == 'Q'])
+            properties = ';'.join([i for i in q_ids if i[0] == 'P'])
+            tables_info.append(
+                {'eid': e_id, 'corresponding classes': classes, 'corresponding properties': properties})
+    print('Writing data')
+    
+    with open(output_file, 'w', newline='') as fle_handler:
+        tables_fields = ['eid','corresponding classes','corresponding properties']
+        writer = csv.DictWriter(fle_handler, fieldnames = tables_fields)
+        writer.writeheader()
+        writer.writerows(tables_info)
+
+
 
 def extract_from_file(opts: ArgumentParser) -> int:
     print('Local file extraction is not supported yet. Please use local/public endpoint.')
@@ -282,25 +324,29 @@ def extract_from_endpoint(opts: ArgumentParser) -> int:
     if(opts.fact_ref_triples):
         p = Process(target=extract_fact_ref_triples(opts))
         extractor_procs.append(p)
-    
+
     if(opts.ref_properties):
         p = Process(target=extract_reference_properties(opts))
         extractor_procs.append(p)
-    
+
     if(opts.ref_prop_value_type):
         p = Process(target=extract_reference_properties_value_types(opts))
         extractor_procs.append(p)
-    
+
     if(opts.ref_incomings):
         p = Process(target=extract_reference_node_incomings(opts))
         extractor_procs.append(p)
-    
+
     if(opts.statement_refs):
         p = Process(target=extract_statement_node_references(opts))
         extractor_procs.append(p)
-    
+
     if(opts.item_refed_facts):
         p = Process(target=extract_item_referenced_facts(opts))
+        extractor_procs.append(p)
+
+    if(opts.wikidata_eschema_data):
+        p = Process(target=extract_wikidata_entityschemas_data(opts))
         extractor_procs.append(p)
 
     for proc in extractor_procs:
