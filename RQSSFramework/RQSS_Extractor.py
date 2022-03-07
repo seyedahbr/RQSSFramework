@@ -7,12 +7,10 @@ from multiprocessing.context import Process
 from pathlib import Path
 from typing import List, Optional, Union
 
-import requests
-from lxml import html
 from SPARQLWrapper import JSON, SPARQLWrapper
 
 from Queries import RQSS_QUERIES
-
+from EntitySchemaExtractor import EntitySchemaExtractor
 
 def genargs(prog: Optional[str] = None) -> ArgumentParser:
     parser = ArgumentParser(prog)
@@ -267,38 +265,15 @@ def extract_item_referenced_facts(opts: ArgumentParser) -> int:
 def extract_wikidata_entityschemas_data(opts: ArgumentParser) -> int:
     output_file = os.path.join(
         opts.output_dir + os.sep + 'eschemas_references.data')
-    schema_dir = 'https://www.wikidata.org/wiki/Wikidata:Database_reports/EntitySchema_directory'
-    xpath_query = '/html/body/div[3]/div[3]/div[5]/div[1]/table[contains(@class,"wikitable")]'
-    print('Getting EntitySchemas directory page data from: ', schema_dir)
-    page = requests.get(schema_dir)
-    tree = html.fromstring(page.content)
-    tables = tree.xpath(xpath_query)
-    tables_info = []
-    print('Parsing data')
-    for table in tables:
-        rows = table.xpath('./tbody/tr')
-        for row in rows:
-            cols = row.xpath('./td')
-            if len(cols) != 5:
-                continue
-            e_id = cols[0].xpath('./text()')[0]
-            e_id = e_id[e_id.find("(")+1:e_id.find(")")]
-            q_ids = cols[3].xpath('./text()')
-            for index, item in enumerate(q_ids):
-                q_ids[index] = item[item.find("(")+1:item.find(")")]
-            classes = ';'.join([i for i in q_ids if i[0] == 'Q'])
-            properties = ';'.join([i for i in q_ids if i[0] == 'P'])
-            tables_info.append(
-                {'eid': e_id, 'corresponding classes': classes, 'corresponding properties': properties})
-    print('Writing data')
-    
+
+    extractor = EntitySchemaExtractor()
+    eschema_data = extractor.get_entity_schemas_references_summary_from_wikidata()
+
     with open(output_file, 'w', newline='') as fle_handler:
         tables_fields = ['eid','corresponding classes','corresponding properties']
         writer = csv.DictWriter(fle_handler, fieldnames = tables_fields)
         writer.writeheader()
-        writer.writerows(tables_info)
-
-
+        writer.writerows(eschema_data)
 
 def extract_from_file(opts: ArgumentParser) -> int:
     print('Local file extraction is not supported yet. Please use local/public endpoint.')
