@@ -58,34 +58,82 @@ class EntitySchemaExtractor:
         schemata: List[ShExJ.Schema] = []
         for record in initial_dict:
             e_id = record.e_id
-            if e_id != 'E293':
-                continue
-            print('\tGetting EntitySchema {} texts from Wikidat'.format(e_id))
+            if e_id != 'E192': continue
+            print('\tGetting EntitySchema {} texts from Wikidata'.format(e_id))
             schema_text = str(requests.get(
                 self._eid_page.format(e_id)).content, "utf-8")
             shext = schema_text.strip()
             loader = SchemaLoader()
             print('\tParsing EntitySchema {} via PyShEx'.format(e_id))
-            eschema = loader.loads(shext)
+            try:
+                eschema = loader.loads(shext)
+            except:
+                print("\t\tERROR: Unable to parse entity schema: ", e_id)
+                continue
             if eschema is None:
                 print("\t\tERROR: Unable to parse entity schema: ", e_id)
                 continue
-            schemata.append(eschema)
+            schemata.append((e_id, eschema))
             
         print('Getting referenced facts and their reference predicates in each EntitySchema')
-        for schema in schemata:
+        for e_id, schema in schemata:
             refed_facts_refs: List[RefedFactRef] = []
-            for shape in schema.shapes:
-                print(type(shape))
-                refed_facts_refs += self.get_refed_facts_ref_predicates_recursive(shape)
+            print('\tSchema {}'.format(e_id), end=' ')
+            shape_ctr = 0
+            #print(schema)
             
-    def get_refed_facts_ref_predicates_recursive(self, shape:ShExJ.Shape) -> List[RefedFactRef]:          
-        
-        if type(shape.expression) == ShExJ.TripleConstraint:
-            print('***')
-            return RefedFactRef(shape.expression.predicate, shape.expression.valueExpr)
+            # Start working on schema
+            # if schema is empty (it can be!) don't do anything
+            if schema == None or schema.shapes == None: continue
+            for shape in schema.shapes:
+                # if the shape is empty don't do anything
+                if shape.expression == None: continue
+                # if the type of exprission in the shape is triple const, fetch the predicate/values directly
+                if type(shape.expression) == ShExJ.TripleConstraint:
+                    # if the predicate is a refered-fact i.e. pointing to a reference Node AND is referenced
+                    if self.is_referenced_fact(shape.expression.predicate, schemata):
+                        refed_facts_refs += [RefedFactRef(shape.expression.predicate, shape.expression.valueExpr)]
+                    
+                # if the type of experision is EachOf or OneOf, for each experision start the recursive fetching func
+                else:
+                    for exp in shape.expression.expressions:
+                        refed_facts_refs += self.get_refed_facts_ref_predicates_recursive(exp)
+                    
+                shape_ctr += 1
+                print(shape_ctr, end=' ')
+            print()
+            for index, item in enumerate(initial_dict):
+                if item.e_id == e_id: initial_dict[index].refed_facts_refs = refed_facts_refs
+
+        return initial_dict
+            
+    def get_refed_facts_ref_predicates_recursive(self, exprission) -> List[RefedFactRef]:          
+        #print (type(shape.expression))
+        if type(exprission) == ShExJ.TripleConstraint:
+            return [RefedFactRef(exprission.predicate, exprission.valueExpr)]
+            #return self.get_refed_facts_ref_predicates_recursive(shape.expression.expressions)
+        #elif type(shape) == ShExJ.EachOf or type(shape) == ShExJ.OneOf:
+        else:
+            for exp in exprission.expressions:
+                return self.get_refed_facts_ref_predicates_recursive(exp)
+        print('###################### ', type(exprission))
+        return []
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
             # print(shape.expression.predicate)
-        return self.get_refed_facts_ref_predicates_recursive(shape.expression.expressions)
+        #print(shape)
+        #for exp in shape.expressions:
+        #return self.get_refed_facts_ref_predicates_recursive(shape.expression.expressions)
                 # print('\t', type(exp))
         # print(type(shape))
         # for exp in shape.expressions:
