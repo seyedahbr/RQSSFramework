@@ -9,8 +9,9 @@ from typing import List, Optional, Union
 
 from SPARQLWrapper import JSON, SPARQLWrapper
 
-from Queries import RQSS_QUERIES
 from EntitySchemaExtractor import EntitySchemaExtractor
+from Queries import RQSS_QUERIES
+
 
 def genargs(prog: Optional[str] = None) -> ArgumentParser:
     parser = ArgumentParser(prog)
@@ -268,13 +269,10 @@ def extract_wikidata_entityschemas_data(opts: ArgumentParser) -> int:
 
     extractor = EntitySchemaExtractor()
     eschema_data = extractor.get_entity_schemas_references_summary_from_wikidata()
-    # for item in eschema_data:
-    #     print ([i.refed_fact for i in item.refed_facts_refs])
-    # with open(output_file, 'w', newline='') as fle_handler:
-    #     tables_fields = ['eid','corresponding classes','corresponding properties']
-    #     writer = csv.DictWriter(fle_handler, fieldnames = tables_fields)
-    #     writer.writeheader()
-    #     writer.writerows(eschema_data)
+    for item in eschema_data:
+        print('------------------------------------')
+        print(item)
+
 
 def extract_from_file(opts: ArgumentParser) -> int:
     print('Local file extraction is not supported yet. Please use local/public endpoint.')
