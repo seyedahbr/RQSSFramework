@@ -272,6 +272,8 @@ def extract_wikidata_entityschemas_data(opts: ArgumentParser) -> int:
     for item in eschema_data:
         print('------------------------------------')
         print(item)
+    print('Number of E-ids: ', len(eschema_data))
+    print('Number of E-ids with referenced facts: ', sum([1 for i in eschema_data if len(i.refed_facts_refs)>0]))
 
 
 def extract_from_file(opts: ArgumentParser) -> int:
