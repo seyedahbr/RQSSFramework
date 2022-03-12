@@ -264,17 +264,28 @@ def extract_item_referenced_facts(opts: ArgumentParser) -> int:
 
 
 def extract_wikidata_entityschemas_data(opts: ArgumentParser) -> int:
-    output_file = os.path.join(
-        opts.output_dir + os.sep + 'eschemas_references.data')
+    output_file_classes = os.path.join(
+        opts.output_dir + os.sep + 'eschemas_summarization_related_classes.data')
+    output_file_refed_fact_refs = os.path.join(
+        opts.output_dir + os.sep + 'eschemas_summarization_related_refed_fact_refs.data')
 
     extractor = EntitySchemaExtractor()
     eschema_data = extractor.get_entity_schemas_references_summary_from_wikidata()
-    for item in eschema_data:
-        print('------------------------------------')
-        print(item)
-    print('Number of E-ids: ', len(eschema_data))
-    print('Number of E-ids with referenced facts: ', sum([1 for i in eschema_data if len(i.refed_facts_refs)>0]))
+    
+    with open(output_file_classes, 'w') as file_handler:
+        csv_writer = csv.writer(file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        csv_writer.writerow(['eid','related class'])
+        for eid in eschema_data:
+            for rel_class in eid.related_classes:
+                csv_writer.writerow(eid.e_id, rel_class)
 
+    with open(output_file_refed_fact_refs, 'w') as file_handler:
+        csv_writer = csv.writer(file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        csv_writer.writerow(['eid','refed fact', 'ref predicate'])
+        for eid in eschema_data:
+            for refed_facts_ref in eid.refed_facts_refs:
+                for ref_predicate in refed_facts_ref.ref_predicates:
+                    csv_writer.writerow(eid.e_id, refed_facts_ref.refed_fact, ref_predicate)
 
 def extract_from_file(opts: ArgumentParser) -> int:
     print('Local file extraction is not supported yet. Please use local/public endpoint.')
