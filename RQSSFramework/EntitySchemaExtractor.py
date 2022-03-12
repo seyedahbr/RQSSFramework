@@ -59,8 +59,8 @@ class EntitySchemaExtractor:
                 q_ids = cols[3].xpath('./text()')
                 for index, item in enumerate(q_ids):
                     q_ids[index] = item[item.find("(")+1:item.find(")")]
-                classes = ';'.join([i for i in q_ids if i[0] == 'Q'])
-                properties = ';'.join([i for i in q_ids if i[0] == 'P'])
+                classes = [i for i in q_ids if i[0] == 'Q']
+                properties = [i for i in q_ids if i[0] == 'P']
                 tables_info.append(EidRefSummary(
                     e_id, classes, properties, []))
         print('DONE. Getting related classes for {} EntitySchemas.'.format(
