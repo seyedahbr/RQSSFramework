@@ -6,6 +6,7 @@ from datetime import datetime
 from multiprocessing.context import Process
 from pathlib import Path
 from typing import List, NamedTuple, Optional, Union
+import pandas as pd
 
 from Accuracy.LiteralSyntaxChecking import WikibaseRefLiteralSyntaxChecker
 from Accuracy.TripleSemanticChecking import (FactReference,
@@ -27,6 +28,8 @@ from Reputation.DNSBLBlacklistedChecking import DNSBLBlacklistedChecker
 from Security.TLSExistanceChecking import TLSChecker
 from Timeliness.ExternalURIsTimelinessChecking import *
 from Volatility.ExternalURIsVolatilityChecking import *
+from Completeness.ClassesPropertiesSchemaCompletenessChecking import *
+from EntitySchemaExtractor import EidRefSummary, RefedFactRef
 
 
 def genargs(prog: Optional[str] = None) -> ArgumentParser:
@@ -75,6 +78,9 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
                         help="Compute the metric: Volatility of external sources", action='store_true')
     parser.add_argument("-et", "--ext-uris-timeliness",
                         help="Compute the metric: Timeliness of external sources. The metric will use the results of the metrics Freshness of external sources and Volatility of external sources. Make sure the results of the two metric is in the --output-dir argument", action='store_true')
+    parser.add_argument("-cpsc", "--class-property-schema-completeness",
+                        help="Compute the metric: Schema completeness of references", action='store_true')
+
     return parser
 
 
@@ -776,6 +782,79 @@ def compute_external_uris_timeliness(opts: ArgumentParser) -> int:
     return 0
 
 
+def compute_class_property_schema_completeness(opts: ArgumentParser) -> int:
+    print('Started computing Metric: Schema completeness of references')
+    input_data_file = os.path.join(
+        opts.data_dir + os.sep + 'classes_facts_refs.data')
+    input_eid_summarization_related_classes = os.path.join(
+        opts.data_dir + os.sep + 'eschemas_summarization_related_classes.data')
+    input_eid_summarization_refed_fact_refs = os.path.join(
+        opts.data_dir + os.sep + 'eschemas_summarization_related_refed_fact_refs.data')
+    output_file_dist = os.path.join(
+        opts.output_dir + os.sep + 'class_property_schema_completeness.csv')
+    output_file_result = os.path.join(
+        opts.output_dir + os.sep + 'class_property_schema_completeness_ratio.csv')
+
+    # reading eid data
+    print('Reading Entity Schemas data ...')
+    try:
+        with open(input_eid_summarization_related_classes, encoding="utf8") as file:
+            related_class_csv = pd.read_csv(file)
+    except FileNotFoundError:
+        print("Error: Input data file not found. Provide data file with name: {0} in data_dir".format(
+            '"eschemas_summarization_related_classes.data"'))
+        exit(1)
+    try:
+        with open(input_eid_summarization_refed_fact_refs, encoding="utf8") as file:
+            refed_fact_refs_csv = pd.read_csv(file)
+    except FileNotFoundError:
+        print("Error: Input data file not found. Provide data file with name: {0} in data_dir".format(
+            '"eschemas_summarization_related_refed_fact_refs.data"'))
+        exit(1)
+
+    eid_summaries: List[EidRefSummary] = []
+    for eid in related_class_csv['eid'].unique().tolist():
+        refed_facts_refs: List[RefedFactRef] = []
+        #print(refed_fact_refs_csv.loc[(refed_fact_refs_csv['eid']==eid),'refed fact'])
+        for fact in refed_fact_refs_csv.loc[(refed_fact_refs_csv['eid']==eid),'refed fact'].unique().tolist():
+            print(eid, fact, refed_fact_refs_csv.loc[(refed_fact_refs_csv['eid']==eid)&(refed_fact_refs_csv['refed fact']==fact), 'ref predicate'].tolist())
+            refed_facts_refs.append(RefedFactRef(fact,refed_fact_refs_csv.loc[(refed_fact_refs_csv['eid']==eid)&(refed_fact_refs_csv['refed fact']==fact), 'ref predicate'].tolist()))
+        eid_summaries.append(EidRefSummary(eid,related_class_csv.loc[related_class_csv['eid']==eid,'related class'].tolist(),[],refed_facts_refs))
+
+    #print (eid_summaries)
+    return    
+    # reading the input instance-level data
+    print('Reading instance-level data ...')
+    asdasdasdasdgs_fact_refs = []
+    try:
+        with open(input_gold_standard_file, encoding="utf8") as file:
+            reader = csv.reader(file)
+            for row in reader:
+                gs_fact_refs.append(FactReference(
+                    row[0], row[1], row[2], row[3]))
+    except FileNotFoundError:
+        print("Error: Gold Standard Set file not found. Provide gold standard data file with name: {0} in data_dir".format(
+            '"semantic_validity_gs.data"'))
+        exit(1)
+
+    # running the framework metric function
+    print('Running metric ...')
+    start_time = datetime.datetime.now()
+    results = RefTripleSemanticChecker(
+        gs_fact_refs, fact_refs).check_semantic_to_gold_standard()
+    end_time = datetime.datetime.now()
+
+    # saving the results for presentation layer
+    if len(results) > 0:
+        write_results_to_CSV(results, output_file)
+
+    print('Metric: Syntactic validity of references’ literals results have been written in the file: {0}'.format(
+        output_file))
+    print('DONE. Metric: Syntactic validity of references’ literals, Duration: {0}'.format(
+        end_time - start_time))
+    return 0
+
+
 def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] = None) -> int:
     if isinstance(argv, str):
         argv = argv.split()
@@ -843,6 +922,9 @@ def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Op
         framework_procs.append(p)
     if opts.ext_uris_timeliness:
         p = Process(target=compute_external_uris_timeliness(opts))
+        framework_procs.append(p)
+    if opts.class_property_schema_completeness:
+        p = Process(target=compute_class_property_schema_completeness(opts))
         framework_procs.append(p)
 
     for proc in framework_procs:
