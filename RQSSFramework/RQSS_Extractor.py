@@ -273,21 +273,28 @@ def extract_wikidata_entityschemas_data(opts: ArgumentParser) -> int:
 
     extractor = EntitySchemaExtractor()
     eschema_data = extractor.get_entity_schemas_references_summary_from_wikidata()
-    
+
     with open(output_file_classes, 'w', newline='') as file_handler:
-        csv_writer = csv.writer(file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        csv_writer.writerow(['eid','related class'])
+        csv_writer = csv.writer(
+            file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        csv_writer.writerow(['eid', 'related class', 'related property'])
         for eid in eschema_data:
             for rel_class in eid.related_classes:
-                csv_writer.writerow([eid.e_id, rel_class])
+                csv_writer.writerow([eid.e_id, rel_class, ''])
+        for eid in eschema_data:
+            for rel_prop in eid.related_properties:
+                csv_writer.writerow([eid.e_id, '', rel_prop])
 
     with open(output_file_refed_fact_refs, 'w', newline='') as file_handler:
-        csv_writer = csv.writer(file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        csv_writer.writerow(['eid','refed fact', 'ref predicate'])
+        csv_writer = csv.writer(
+            file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        csv_writer.writerow(['eid', 'refed fact', 'ref predicate'])
         for eid in eschema_data:
             for refed_facts_ref in eid.refed_facts_refs:
                 for ref_predicate in refed_facts_ref.ref_predicates:
-                    csv_writer.writerow([eid.e_id, refed_facts_ref.refed_fact, ref_predicate])
+                    csv_writer.writerow(
+                        [eid.e_id, refed_facts_ref.refed_fact, ref_predicate])
+
 
 def extract_classes_facts_refs(opts: ArgumentParser) -> int:
     print('Started extracting classes of referenced items, and their referenced facts and the reference properties')
@@ -309,6 +316,7 @@ def extract_classes_facts_refs(opts: ArgumentParser) -> int:
     print('DONE. Extracting classes of referenced items, and their referenced facts and the reference properties, Duration: {0}'.format(
         end_time - start_time))
     return 0
+
 
 def extract_from_file(opts: ArgumentParser) -> int:
     print('Local file extraction is not supported yet. Please use local/public endpoint.')
