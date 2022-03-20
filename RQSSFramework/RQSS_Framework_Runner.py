@@ -817,11 +817,12 @@ def compute_class_property_schema_completeness(opts: ArgumentParser) -> int:
         refed_facts_refs: List[RefedFactRef] = []
         #print(refed_fact_refs_csv.loc[(refed_fact_refs_csv['eid']==eid),'refed fact'])
         for fact in refed_fact_refs_csv.loc[(refed_fact_refs_csv['eid']==eid),'refed fact'].unique().tolist():
-            print(eid, fact, refed_fact_refs_csv.loc[(refed_fact_refs_csv['eid']==eid)&(refed_fact_refs_csv['refed fact']==fact), 'ref predicate'].tolist())
-            refed_facts_refs.append(RefedFactRef(fact,refed_fact_refs_csv.loc[(refed_fact_refs_csv['eid']==eid)&(refed_fact_refs_csv['refed fact']==fact), 'ref predicate'].tolist()))
-        eid_summaries.append(EidRefSummary(eid,related_class_csv.loc[related_class_csv['eid']==eid,'related class'].tolist(),[],refed_facts_refs))
+            refed_facts_refs.append(RefedFactRef(fact,refed_fact_refs_csv.loc[(refed_fact_refs_csv['eid']==eid)&(refed_fact_refs_csv['refed fact']==fact), 'ref predicate'].dropna().tolist()))
+        eid_summaries.append(EidRefSummary(eid,related_class_csv.loc[related_class_csv['eid']==eid,'related class'].dropna().tolist(),related_class_csv.loc[related_class_csv['eid']==eid,'related property'].dropna().tolist(),refed_facts_refs))
 
-    #print (eid_summaries)
+    print('Number of E-ids: ', len(eid_summaries))
+    print('Number of E-ids with referenced facts: ', sum([1 for i in eid_summaries if len(i.refed_facts_refs)>0]))
+
     return    
     # reading the input instance-level data
     print('Reading instance-level data ...')
