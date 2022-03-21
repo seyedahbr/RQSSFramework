@@ -3,26 +3,29 @@ import datetime
 import unittest
 
 from RQSSFramework.Completeness.ClassesPropertiesSchemaCompletenessChecking import *
+from RQSSFramework.EntitySchemaExtractor import *
 
 
 class TestClassesPropertiesSchemaCompletenessChecking(unittest.TestCase):
 
     def setUp(self):
         self.data = {'Q35715216': ['P698', 'P2860', 'P2093', 'P1433', 'P356', 'P31'],
-        'Q4713960': ['P1412', 'P102', 'P8172', 'P39', 'P31', 'P569'],
-        'Q36985': ['P31', 'P234', 'P987', 'P12']} # not real data, only for test
-        self.wikidata_schema_info = {'Q35715216': ['P698', 'P2860', 'P91', 'P92', 'P93', 'P31'],
-        'Q4713960': ['P1412', 'P102', 'P98', 'P99', 'P31', 'P325'],
-        'Q9855587': ['P1412', 'P102', 'P98', 'P99', 'P31', 'P325']} # not real data, only for test
+                     'Q4713960': ['P1412', 'P102', 'P8172', 'P39', 'P31', 'P569'],
+                     'Q36985': ['P31', 'P234', 'P987', 'P12']}  # not real data, only for test
+        self.wikidata_schema_info = [EidRefSummary('E1', ['Q35715216'], ['P698'], [RefedFactRef('P2860', []), RefedFactRef('P91', []), RefedFactRef('P92', []), RefedFactRef('P93', []), RefedFactRef('P31', [])]),
+                                     EidRefSummary('E2', ['Q4713960'],[], [RefedFactRef('P1412',[]), RefedFactRef('P102',[]), RefedFactRef('P98',[]), RefedFactRef('P99',[]), RefedFactRef('P31',[]), RefedFactRef('P325',[])]),
+                                     EidRefSummary('E3',['Q9855587'],[], [RefedFactRef('P1412',[]), RefedFactRef('P102',[]), RefedFactRef('P98',[]), RefedFactRef('P99',[]), RefedFactRef('P31',[]), RefedFactRef('P325',[])])]  # not real data, only for test
 
     def test_ref_schema_existance_for_properties_Wikidata(self):
         test_class = ClassesPropertiesSchemaCompletenessChecker(self.data)
         self.assertEqual(test_class.results, None)
-        ret = test_class.check_ref_schema_existance_for_properties_Wikidata(self.wikidata_schema_info)
+        ret = test_class.check_ref_schema_existance_for_properties_Wikidata(
+            self.wikidata_schema_info)
         self.assertEqual(len(ret[0]), len(self.data.keys()))
         self.assertGreaterEqual(test_class.class_schema_completeness_score, 0)
         self.assertLessEqual(test_class.class_schema_completeness_score, 1)
-        self.assertGreaterEqual(test_class.property_schema_completeness_score, 0)
+        self.assertGreaterEqual(
+            test_class.property_schema_completeness_score, 0)
         self.assertLessEqual(test_class.property_schema_completeness_score, 1)
         self.assertEqual
         with open('classes_properties_schema_completeness_ratio.test.csv', 'w') as file_handler:
