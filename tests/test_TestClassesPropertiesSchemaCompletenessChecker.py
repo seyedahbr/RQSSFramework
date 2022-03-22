@@ -10,11 +10,11 @@ class TestClassesPropertiesSchemaCompletenessChecking(unittest.TestCase):
 
     def setUp(self):
         self.data = {'Q35715216': ['P698', 'P2860', 'P2093', 'P1433', 'P356', 'P31'],
-                     'Q4713960': ['P1412', 'P102', 'P8172', 'P39', 'P31', 'P569'],
+                     'Q4713960': ['P1412', 'P102', 'P8172', 'P791', 'P39', 'P31', 'P569'],
                      'Q36985': ['P31', 'P234', 'P987', 'P12']}  # not real data, only for test
         self.wikidata_schema_info = [EidRefSummary('E1', ['Q35715216'], ['P698'], [RefedFactRef('P2860', []), RefedFactRef('P91', []), RefedFactRef('P92', []), RefedFactRef('P93', []), RefedFactRef('P31', [])]),
-                                     EidRefSummary('E2', ['Q4713960'],[], [RefedFactRef('P1412',[]), RefedFactRef('P102',[]), RefedFactRef('P98',[]), RefedFactRef('P99',[]), RefedFactRef('P31',[]), RefedFactRef('P325',[])]),
-                                     EidRefSummary('E3',['Q9855587'],[], [RefedFactRef('P1412',[]), RefedFactRef('P102',[]), RefedFactRef('P98',[]), RefedFactRef('P99',[]), RefedFactRef('P31',[]), RefedFactRef('P325',[])])]  # not real data, only for test
+                                     EidRefSummary('E2', ['Q4713960'], [], [RefedFactRef('P1412', []), RefedFactRef('P102', []), RefedFactRef('P98', []), RefedFactRef('P99', []), RefedFactRef('P31', []), RefedFactRef('P325', [])]),
+                                     EidRefSummary('E3', ['Q9855587'], ['P12'], [RefedFactRef('P1412', []), RefedFactRef('P102', []), RefedFactRef('P98', []), RefedFactRef('P99', []), RefedFactRef('P31', []), RefedFactRef('P325', [])])]  # not real data, only for test
 
     def test_ref_schema_existance_for_properties_Wikidata(self):
         test_class = ClassesPropertiesSchemaCompletenessChecker(self.data)
