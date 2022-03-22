@@ -1,3 +1,4 @@
+import csv
 import os
 import sys
 from argparse import ArgumentParser
@@ -333,6 +334,31 @@ def plot_external_uris_timeliness(opts: ArgumentParser) -> int:
         output_file))
     return 0
 
+def plot_class_properties_schema_completeness(opts: ArgumentParser) -> int:
+    input_data_file = os.path.join(
+        opts.result_dir + os.sep + 'class_property_schema_completeness.csv')
+    output_file = os.path.join(
+        opts.output_dir + os.sep + 'class_property_schema_completeness.png')
+
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    csv_data = pd.read_csv(input_data_file, index_col=None, header=0)
+    csv_data['property completeness of class'] = csv_data['num_properties_schema_exists']/csv_data['total_refed_properties']
+    csv_data.replace(0, np.nan, inplace=True)
+    box_plot = sns.boxplot(palette=["#3498db", "#2ecc71"],
+                           data=csv_data['property completeness of class'], showmeans=True, showfliers=False,
+                           meanprops={"marker": "^",
+                                      "markerfacecolor": "black",
+                                      "markeredgecolor": "black",
+                                      "markersize": "5"}, medianprops={'color': 'red'}, flierprops={"marker": "o", "markersize": "5"})
+    box_plot.set_xlabel('Timeliness of External URIs')
+    box_plot.set_ylabel('Timeliness')
+    sns.despine(trim=True)
+    plt.savefig(output_file, format='png')
+    plt.close()
+    print('Metric: Schema completeness of references chart(s) have been plotted in the file: {0}'.format(
+        output_file))
+    return 0
 
 def RQSS_Plot(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] = None) -> int:
     if isinstance(argv, str):
@@ -397,6 +423,9 @@ def RQSS_Plot(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] 
         framework_procs.append(p)
     if Path(opts.result_dir + os.sep + 'external_uris_timeliness.csv').is_file():
         p = Process(target=plot_external_uris_timeliness(opts))
+        framework_procs.append(p)
+    if Path(opts.result_dir + os.sep + 'class_property_schema_completeness.csv').is_file():
+        p = Process(target=plot_class_properties_schema_completeness(opts))
         framework_procs.append(p)
 
     for proc in framework_procs:
