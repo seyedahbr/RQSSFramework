@@ -815,43 +815,48 @@ def compute_class_property_schema_completeness(opts: ArgumentParser) -> int:
     eid_summaries: List[EidRefSummary] = []
     for eid in related_class_csv['eid'].unique().tolist():
         refed_facts_refs: List[RefedFactRef] = []
-        #print(refed_fact_refs_csv.loc[(refed_fact_refs_csv['eid']==eid),'refed fact'])
-        for fact in refed_fact_refs_csv.loc[(refed_fact_refs_csv['eid']==eid),'refed fact'].unique().tolist():
-            refed_facts_refs.append(RefedFactRef(fact,refed_fact_refs_csv.loc[(refed_fact_refs_csv['eid']==eid)&(refed_fact_refs_csv['refed fact']==fact), 'ref predicate'].dropna().tolist()))
-        eid_summaries.append(EidRefSummary(eid,related_class_csv.loc[related_class_csv['eid']==eid,'related class'].dropna().tolist(),related_class_csv.loc[related_class_csv['eid']==eid,'related property'].dropna().tolist(),refed_facts_refs))
+        for fact in refed_fact_refs_csv.loc[(refed_fact_refs_csv['eid'] == eid), 'refed fact'].unique().tolist():
+            refed_facts_refs.append(RefedFactRef(fact, refed_fact_refs_csv.loc[(refed_fact_refs_csv['eid'] == eid) & (
+                refed_fact_refs_csv['refed fact'] == fact), 'ref predicate'].dropna().tolist()))
+        eid_summaries.append(EidRefSummary(eid, related_class_csv.loc[related_class_csv['eid'] == eid, 'related class'].dropna(
+        ).tolist(), related_class_csv.loc[related_class_csv['eid'] == eid, 'related property'].dropna().tolist(), refed_facts_refs))
 
     print('Number of E-ids: ', len(eid_summaries))
-    print('Number of E-ids with referenced facts: ', sum([1 for i in eid_summaries if len(i.refed_facts_refs)>0]))
+    print('Number of E-ids with referenced facts: ',
+          sum([1 for i in eid_summaries if len(i.refed_facts_refs) > 0]))
 
-    return    
     # reading the input instance-level data
     print('Reading instance-level data ...')
-    asdasdasdasdgs_fact_refs = []
+    refed_fact_refs: Dict = {}
     try:
-        with open(input_gold_standard_file, encoding="utf8") as file:
+        with open(input_data_file, encoding="utf8") as file:
             reader = csv.reader(file)
             for row in reader:
-                gs_fact_refs.append(FactReference(
-                    row[0], row[1], row[2], row[3]))
+                if row[0] not in refed_fact_refs.keys():
+                    refed_fact_refs[str(row[0])] = []
+                refed_fact_refs[str(row[0])].append(row[1])
     except FileNotFoundError:
-        print("Error: Gold Standard Set file not found. Provide gold standard data file with name: {0} in data_dir".format(
-            '"semantic_validity_gs.data"'))
+        print("Error: Input data file not found. Provide input data file with name: {0} in data_dir".format(
+            '"classes_facts_refs.data"'))
         exit(1)
 
     # running the framework metric function
     print('Running metric ...')
     start_time = datetime.datetime.now()
-    results = RefTripleSemanticChecker(
-        gs_fact_refs, fact_refs).check_semantic_to_gold_standard()
+    schema_comp_checker = ClassesPropertiesSchemaCompletenessChecker(
+        refed_fact_refs)
+    results = schema_comp_checker.check_ref_schema_existance_for_properties_Wikidata(
+        eid_summaries)
     end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
     if len(results) > 0:
-        write_results_to_CSV(results, output_file)
+        write_results_to_CSV(schema_comp_checker.results, output_file_dist)
+        write_results_to_CSV(str(schema_comp_checker), output_file_result)
 
-    print('Metric: Syntactic validity of references’ literals results have been written in the file: {0}'.format(
-        output_file))
-    print('DONE. Metric: Syntactic validity of references’ literals, Duration: {0}'.format(
+    print('Metric: Timeliness of external sources results have been written in the file: {0} and {1}'.format(
+        output_file_dist, output_file_result))
+    print('DONE. Metric: Timeliness of external sources, Duration: {0}'.format(
         end_time - start_time))
     return 0
 
