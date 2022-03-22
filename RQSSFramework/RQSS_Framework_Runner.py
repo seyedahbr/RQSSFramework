@@ -6,6 +6,7 @@ from datetime import datetime
 from multiprocessing.context import Process
 from pathlib import Path
 from typing import List, NamedTuple, Optional, Union
+
 import pandas as pd
 
 from Accuracy.LiteralSyntaxChecking import WikibaseRefLiteralSyntaxChecker
@@ -14,6 +15,7 @@ from Accuracy.TripleSemanticChecking import (FactReference,
 from Accuracy.TripleSyntaxChecking import WikibaseRefTripleSyntaxChecker
 from Availability.DereferencePossibility import DerefrenceExplorer
 from Believability.HumanReferenceInItemChecking import *
+from Completeness.ClassesPropertiesSchemaCompletenessChecking import *
 from Conciseness.ReferenceSharingChecking import *
 from Consistency.RefPropertiesConsistencyChecking import \
     RefPropertiesConsistencyChecker
@@ -21,6 +23,7 @@ from Consistency.TriplesRangeConsistencyChecking import \
     TriplesRangeConsistencyChecker
 from Currency.ExternalURIsFreshnessChecking import *
 from Currency.ReferenceFreshnessChecking import *
+from EntitySchemaExtractor import EidRefSummary, RefedFactRef
 from Licensing.LicenseExistanceChecking import LicenseChecker
 from Objectivity.MultipleReferenceChecking import *
 from Queries import RQSS_QUERIES
@@ -28,8 +31,6 @@ from Reputation.DNSBLBlacklistedChecking import DNSBLBlacklistedChecker
 from Security.TLSExistanceChecking import TLSChecker
 from Timeliness.ExternalURIsTimelinessChecking import *
 from Volatility.ExternalURIsVolatilityChecking import *
-from Completeness.ClassesPropertiesSchemaCompletenessChecking import *
-from EntitySchemaExtractor import EidRefSummary, RefedFactRef
 
 
 def genargs(prog: Optional[str] = None) -> ArgumentParser:
@@ -854,9 +855,9 @@ def compute_class_property_schema_completeness(opts: ArgumentParser) -> int:
         write_results_to_CSV(schema_comp_checker.results, output_file_dist)
         write_results_to_CSV(str(schema_comp_checker), output_file_result)
 
-    print('Metric: Timeliness of external sources results have been written in the file: {0} and {1}'.format(
+    print('Metric: Schema completeness of references results have been written in the file: {0} and {1}'.format(
         output_file_dist, output_file_result))
-    print('DONE. Metric: Timeliness of external sources, Duration: {0}'.format(
+    print('DONE. Metric: Schema completeness of references, Duration: {0}'.format(
         end_time - start_time))
     return 0
 
