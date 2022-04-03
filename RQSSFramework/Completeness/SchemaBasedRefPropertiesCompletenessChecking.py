@@ -39,6 +39,12 @@ class SchemaBasedRefPropertiesCompletenessChecker:
 
     def check_schema_based_property_completeness_Wikidata(self, wikidata_entityschemas_ref_summery: List[EidRefSummary]) -> List[SchemaBasedCompletenessResult]:
         self.results = []
+        for item in self._refed_facts:
+            for match in wikidata_entityschemas_ref_summery:
+                if item.class_id in match.related_classes:
+                    for pred in match.refed_facts_refs:
+                        if item.refed_fact == pred.refed_fact:
+                            
         return self.results
 
     def __repr__(self):
