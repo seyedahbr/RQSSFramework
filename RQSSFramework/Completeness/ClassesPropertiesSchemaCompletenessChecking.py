@@ -61,7 +61,7 @@ class ClassesPropertiesSchemaCompletenessChecker:
     def __repr__(self):
         if self.results == None:
             return 'Results are not computed'
-        return """num of classes,total of refed properties,total classes with schema defined,total properties with schema defined,class schema completeness score,property schema completeness score
+        return """num of classes,total of refed properties,total classes with defined schema,total properties with schema defined,class schema completeness score,property schema completeness score
 {0},{1},{2},{3},{4},{5}""".format(len(self.results),
                                   sum([i.total_refed_properties for i in self.results]),
                                   len([
