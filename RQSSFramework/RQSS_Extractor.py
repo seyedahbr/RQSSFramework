@@ -306,7 +306,7 @@ def extract_classes_facts_refs(opts: ArgumentParser) -> int:
         opts.endpoint, RQSS_QUERIES["get_classes_and_facts_and_refed_props"])
     output_file = os.path.join(
         opts.output_dir + os.sep + 'classes_facts_refs.data')
-    with open(output_file, 'w') as file_handler:
+    with open(output_file, 'w', newline='') as file_handler:
         csv_writer = csv.writer(
             file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for row in item_refed_facts:
@@ -327,7 +327,7 @@ def extract_classes_facts_refs_no_distinct(opts: ArgumentParser) -> int:
         opts.endpoint, RQSS_QUERIES["get_classes_and_facts_and_refed_props_no_distinct"])
     output_file = os.path.join(
         opts.output_dir + os.sep + 'classes_facts_refs_no_distinct.data')
-    with open(output_file, 'w') as file_handler:
+    with open(output_file, 'w',newline='') as file_handler:
         csv_writer = csv.writer(
             file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for row in item_refed_facts:
