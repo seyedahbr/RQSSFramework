@@ -10,6 +10,24 @@ SELECT ?to_ret WHERE
 
 Limit 3
 ''',
+"get_classes_and_facts_and_refed_props_no_distinct":
+'''
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+SELECT (REPLACE(STR(?class),".*Q","Q") AS ?ret1)
+       (REPLACE(STR(?property),".*P","P") AS ?ret2)
+       (REPLACE(STR(?refProperty),".*P","P") AS ?ret3) WHERE{
+  ?item ?property ?statementNode.
+  ?statementNode a wikibase:Statement.
+  ?statementNode prov:wasDerivedFrom ?refNode.
+  ?refNode ?refProperty ?refObject.
+  MINUS {?refObject a wikibase:TimeValue}
+  MINUS {?refObject a wikibase:QuantityValue}
+  FILTER (?refObject != <http://wikiba.se/ontology#Reference>)
+  ?item wdt:P31 ?class.
+}
+''',
 "get_classes_and_facts_and_refed_props":
 '''
 PREFIX wikibase: <http://wikiba.se/ontology#>
