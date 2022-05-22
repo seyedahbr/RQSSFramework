@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List, NamedTuple
 
-from RQSSFramework.EntitySchemaExtractor import EidRefSummary
+from EntitySchemaExtractor import EidRefSummary
 
 
 class SchemaBasedCompletenessResult(NamedTuple):
@@ -98,8 +98,9 @@ class SchemaBasedRefPropertiesCompletenessChecker:
     def __repr__(self):
         if self.results == None:
             return 'Results are not computed'
-        return """num of classes,total referenced facts,total reference-specific predicates mentioned in schema level,total fact instances,total referenced fact instances,score
-{0},{1},{2},{3},{4},{5}""".format(len(list(dict.fromkeys([i.class_id for i in self.results]))),
+        return """num of classes, total classes with defined schema, total referenced facts,total reference-specific predicates mentioned in schema level,total fact instances,total referenced fact instances,score
+{0},{1},{2},{3},{4},{5},{6}""".format(len(list(dict.fromkeys([i.class_id for i in self._refed_facts]))),
+                                  len(list(dict.fromkeys([i.class_id for i in self.results]))),
                                   len(list(dict.fromkeys(
                                       [i.fact_predicate_id for i in self.results]))),
                                   len(list(dict.fromkeys(
