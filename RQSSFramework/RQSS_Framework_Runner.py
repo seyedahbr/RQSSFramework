@@ -16,6 +16,7 @@ from Accuracy.TripleSyntaxChecking import WikibaseRefTripleSyntaxChecker
 from Availability.DereferencePossibility import DerefrenceExplorer
 from Believability.HumanReferenceInItemChecking import *
 from Completeness.ClassesPropertiesSchemaCompletenessChecking import *
+from Completeness.SchemaBasedRefPropertiesCompletenessChecking import *
 from Conciseness.ReferenceSharingChecking import *
 from Consistency.RefPropertiesConsistencyChecking import \
     RefPropertiesConsistencyChecker
@@ -81,6 +82,8 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
                         help="Compute the metric: Timeliness of external sources. The metric will use the results of the metrics Freshness of external sources and Volatility of external sources. Make sure the results of the two metric is in the --output-dir argument", action='store_true')
     parser.add_argument("-cpsc", "--class-property-schema-completeness",
                         help="Compute the metric: Schema completeness of references", action='store_true')
+    parser.add_argument("-sbpc", "--schema-based-property-completeness",
+                        help="Compute the metric: Schema-based property completeness of references", action='store_true')
 
     return parser
 
@@ -862,6 +865,84 @@ def compute_class_property_schema_completeness(opts: ArgumentParser) -> int:
     return 0
 
 
+def compute_schema_based_property_completeness(opts: ArgumentParser) -> int:
+    print('Started computing Metric: Schema-based property completeness of references')
+    input_data_file = os.path.join(
+        opts.data_dir + os.sep + 'classes_facts_refs_no_distinct.data')
+    input_eid_summarization_related_classes = os.path.join(
+        opts.data_dir + os.sep + 'eschemas_summarization_related_classes.data')
+    input_eid_summarization_refed_fact_refs = os.path.join(
+        opts.data_dir + os.sep + 'eschemas_summarization_related_refed_fact_refs.data')
+    output_file_dist = os.path.join(
+        opts.output_dir + os.sep + 'schema_based_property_completeness.csv')
+    output_file_result = os.path.join(
+        opts.output_dir + os.sep + 'schema_based_property_completeness_ratio.csv')
+
+    # reading eid data
+    print('Reading Entity Schemas data ...')
+    try:
+        with open(input_eid_summarization_related_classes, encoding="utf8") as file:
+            related_class_csv = pd.read_csv(file)
+    except FileNotFoundError:
+        print("Error: Input data file not found. Provide data file with name: {0} in data_dir".format(
+            '"eschemas_summarization_related_classes.data"'))
+        exit(1)
+    try:
+        with open(input_eid_summarization_refed_fact_refs, encoding="utf8") as file:
+            refed_fact_refs_csv = pd.read_csv(file)
+    except FileNotFoundError:
+        print("Error: Input data file not found. Provide data file with name: {0} in data_dir".format(
+            '"eschemas_summarization_related_refed_fact_refs.data"'))
+        exit(1)
+
+    eid_summaries: List[EidRefSummary] = []
+    for eid in related_class_csv['eid'].unique().tolist():
+        refed_facts_refs: List[RefedFactRef] = []
+        for fact in refed_fact_refs_csv.loc[(refed_fact_refs_csv['eid'] == eid), 'refed fact'].unique().tolist():
+            refed_facts_refs.append(RefedFactRef(fact, refed_fact_refs_csv.loc[(refed_fact_refs_csv['eid'] == eid) & (
+                refed_fact_refs_csv['refed fact'] == fact), 'ref predicate'].dropna().tolist()))
+        eid_summaries.append(EidRefSummary(eid, related_class_csv.loc[related_class_csv['eid'] == eid, 'related class'].dropna(
+        ).tolist(), related_class_csv.loc[related_class_csv['eid'] == eid, 'related property'].dropna().tolist(), refed_facts_refs))
+
+    print('Number of E-ids: ', len(eid_summaries))
+    print('Number of E-ids with referenced facts: ',
+          sum([1 for i in eid_summaries if len(i.refed_facts_refs) > 0]))
+
+    # reading the input instance-level data
+    print('Reading instance-level data ...')
+    refed_fact_refs: List[ClassRefedFactRef] = []
+    try:
+        with open(input_data_file, encoding="utf8") as file:
+            reader = csv.reader(file)
+            for row in reader:
+                refed_fact_refs.append(
+                    ClassRefedFactRef(row[0], row[1], [row[2]]))
+    except FileNotFoundError:
+        print("Error: Input data file not found. Provide input data file with name: {0} in data_dir".format(
+            '"classes_facts_refs.data"'))
+        exit(1)
+
+    # running the framework metric function
+    print('Running metric ...')
+    start_time = datetime.datetime.now()
+    schema_comp_checker = SchemaBasedRefPropertiesCompletenessChecker(
+        refed_fact_refs)
+    results = schema_comp_checker.check_schema_based_property_completeness_Wikidata(
+        eid_summaries)
+    end_time = datetime.datetime.now()
+
+    # saving the results for presentation layer
+    if len(results) > 0:
+        write_results_to_CSV(schema_comp_checker.results, output_file_dist)
+        write_results_to_CSV(str(schema_comp_checker), output_file_result)
+
+    print('Metric: Schema-based property completeness of references results have been written in the file: {0} and {1}'.format(
+        output_file_dist, output_file_result))
+    print('DONE. Metric: Schema-based property completeness of references, Duration: {0}'.format(
+        end_time - start_time))
+    return 0
+
+
 def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] = None) -> int:
     if isinstance(argv, str):
         argv = argv.split()
@@ -932,6 +1013,9 @@ def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Op
         framework_procs.append(p)
     if opts.class_property_schema_completeness:
         p = Process(target=compute_class_property_schema_completeness(opts))
+        framework_procs.append(p)
+    if opts.schema_based_property_completeness:
+        p = Process(target=compute_schema_based_property_completeness(opts))
         framework_procs.append(p)
 
     for proc in framework_procs:
