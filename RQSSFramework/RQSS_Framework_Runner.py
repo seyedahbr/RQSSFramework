@@ -932,9 +932,8 @@ def compute_schema_based_property_completeness(opts: ArgumentParser) -> int:
     end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
-    if len(results) > 0:
-        write_results_to_CSV(schema_comp_checker.results, output_file_dist)
-        write_results_to_CSV(str(schema_comp_checker), output_file_result)
+    if results: write_results_to_CSV(schema_comp_checker.results, output_file_dist)
+    write_results_to_CSV(str(schema_comp_checker), output_file_result) 
 
     print('Metric: Schema-based property completeness of references results have been written in the file: {0} and {1}'.format(
         output_file_dist, output_file_result))
