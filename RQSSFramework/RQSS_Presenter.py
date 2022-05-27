@@ -115,7 +115,7 @@ def plot_literal_syntax(opts: ArgumentParser) -> int:
     csv_data = pd.read_csv(input_data_file, index_col=None, header=0)
     csv_data['accuracy rate'] = 1 - csv_data['fails']/csv_data['total']
     csv_data['error rate'] = csv_data['errors']/csv_data['total']
-    csv_data['not exists rate'] = csv_data['not_exixts']/csv_data['total']
+    csv_data['not exists rate'] = 1 - csv_data['regexes']/csv_data['total']
     box_whisker_plot(pd.melt(csv_data[['accuracy rate', 'error rate', 'not exists rate']]),
                      'Syntax Validity of Reference Literals and Regex Errors', 'value', output_file, 'variable')
 
@@ -351,12 +351,37 @@ def plot_class_properties_schema_completeness(opts: ArgumentParser) -> int:
                                       "markerfacecolor": "black",
                                       "markeredgecolor": "black",
                                       "markersize": "5"}, medianprops={'color': 'red'}, flierprops={"marker": "o", "markersize": "5"})
-    box_plot.set_xlabel('Timeliness of External URIs')
-    box_plot.set_ylabel('Timeliness')
+    box_plot.set_xlabel('Class and Property Completeness')
+    box_plot.set_ylabel('Completeness')
     sns.despine(trim=True)
     plt.savefig(output_file, format='png')
     plt.close()
-    print('Metric: Schema completeness of references chart(s) have been plotted in the file: {0}'.format(
+    print('Metric: Class and Property Schema Completeness of References chart(s) have been plotted in the file: {0}'.format(
+        output_file))
+    return 0
+
+def plot_schema_based_property_completeness(opts: ArgumentParser) -> int:
+    input_data_file = os.path.join(
+        opts.result_dir + os.sep + 'schema_based_property_completeness.csv')
+    output_file = os.path.join(
+        opts.output_dir + os.sep + 'schema_based_property_completeness.png')
+
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    csv_data = pd.read_csv(input_data_file, index_col=None, header=0)
+    csv_data.replace(0, np.nan, inplace=True)
+    box_plot = sns.boxplot(palette=["#3498db", "#2ecc71"],
+                           data=csv_data['total_refed_instances'], showmeans=True, showfliers=False,
+                           meanprops={"marker": "^",
+                                      "markerfacecolor": "black",
+                                      "markeredgecolor": "black",
+                                      "markersize": "5"}, medianprops={'color': 'red'}, flierprops={"marker": "o", "markersize": "5"})
+    box_plot.set_xlabel('Distribution of total referenced instances per requiered reference property (based on schema)')
+    box_plot.set_ylabel('Num of referenced instances')
+    sns.despine(trim=True)
+    plt.savefig(output_file, format='png')
+    plt.close()
+    print('Metric: Schema-based Property Completeness of References chart(s) have been plotted in the file: {0}'.format(
         output_file))
     return 0
 
@@ -426,6 +451,9 @@ def RQSS_Plot(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] 
         framework_procs.append(p)
     if Path(opts.result_dir + os.sep + 'class_property_schema_completeness.csv').is_file():
         p = Process(target=plot_class_properties_schema_completeness(opts))
+        framework_procs.append(p)
+    if Path(opts.result_dir + os.sep + 'schema_based_property_completeness.csv').is_file():
+        p = Process(target=plot_schema_based_property_completeness(opts))
         framework_procs.append(p)
 
     for proc in framework_procs:
