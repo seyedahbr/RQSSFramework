@@ -52,10 +52,9 @@ class SchemaBasedRefPropertiesCompletenessChecker:
         schema_classes = []
         for match in wikidata_entityschemas_ref_summery:
             if match.refed_facts_refs: schema_classes.extend(match.related_classes)
-        print(len(schema_classes))
         for item in self._refed_facts:
-            if item.class_id not in schema_classes:
-                continue
+            #if item.class_id not in schema_classes:
+            #    continue
             for ref in item.ref_predicates:
                 if len([x for x in self._results if x.class_id == item.class_id and x.fact_predicate_id == item.refed_fact and x.ref_predicate_id == ref]) == 0:
                     self._results.append(SchemaBasedCompleteness(
