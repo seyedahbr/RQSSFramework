@@ -16,8 +16,7 @@ class SchemaBasedCompletenessResult(NamedTuple):
         return "Class {0}, with fact predicate: {1}, has a reference predicate: {2} in the schema level (E-ids); total instances: {3}; total referenced instances: {4} ".format(self.class_id, self.fact_predicate_id, self.ref_predicate_id, self.total_instances, self.total_refed_instances)
 
 
-@dataclass
-class SchemaBasedCompleteness:
+class SchemaBasedCompleteness(NamedTuple):
     class_id: str
     fact_predicate_id: str
     ref_predicate_id: str
@@ -41,34 +40,38 @@ class ClassRefedFactRef:
 
 
 class SchemaBasedRefPropertiesCompletenessChecker:
-    _results: List[SchemaBasedCompleteness] = None
+    results: List[SchemaBasedCompleteness] = None
     _refed_facts: List[ClassRefedFactRef]
 
     def __init__(self, dataset_refed_facts: List[ClassRefedFactRef]):
         self._refed_facts = dataset_refed_facts
 
     def check_schema_based_property_completeness_Wikidata(self, wikidata_entityschemas_ref_summery: List[EidRefSummary]) -> List[SchemaBasedCompletenessResult]:
-        self._results = []
-        schema_classes = []
-        for match in wikidata_entityschemas_ref_summery:
-            if match.refed_facts_refs: schema_classes.extend(match.related_classes)
-        for item in self._refed_facts:
-            #if item.class_id not in schema_classes:
-            #    continue
-            for ref in item.ref_predicates:
-                if len([x for x in self._results if x.class_id == item.class_id and x.fact_predicate_id == item.refed_fact and x.ref_predicate_id == ref]) == 0:
-                    self._results.append(SchemaBasedCompleteness(
-                        item.class_id, item.refed_fact, ref, 0, 0))
-                refed_instance = 0
-                for match in wikidata_entityschemas_ref_summery:
-                    if item.class_id in match.related_classes:
-                        for pred in match.refed_facts_refs:
-                            if item.refed_fact == pred.refed_fact:
-                                for schema_ref in pred.ref_predicates:
-                                    if schema_ref == ref:
-                                        refed_instance = 1
-                self._update_result_entry(
-                    item.class_id, item.refed_fact, ref, refed_instance)
+        self.results = []
+        for schema in wikidata_entityschemas_ref_summery:
+            for fact_ref in schema.refed_facts_refs:
+                for ref in fact_ref.ref_predicates:
+
+        # schema_classes = []
+        # for match in wikidata_entityschemas_ref_summery:
+        #     if match.refed_facts_refs: schema_classes.extend(match.related_classes)
+        # for item in self._refed_facts:
+        #     #if item.class_id not in schema_classes:
+        #     #    continue
+        #     for ref in item.ref_predicates:
+        #         if len([x for x in self._results if x.class_id == item.class_id and x.fact_predicate_id == item.refed_fact and x.ref_predicate_id == ref]) == 0:
+        #             self._results.append(SchemaBasedCompleteness(
+        #                 item.class_id, item.refed_fact, ref, 0, 0))
+        #         refed_instance = 0
+        #         for match in wikidata_entityschemas_ref_summery:
+        #             if item.class_id in match.related_classes:
+        #                 for pred in match.refed_facts_refs:
+        #                     if item.refed_fact == pred.refed_fact:
+        #                         for schema_ref in pred.ref_predicates:
+        #                             if schema_ref == ref:
+        #                                 refed_instance = 1
+        #         self._update_result_entry(
+        #             item.class_id, item.refed_fact, ref, refed_instance)
 
         return self.results
 
@@ -85,15 +88,15 @@ class SchemaBasedRefPropertiesCompletenessChecker:
             return sum([i.total_refed_instances for i in self.results])/total if total > 0 else 1
         return None
 
-    @property
-    def results(self) -> List[SchemaBasedCompletenessResult]:
-        if self._results == None:
-            return None
-        ret_val: List[SchemaBasedCompletenessResult] = []
-        for item in self._results:
-            ret_val.append(SchemaBasedCompletenessResult(item.class_id, item.fact_predicate_id,
-                                                         item.ref_predicate_id, item.total_instances, item.total_refed_instances))
-        return ret_val
+    # @property
+    # def results(self) -> List[SchemaBasedCompletenessResult]:
+    #     if self._results == None:
+    #         return None
+    #     ret_val: List[SchemaBasedCompletenessResult] = []
+    #     for item in self._results:
+    #         ret_val.append(SchemaBasedCompletenessResult(item.class_id, item.fact_predicate_id,
+    #                                                      item.ref_predicate_id, item.total_instances, item.total_refed_instances))
+    #     return ret_val
 
     def __repr__(self):
         if self.results == None:
