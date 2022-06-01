@@ -9,49 +9,38 @@ class SchemaBasedCompletenessResult(NamedTuple):
     fact_predicate_id: str
     ref_predicate_id: str
     total_instances: int
-    # total number of instances with the ref_predicate_id
     total_refed_instances: int
 
     def __repr__(self):
         return "Class {0}, with fact predicate: {1}, has a reference predicate: {2} in the schema level (E-ids); total instances: {3}; total referenced instances: {4} ".format(self.class_id, self.fact_predicate_id, self.ref_predicate_id, self.total_instances, self.total_refed_instances)
 
-
-class SchemaBasedCompleteness(NamedTuple):
-    class_id: str
-    fact_predicate_id: str
-    ref_predicate_id: str
-    total_instances: int
-    # total number of instances with the ref_predicate_id
-    total_refed_instances: int
-
-
 @dataclass
 class ClassRefedFactRef:
     class_id: str
-    refed_fact: str
-    ref_predicates: List[str]
+    fact: str
+    ref_predicate: str
 
     def __repr__(self) -> str:
         return '''\n
-\tclass id: {0}
-\treferenced fact: {1}
-\tref-specific properties: {2}
-        '''.format(self.class_id, self.refed_fact, self.ref_predicates)
+\tClass id: {0}
+\tFact: {1}
+\tReference Property: {2}
+        '''.format(self.class_id, self.fact, self.ref_predicate)
 
 
 class SchemaBasedRefPropertiesCompletenessChecker:
-    results: List[SchemaBasedCompleteness] = None
-    _refed_facts: List[ClassRefedFactRef]
+    results: List[SchemaBasedCompletenessResult] = None
+    _input: List[ClassRefedFactRef]
 
-    def __init__(self, dataset_refed_facts: List[ClassRefedFactRef]):
-        self._refed_facts = dataset_refed_facts
+    def __init__(self, dataset: List[ClassRefedFactRef]):
+        self._input = dataset
 
     def check_schema_based_property_completeness_Wikidata(self, wikidata_entityschemas_ref_summery: List[EidRefSummary]) -> List[SchemaBasedCompletenessResult]:
         self.results = []
         for schema in wikidata_entityschemas_ref_summery:
             for fact_ref in schema.refed_facts_refs:
                 for ref in fact_ref.ref_predicates:
-
+                    total_instances = len([])
         # schema_classes = []
         # for match in wikidata_entityschemas_ref_summery:
         #     if match.refed_facts_refs: schema_classes.extend(match.related_classes)
