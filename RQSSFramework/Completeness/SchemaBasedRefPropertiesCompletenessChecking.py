@@ -5,27 +5,35 @@ from EntitySchemaExtractor import EidRefSummary
 
 
 class SchemaBasedCompletenessResult(NamedTuple):
-    class_id: str
-    fact_predicate_id: str
-    ref_predicate_id: str
+    fact: str
+    ref_predicate: str
     total_instances: int
+    total_instances_not_refed: int
     total_refed_instances: int
 
+    @property
+    def score(self):
+        return self.total_refed_instances / self.total_instances if self.total_instances > 0 else 1
+    @property
+    def score_including_not_refed(self):
+        including_not_refed = self.total_instances + self.total_instances_not_refed
+        return self.total_refed_instances / including_not_refed if including_not_refed > 0 else 1
     def __repr__(self):
-        return "Class {0}, with fact predicate: {1}, has a reference predicate: {2} in the schema level (E-ids); total instances: {3}; total referenced instances: {4} ".format(self.class_id, self.fact_predicate_id, self.ref_predicate_id, self.total_instances, self.total_refed_instances)
+        return '''For fact {0} and reference properties {1} in the schema-level,\n
+\tTotal fact instances: {2}
+\tTotal not referenced fact instances: {3}
+\tTotal referenced fact (with {1}) instances: {4}
+\tScore: {5}
+\tScore (including not referenced instances): {6}'''.format(self.fact, self.ref_predicate, self.total_instances, self.total_instances_not_refed, self.total_refed_instances, self.score, self.score_including_not_refed)
 
 @dataclass
 class ClassRefedFactRef:
     class_id: str
     fact: str
-    ref_predicate: str
+    ref_predicate: str = None
 
     def __repr__(self) -> str:
-        return '''\n
-\tClass id: {0}
-\tFact: {1}
-\tReference Property: {2}
-        '''.format(self.class_id, self.fact, self.ref_predicate)
+        return "Class id: {0}, Fact: {1}, Reference Property: {2}".format(self.class_id, self.fact, self.ref_predicate)
 
 
 class SchemaBasedRefPropertiesCompletenessChecker:
@@ -40,35 +48,12 @@ class SchemaBasedRefPropertiesCompletenessChecker:
         for schema in wikidata_entityschemas_ref_summery:
             for fact_ref in schema.refed_facts_refs:
                 for ref in fact_ref.ref_predicates:
-                    total_instances = len([])
-        # schema_classes = []
-        # for match in wikidata_entityschemas_ref_summery:
-        #     if match.refed_facts_refs: schema_classes.extend(match.related_classes)
-        # for item in self._refed_facts:
-        #     #if item.class_id not in schema_classes:
-        #     #    continue
-        #     for ref in item.ref_predicates:
-        #         if len([x for x in self._results if x.class_id == item.class_id and x.fact_predicate_id == item.refed_fact and x.ref_predicate_id == ref]) == 0:
-        #             self._results.append(SchemaBasedCompleteness(
-        #                 item.class_id, item.refed_fact, ref, 0, 0))
-        #         refed_instance = 0
-        #         for match in wikidata_entityschemas_ref_summery:
-        #             if item.class_id in match.related_classes:
-        #                 for pred in match.refed_facts_refs:
-        #                     if item.refed_fact == pred.refed_fact:
-        #                         for schema_ref in pred.ref_predicates:
-        #                             if schema_ref == ref:
-        #                                 refed_instance = 1
-        #         self._update_result_entry(
-        #             item.class_id, item.refed_fact, ref, refed_instance)
+                    total_instances = len([x for x in self._input if x.fact == fact_ref.refed_fact and x.ref_predicate is not None])
+                    total_instances_not_refed = len([x for x in self._input if x.fact == fact_ref.refed_fact])
+                    total_refed_instances = len([x for x in self._input if x.fact == fact_ref.refed_fact and x.ref_predicate is not None and x.ref_predicate == ref ])
+                    self.results.append(SchemaBasedCompletenessResult(fact_ref.refed_fact, ref,total_instances,total_instances_not_refed, total_refed_instances))
 
         return self.results
-
-    def _update_result_entry(self, class_id, fact, ref, num_instance_increment):
-        for index, item in enumerate(self._results):
-            if item.class_id == class_id and item.fact_predicate_id == fact and item.ref_predicate_id == ref:
-                self._results[index].total_instances += 1
-                self._results[index].total_refed_instances += num_instance_increment
 
     @property
     def score(self):
@@ -77,29 +62,26 @@ class SchemaBasedRefPropertiesCompletenessChecker:
             return sum([i.total_refed_instances for i in self.results])/total if total > 0 else 1
         return None
 
-    # @property
-    # def results(self) -> List[SchemaBasedCompletenessResult]:
-    #     if self._results == None:
-    #         return None
-    #     ret_val: List[SchemaBasedCompletenessResult] = []
-    #     for item in self._results:
-    #         ret_val.append(SchemaBasedCompletenessResult(item.class_id, item.fact_predicate_id,
-    #                                                      item.ref_predicate_id, item.total_instances, item.total_refed_instances))
-    #     return ret_val
+    @property
+    def score_including_not_refed(self):
+        if self.results != None:
+            total_including_not_refed = sum([(i.total_instances + i.total_instances_not_refed) for i in self.results])
+            return sum([i.total_refed_instances for i in self.results])/total_including_not_refed if total_including_not_refed > 0 else 1
+        return None
 
-    def __repr__(self):
-        if self.results == None:
-            return 'Results are not computed'
-        return """num of classes, total classes with defined schema, total referenced facts,total reference-specific predicates mentioned in schema level,total fact instances,total referenced fact instances,score
-{0},{1},{2},{3},{4},{5},{6}""".format(len(list(dict.fromkeys([i.class_id for i in self._refed_facts]))),
-                                  len(list(dict.fromkeys([i.class_id for i in self.results]))),
-                                  len(list(dict.fromkeys(
-                                      [i.fact_predicate_id for i in self.results]))),
-                                  len(list(dict.fromkeys(
-                                      [i.ref_predicate_id for i in self.results]))),
-                                  sum([i.total_instances for i in self.results]),
-                                  sum([i.total_refed_instances for i in self.results]),
-                                  self.score)
+#     def __repr__(self):
+#         if self.results == None:
+#             return 'Results are not computed'
+#         return """num of classes, total classes with defined schema, total referenced facts,total reference-specific predicates mentioned in schema level,total fact instances,total referenced fact instances,score
+# {0},{1},{2},{3},{4},{5},{6}""".format(len(list(dict.fromkeys([i.class_id for i in self._refed_facts]))),
+#                                   len(list(dict.fromkeys([i.class_id for i in self.results]))),
+#                                   len(list(dict.fromkeys(
+#                                       [i.fact_predicate_id for i in self.results]))),
+#                                   len(list(dict.fromkeys(
+#                                       [i.ref_predicate_id for i in self.results]))),
+#                                   sum([i.total_instances for i in self.results]),
+#                                   sum([i.total_refed_instances for i in self.results]),
+#                                   self.score)
 
     def print_results(self):
         """
