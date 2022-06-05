@@ -29,7 +29,7 @@ class TLSChecker:
         self.results = []
         for u in self._uris:
             try:
-                r = requests.get(u, verify=True)
+                r = requests.get(u, verify=True, timeout=(10, 60))
                 if (r.status_code == 200):
                     self.results.append(TLSExist(u, True))
                 else:

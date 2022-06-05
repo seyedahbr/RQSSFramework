@@ -26,7 +26,7 @@ class DerefrenceExplorer:
         self.results = []
         for u in self._uris:
             try:
-                r = requests.get(u)
+                r = requests.get(u, timeout=(10, 60))
                 if r.status_code == 200:
                     self.results.append(DerefOfURI(u, True))
                 else:
