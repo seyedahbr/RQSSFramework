@@ -59,9 +59,10 @@ class SchemaBasedRefPropertiesCompletenessChecker:
         self.results = []
         eschema_facts_refs = self._get_eschema_distinct_properties_and_ref_predicates(
             wikidata_entityschemas_ref_summery)
-
+        print('len of eschema_fact_refs: ',len(eschema_facts_refs.keys()))
         for fact in eschema_facts_refs.keys():
             for ref in eschema_facts_refs[fact]:
+                print('computing fact {0}, ref {1}'.format(fact, ref))
                 total_instances = len(self._df.loc[(self._df['fact'] == fact) & ~(
                     self._df['ref_predicate'].isna())].drop_duplicates('statement_id'))
                 total_instances_not_refed = len(self._df.loc[(
@@ -77,6 +78,8 @@ class SchemaBasedRefPropertiesCompletenessChecker:
         ret_dict = {}
         for schema in wikidata_entityschemas_ref_summery:
             for fact_ref in schema.refed_facts_refs:
+                if not fact_ref.ref_predicates:
+                    continue
                 if fact_ref.refed_fact not in ret_dict.keys():
                     ret_dict[str(fact_ref.refed_fact)] = []
                 for ref in fact_ref.ref_predicates:
