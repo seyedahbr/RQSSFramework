@@ -868,7 +868,7 @@ def compute_class_property_schema_completeness(opts: ArgumentParser) -> int:
 def compute_schema_based_property_completeness(opts: ArgumentParser) -> int:
     print('Started computing Metric: Schema-based property completeness of references')
     input_data_file = os.path.join(
-        opts.data_dir + os.sep + 'classes_facts_refs_no_distinct.data')
+        opts.data_dir + os.sep + 'statement_fact_refed_props.data')
     input_eid_summarization_related_classes = os.path.join(
         opts.data_dir + os.sep + 'eschemas_summarization_related_classes.data')
     input_eid_summarization_refed_fact_refs = os.path.join(
@@ -910,16 +910,18 @@ def compute_schema_based_property_completeness(opts: ArgumentParser) -> int:
 
     # reading the input instance-level data
     print('Reading instance-level data ...')
-    refed_fact_refs: List[ClassRefedFactRef] = []
+    refed_fact_refs: List[FactRef] = []
     try:
         with open(input_data_file, encoding="utf8") as file:
             reader = csv.reader(file)
             for row in reader:
-                refed_fact_refs.append(
-                    ClassRefedFactRef(row[0], row[1], [row[2]]))
+                try:
+                    refed_fact_refs.append(FactRef(row[0], row[1], row[2]))
+                except IndexError:
+                    refed_fact_refs.append(FactRef(row[0], row[1]))
     except FileNotFoundError:
         print("Error: Input data file not found. Provide input data file with name: {0} in data_dir".format(
-            '"classes_facts_refs.data"'))
+            '"statement_fact_refed_props.data"'))
         exit(1)
 
     # running the framework metric function

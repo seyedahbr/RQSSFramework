@@ -45,8 +45,8 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
                         help="Extract most up-to-date Wikidata EntitySchemas data from Wikidata directory and save them on output dir. Collects data for computing COMPLETENESS metrics", action='store_true')
     parser.add_argument("-cfr", "--classes-facts-refs",
                         help="Extract all classes of referenced items, and their referenced facts and the reference properties (distinct) and save them on output dir. Collects data for computing Metric: Schema completeness of references", action='store_true')
-    parser.add_argument("-cfrnd", "--classes-facts-refs-no-distinct",
-                        help="Extract all classes of referenced items, and their referenced facts and the reference properties (no distinct) and save them on output dir. Collects data for computing Metric: Schema-based property completeness of references", action='store_true')
+    parser.add_argument("-sfr", "--statements-facts-refs",
+                        help="Extract all statement id, fact of the statement and the reference properties and save them on output dir. Collects data for computing Metric: Schema-based property completeness of references", action='store_true')
     return parser
 
 
@@ -319,24 +319,25 @@ def extract_classes_facts_refs(opts: ArgumentParser) -> int:
         end_time - start_time))
     return 0
 
-def extract_classes_facts_refs_no_distinct(opts: ArgumentParser) -> int:
-    print('Started extracting classes of referenced items, and their referenced facts and the reference properties considering duplications')
+
+def extract_statement_fact_refed_props_wikimedia(opts: ArgumentParser) -> int:
+    print('Started extracting statement id, fact of the statement and the reference properties')
     start_time = datetime.now()
 
     item_refed_facts = perform_query(
-        opts.endpoint, RQSS_QUERIES["get_classes_and_facts_and_refed_props_no_distinct"])
+        opts.endpoint, RQSS_QUERIES["get_statement_fact_refed_props_wikimedia"])
     output_file = os.path.join(
-        opts.output_dir + os.sep + 'classes_facts_refs_no_distinct.data')
-    with open(output_file, 'w',newline='') as file_handler:
+        opts.output_dir + os.sep + 'statement_fact_refed_props.data')
+    with open(output_file, 'w', newline='') as file_handler:
         csv_writer = csv.writer(
             file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for row in item_refed_facts:
             csv_writer.writerow(row)
 
     end_time = datetime.now()
-    print('Classes of referenced items, and their referenced facts and the reference properties considering duplications have been written in the file: {0}'.format(
+    print('Statement id, fact of the statement and the reference properties have been written in the file: {0}'.format(
         output_file))
-    print('DONE. Extracting classes of referenced items, and their referenced facts and the reference properties considering duplications, Duration: {0}'.format(
+    print('DONE. Extracting statement id, fact of the statement and the reference properties, Duration: {0}'.format(
         end_time - start_time))
     return 0
 
@@ -393,9 +394,9 @@ def extract_from_endpoint(opts: ArgumentParser) -> int:
     if(opts.classes_facts_refs):
         p = Process(target=extract_classes_facts_refs(opts))
         extractor_procs.append(p)
-    
-    if(opts.classes_facts_refs_no_distinct):
-        p = Process(target=extract_classes_facts_refs_no_distinct(opts))
+
+    if(opts.statements_facts_refs):
+        p = Process(target=extract_statement_fact_refed_props_wikimedia(opts))
         extractor_procs.append(p)
 
     for proc in extractor_procs:
