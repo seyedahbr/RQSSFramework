@@ -110,6 +110,7 @@ SELECT DISTINCT (REPLACE(STR(?refProperty),".*P","P") AS ?to_ret) WHERE{
         MINUS {?object a wikibase:TimeValue}
         MINUS {?object a wikibase:QuantityValue}
         FILTER (?object != <http://wikiba.se/ontology#Reference>)
+        FILTER (?object != <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>)
 }
 ''',
 "get_property_constraints_specificity":
