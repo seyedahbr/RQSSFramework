@@ -88,9 +88,6 @@ SELECT DISTINCT (REPLACE(STR(?refProperty),".*P","P") AS ?ret1)
                 (REPLACE(STR(?refVlueType),".*Q","Q") AS ?ret2) WHERE{
   ?refNode a wikibase:Reference.
   ?refNode ?refProperty ?refObject.
-  MINUS {?refObject a wikibase:TimeValue}
-  MINUS {?refObject a wikibase:QuantityValue}
-  FILTER (?refObject != <http://wikiba.se/ontology#Reference>).
   ?refobject wdt:P31 ?refVlueType.
   ?refobject wdt:P279 ?refVlueType.
   ?refobject wdt:P31/wdt:P279* ?refVlueType.
