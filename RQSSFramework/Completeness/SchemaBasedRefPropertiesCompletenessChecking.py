@@ -23,7 +23,7 @@ class SchemaBasedCompletenessResult(NamedTuple):
         return self.total_refed_instances_schema_based / including_not_refed if including_not_refed > 0 else 1
 
     def __repr__(self):
-        return '''For fact {0} and reference properties {1} in the schema-level,\n
+        return '''For fact {0} and reference property {1} in the schema-level,\n
 \tTotal fact instances: {2}
 \tTotal not referenced fact instances: {3}
 \tTotal referenced fact (with {1}) instances: {4}
@@ -59,7 +59,7 @@ class SchemaBasedRefPropertiesCompletenessChecker:
         self.results = []
         eschema_facts_refs = self._get_eschema_distinct_properties_and_ref_predicates(
             wikidata_entityschemas_ref_summery)
-        print('len of eschema_fact_refs: ',len(eschema_facts_refs.keys()))
+        print('len of eschema_fact_refs: ', len(eschema_facts_refs.keys()))
         for fact in eschema_facts_refs.keys():
             for ref in eschema_facts_refs[fact]:
                 print('computing fact {0}, ref {1}'.format(fact, ref))
@@ -120,7 +120,7 @@ class SchemaBasedRefPropertiesCompletenessChecker:
 
     def print_results(self):
         """
-        print self._resultsif it is already computed
+        print self.results if it is already computed
         """
         if self.results == None:
             print('results are not computed')
