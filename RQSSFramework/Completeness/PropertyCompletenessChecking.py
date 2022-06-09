@@ -2,21 +2,34 @@ from dataclasses import dataclass
 from typing import List, NamedTuple
 
 from EntitySchemaExtractor import EidRefSummary
+from SchemaBasedRefPropertiesCompletenessChecking import FactRef
 
 
 class PropertyCompletenessResult(NamedTuple):
-    fact_predicate_id: str
-    ref_predicate_id: str
+    fact: str
+    ref_predicate: str
     total_instances: int
-    total_refed_instances: int
+    total_instances_not_refed: int
+    total_refed: int
+
+    @property
+    def score(self):
+        return self.total_refed / self.total_instances if self.total_instances > 0 else 1
+
+    @property
+    def score_including_not_refed(self):
+        including_not_refed = self.total_instances + self.total_instances_not_refed
+        return self.total_refed / including_not_refed if including_not_refed > 0 else 1
 
     def __repr__(self):
-        return "Fact predicate: {0}, has at least one reference predicate: {1} in instance-level; total instances: {2}; total referenced instances: {3} ".format(self.fact_predicate_id, self.ref_predicate_id, self.total_instances, self.total_refed_instances)
+        return '''For reference property {0} and fact {1} in the schema-level,\n
+\tTotal fact instances: {2}
+\tTotal not referenced fact instances: {3}
+\tTotal referenced fact (with {1}) instances: {4}
+\tScore: {5}
+\tScore (including not referenced instances): {6}'''.format(self.ref_predicate, self.fact, self.total_instances, self.total_instances_not_refed, self.total_refed, self.score, self.score_including_not_refed)
 
 
-class FactRef(NamedTuple):
-    fact_predicate_id: str
-    ref_predicate_id: str
 
 class PropertyCompletenessChecker:
     results: List[PropertyCompletenessResult] = None
@@ -33,16 +46,12 @@ class PropertyCompletenessChecker:
     def score(self):
         pass
 
-    @property
-    def results(self) -> List[PropertyCompletenessResult]:
-        pass
-
     def __repr__(self):
         pass
 
     def print_results(self):
         """
-        print self.resultsif it is already computed
+        print self.results if it is already computed
         """
         if self.results == None:
             print('results are not computed')
