@@ -29,7 +29,7 @@ class ExternalURIsVolatilityChecker:
                 if str(uri) in str(page):
                     not_found = False
                     self.results.append(VolatilityOfURI(uri, self.get_volatility_from_change_freq(
-                        page.change_frequency) if page.change_frequency != None else None))
+                        page.change_frequency) if page.change_frequency is not None else None))
                     break
             if not_found:
                 self.results.append(VolatilityOfURI(uri, None))
@@ -54,9 +54,9 @@ class ExternalURIsVolatilityChecker:
 
     @property
     def score(self):
-        if self.results != None:
+        if self.results is not None:
             scored_list = [
-                i.volatility for i in self.results if i.volatility != None]
+                i.volatility for i in self.results if i.volatility is not None]
             return sum(scored_list)/len(scored_list) if len(scored_list) > 0 else '<None>'
         return None
 

@@ -106,7 +106,7 @@ class LicenseChecker:
 
     @property
     def score(self):
-        if self.results != None:
+        if self.results is not None:
             return sum([1 for i in self.results if i.license])/len(self.results)
         return None
 

@@ -45,7 +45,7 @@ class WikibaseRefTripleSyntaxChecker:
     
     @property
     def score(self):
-        if self.result != None:
+        if self.result is not None:
             return self.result.score
         return None
 

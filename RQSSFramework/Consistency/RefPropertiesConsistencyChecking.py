@@ -41,7 +41,7 @@ class RefPropertiesConsistencyChecker:
 
     @property
     def score(self):
-        if self.results != None:
+        if self.results is not None:
             return sum([1 for i in self.results if i.is_ref_specific])/len(self.results)
         return None
 

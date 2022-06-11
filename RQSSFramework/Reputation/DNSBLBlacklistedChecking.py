@@ -42,7 +42,7 @@ class DNSBLBlacklistedChecker:
 
     @property
     def score(self):
-        if self.results != None:
+        if self.results is not None:
             return 1 - sum([1 for i in self.results if i.blacklisted])/len(self.results)
         return None
 

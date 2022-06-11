@@ -41,12 +41,12 @@ class ExternalURIsFreshnessChecker:
                 last_modif_time = self.get_last_modified_tag(uri)
             except:
                 last_modif_time = None
-            if last_modif_time != None:
+            if last_modif_time is not None:
                 last_modif_freshness = (
                     t_now - last_modif_time).total_seconds()/t_base
             if self._extract_google_cache:
                 google_cache_time = self.get_google_cache_last_indexed(uri)
-                if google_cache_time != None:
+                if google_cache_time is not None:
                     google_cache_freshness = (
                         t_now - google_cache_time).total_seconds()/t_base
             self.results.append(FreshnessOfURI(
@@ -59,7 +59,7 @@ class ExternalURIsFreshnessChecker:
             response = requests.head(uri)
         except:
             return None
-        if response.headers.get('Last-Modified') != None:
+        if response.headers.get('Last-Modified') is not None:
             ret_date_str = response.headers.get('Last-Modified')
             return datetime.datetime.strptime(ret_date_str, '%a, %d %b %Y %H:%M:%S %Z')
         return None
@@ -87,33 +87,33 @@ class ExternalURIsFreshnessChecker:
 
     @property
     def last_modif_score(self):
-        if self.results != None:
+        if self.results is not None:
             scored_list = [
-                i.freshness_last_modif for i in self.results if i.freshness_last_modif != None]
+                i.freshness_last_modif for i in self.results if i.freshness_last_modif is not None]
             return sum(scored_list)/len(scored_list) if len(scored_list) > 0 else '<None>'
         return None
 
     @property
     def google_cache_score(self):
-        if self.results != None:
+        if self.results is not None:
             scored_list = [
-                i.freshness_google_cache for i in self.results if i.freshness_google_cache != None]
+                i.freshness_google_cache for i in self.results if i.freshness_google_cache is not None]
             return sum(scored_list)/len(scored_list) if len(scored_list) > 0 else '<None>'
         return None
 
     @property
     def num_last_modif_tag(self):
-        if self.results != None:
+        if self.results is not None:
             scored_list = [
-                i.freshness_last_modif for i in self.results if i.freshness_last_modif != None]
+                i.freshness_last_modif for i in self.results if i.freshness_last_modif is not None]
             return len(scored_list) if len(scored_list) > 0 else '<None>'
         return None
 
     @property
     def num_google_cache(self):
-        if self.results != None:
+        if self.results is not None:
             scored_list = [
-                i.freshness_google_cache for i in self.results if i.freshness_google_cache != None]
+                i.freshness_google_cache for i in self.results if i.freshness_google_cache is not None]
             return len(scored_list) if len(scored_list) > 0 else '<None>'
         return None
 

@@ -38,13 +38,8 @@ class PropertyCompletenessChecker:
 
     def __init__(self, dataset_facts_refs: List[FactRef]):
         self._input = dataset_facts_refs
-        self._df = pd.DataFrame(
-            columns=['statement_id', 'fact', 'ref_predicate'])
-        for x in self._input:
-            self._df = self._df.append({
-                'statement_id': x.statement_id,
-                'fact': x.fact,
-                'ref_predicate': x.ref_predicate if x.ref_predicate is not None else np.nan}, ignore_index=True)
+        if not self._input: pass
+        self._df = pd.DataFrame.from_records(self._input, columns=self._input[0]._fields)
 
     def check_property_completeness_Wikidata(self) -> List[PropertyCompletenessResult]:
         self.results = []
@@ -53,7 +48,7 @@ class PropertyCompletenessChecker:
 
     @property
     def score(self):
-        if self.results != None:
+        if self.results is not None:
             total = len(
                 [i for i in self._input if i.ref_predicate is not None])
             return sum([i.score for i in self.results])/total if total > 0 else 1
@@ -61,7 +56,7 @@ class PropertyCompletenessChecker:
 
     @property
     def score_including_not_refed(self):
-        if self.results != None:
+        if self.results is not None:
             total_including_not_refed = len(self._input)
             return sum([i.score_including_not_refed for i in self.results])/total_including_not_refed if total_including_not_refed > 0 else 1
         return None

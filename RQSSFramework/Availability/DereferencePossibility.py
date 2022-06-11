@@ -38,7 +38,7 @@ class DerefrenceExplorer:
 
     @property
     def score(self):
-        if self.results != None:
+        if self.results is not None:
             return sum([1 for i in self.results if i.deref])/len(self.results)
         return None
 

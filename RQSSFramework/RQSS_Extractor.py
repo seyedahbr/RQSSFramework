@@ -319,7 +319,6 @@ def extract_classes_facts_refs(opts: ArgumentParser) -> int:
         end_time - start_time))
     return 0
 
-
 def extract_statement_fact_refed_props_wikimedia(opts: ArgumentParser) -> int:
     print('Started extracting statement id, fact of the statement and the reference properties')
     start_time = datetime.now()
@@ -414,9 +413,9 @@ def RQSS_Extractor(argv: Optional[Union[str, List[str]]] = None, prog: Optional[
     print('Creating output directory: {0}'.format(opts.output_dir))
     Path(opts.output_dir).mkdir(parents=True, exist_ok=True)
 
-    if(opts.input != None):
+    if(opts.input is not None):
         return extract_from_file(opts)
-    if(opts.endpoint != None):
+    if(opts.endpoint is not None):
         return extract_from_endpoint(opts)
 
     return 0

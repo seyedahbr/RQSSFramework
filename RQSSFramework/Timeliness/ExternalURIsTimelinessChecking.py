@@ -57,9 +57,9 @@ class ExternalURIsTimelinessChecker:
 
     @property
     def score(self):
-        if self.results != None:
+        if self.results is not None:
             scored_list = [
-                i.timeliness for i in self.results if i.timeliness != None]
+                i.timeliness for i in self.results if i.timeliness is not None]
             return sum(scored_list)/len(scored_list) if len(scored_list) > 0 else '<None>'
         return None
 

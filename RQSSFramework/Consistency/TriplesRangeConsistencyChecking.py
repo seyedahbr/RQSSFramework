@@ -77,7 +77,7 @@ class TriplesRangeConsistencyChecker:
 
     @property
     def score(self):
-        if self.results != None:
+        if self.results is not None:
             return 1 - sum([0 if np.isnan(i.fails) else i.fails for i in self.results])/sum([i.total for i in self.results])
         return None
 

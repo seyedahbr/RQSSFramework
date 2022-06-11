@@ -47,14 +47,14 @@ class ClassesPropertiesSchemaCompletenessChecker:
 
     @property
     def property_schema_completeness_score(self):
-        if self.results != None:
+        if self.results is not None:
             total = sum([i.total_refed_properties for i in self.results])
             return sum([i.num_properties_schema_exists for i in self.results])/total if total > 0 else 1
         return None
 
     @property
     def class_schema_completeness_score(self):
-        if self.results != None:
+        if self.results is not None:
             return len([i for i in self.results if i.num_properties_schema_exists > 0])/len(self.results) if len(self.results) > 0 else 1
         return None
 
