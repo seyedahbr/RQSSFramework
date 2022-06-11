@@ -70,7 +70,7 @@ class TestRefPropertiesCompletenessChecking(unittest.TestCase):
         ret = test_class.check_property_completeness_Wikidata()
         self.assertGreaterEqual(test_class.score, 0)
         self.assertLessEqual(test_class.score, 1)
-        self.assertGreaterEqual(test_class, 0)
+        self.assertGreaterEqual(test_class.score_including_not_refed, 0)
         self.assertLessEqual(test_class.score_including_not_refed, 1)
         with open('property_completeness_ratio.test.csv', 'w') as file_handler:
             file_handler.write(str(test_class))
