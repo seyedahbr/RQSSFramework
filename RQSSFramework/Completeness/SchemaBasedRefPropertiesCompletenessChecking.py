@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from typing import Dict, List, NamedTuple
 
-import numpy as np
 import pandas as pd
 from EntitySchemaExtractor import EidRefSummary
 
@@ -31,8 +30,7 @@ class SchemaBasedCompletenessResult(NamedTuple):
 \tScore (including not referenced instances): {6}'''.format(self.fact, self.ref_predicate, self.total_instances, self.total_instances_not_refed, self.total_refed_instances_schema_based, self.score, self.score_including_not_refed)
 
 
-@dataclass
-class FactRef:
+class FactRef(NamedTuple):
     statement_id: str
     fact: str
     ref_predicate: str = None
@@ -47,14 +45,9 @@ class SchemaBasedRefPropertiesCompletenessChecker:
 
     def __init__(self, dataset: List[FactRef]):
         self._input = dataset
-        self._df = pd.DataFrame(
-            columns=['statement_id', 'fact', 'ref_predicate'])
-        for x in self._input:
-            self._df = self._df.append({
-                'statement_id': x.statement_id,
-                'fact': x.fact,
-                'ref_predicate': x.ref_predicate if x.ref_predicate is not None else np.nan}, ignore_index=True)
-
+        if not self._input: pass
+        self._df = pd.DataFrame.from_records(self._input, columns=self._input[0]._fields)
+        
     def check_schema_based_property_completeness_Wikidata(self, wikidata_entityschemas_ref_summery: List[EidRefSummary]) -> List[SchemaBasedCompletenessResult]:
         self.results = []
         eschema_facts_refs = self._get_eschema_distinct_properties_and_ref_predicates(
@@ -71,7 +64,6 @@ class SchemaBasedRefPropertiesCompletenessChecker:
                     self._df['ref_predicate'] == ref)].drop_duplicates('statement_id'))
                 self.results.append(SchemaBasedCompletenessResult(
                     fact, ref, total_instances, total_instances_not_refed, total_refed_instances_schema_based))
-
         return self.results
 
     def _get_eschema_distinct_properties_and_ref_predicates(self, wikidata_entityschemas_ref_summery: List[EidRefSummary]) -> Dict:
