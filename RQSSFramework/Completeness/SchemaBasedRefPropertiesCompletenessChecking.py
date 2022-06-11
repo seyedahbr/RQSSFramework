@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import Dict, List, NamedTuple
 
 import pandas as pd
@@ -45,9 +44,11 @@ class SchemaBasedRefPropertiesCompletenessChecker:
 
     def __init__(self, dataset: List[FactRef]):
         self._input = dataset
-        if not self._input: pass
-        self._df = pd.DataFrame.from_records(self._input, columns=self._input[0]._fields)
-        
+        if not self._input:
+            pass
+        self._df = pd.DataFrame.from_records(
+            self._input, columns=self._input[0]._fields)
+
     def check_schema_based_property_completeness_Wikidata(self, wikidata_entityschemas_ref_summery: List[EidRefSummary]) -> List[SchemaBasedCompletenessResult]:
         self.results = []
         eschema_facts_refs = self._get_eschema_distinct_properties_and_ref_predicates(
