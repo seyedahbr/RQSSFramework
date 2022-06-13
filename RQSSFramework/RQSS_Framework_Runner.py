@@ -16,6 +16,7 @@ from Accuracy.TripleSyntaxChecking import WikibaseRefTripleSyntaxChecker
 from Availability.DereferencePossibility import DerefrenceExplorer
 from Believability.HumanReferenceInItemChecking import *
 from Completeness.ClassesPropertiesSchemaCompletenessChecking import *
+from Completeness.PropertyCompletenessChecking import *
 from Completeness.SchemaBasedRefPropertiesCompletenessChecking import *
 from Conciseness.ReferenceSharingChecking import *
 from Consistency.RefPropertiesConsistencyChecking import \
@@ -53,37 +54,39 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
     parser.add_argument("-rts", "--ref-triple-syntax",
                         help="Compute the metric: Syntactic Validity of Reference Triples", action='store_true')
     parser.add_argument("-rls", "--ref-literal-syntax",
-                        help="Compute the metric: Syntactic validity of references’ literals", action='store_true')
+                        help="Compute the metric: Syntactic Validity of References’ Literals", action='store_true')
     parser.add_argument("-rtm", "--ref-triple-semantic",
-                        help="Compute the metric: Semantic validity of reference triples", action='store_true')
+                        help="Compute the metric: Semantic Validity of Reference Triples", action='store_true')
     parser.add_argument("-rpc", "--ref-property-consistency",
-                        help="Compute the metric: Consistency of references’ properties", action='store_true')
+                        help="Compute the metric: Consistency of References’ Properties", action='store_true')
     parser.add_argument("-rc", "--range-consistency",
-                        help="Compute the metric: Range consistency of reference triples", action='store_true')
+                        help="Compute the metric: Range Consistency of Reference Triples", action='store_true')
     parser.add_argument("-rs", "--ref-sharing",
-                        help="Compute the metric: Ratio of reference sharing", action='store_true')
+                        help="Compute the metric: Ratio of Reference Sharing", action='store_true')
     parser.add_argument("-rdns", "--reputation",
-                        help="Compute the metric: External sources’ domain reputation", action='store_true')
+                        help="Compute the metric: External Sources’ Domain Reputation", action='store_true')
     parser.add_argument("-mr", "--multiple-ref",
-                        help="Compute the metric: Multiple references for facts", action='store_true')
+                        help="Compute the metric: Multiple References for Facts", action='store_true')
     parser.add_argument("-ha", "--human-added",
-                        help="Compute the metric: Human-added references ratio", action='store_true')
+                        help="Compute the metric: Human-added References Ratio", action='store_true')
     parser.add_argument("-rf", "--ref-freshness",
-                        help="Compute the metric: Freshness of fact referencing", action='store_true')
+                        help="Compute the metric: Freshness of Fact Referencing", action='store_true')
     parser.add_argument("-ef", "--ext-uris-freshness",
-                        help="Compute the metric: Freshness of external sources", action='store_true')
+                        help="Compute the metric: Freshness of External Sources", action='store_true')
     freshness_group = parser.add_argument_group(
         title='options for computing freshness of external sources')
     freshness_group.add_argument(
         "--extract-google-cache", help="Set to extract google cache info for freshness of external sources", action='store_true')
     parser.add_argument("-ev", "--ext-uris-volatility",
-                        help="Compute the metric: Volatility of external sources", action='store_true')
+                        help="Compute the metric: Volatility of External Sources", action='store_true')
     parser.add_argument("-et", "--ext-uris-timeliness",
-                        help="Compute the metric: Timeliness of external sources. The metric will use the results of the metrics Freshness of external sources and Volatility of external sources. Make sure the results of the two metric is in the --output-dir argument", action='store_true')
+                        help="Compute the metric: Timeliness of External Sources. The metric will use the results of the metrics Freshness of external sources and Volatility of external sources. Make sure the results of the two metric is in the --output-dir argument", action='store_true')
     parser.add_argument("-cpsc", "--class-property-schema-completeness",
-                        help="Compute the metric: Schema completeness of references", action='store_true')
+                        help="Compute the metric: Schema Completeness of References", action='store_true')
     parser.add_argument("-sbpc", "--schema-based-property-completeness",
-                        help="Compute the metric: Schema-based property completeness of references", action='store_true')
+                        help="Compute the metric: Schema-based Property Completeness of References", action='store_true')
+    parser.add_argument("-pc", "--property-completeness",
+                        help="Compute the metric: Property Completeness of References", action='store_true')
 
     return parser
 
@@ -934,12 +937,58 @@ def compute_schema_based_property_completeness(opts: ArgumentParser) -> int:
     end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
-    if results: write_results_to_CSV(schema_comp_checker.results, output_file_dist)
-    write_results_to_CSV(str(schema_comp_checker), output_file_result) 
+    if results:
+        write_results_to_CSV(schema_comp_checker.results, output_file_dist)
+    write_results_to_CSV(str(schema_comp_checker), output_file_result)
 
     print('Metric: Schema-based property completeness of references results have been written in the file: {0} and {1}'.format(
         output_file_dist, output_file_result))
     print('DONE. Metric: Schema-based property completeness of references, Duration: {0}'.format(
+        end_time - start_time))
+    return 0
+
+
+def compute_property_completeness(opts: ArgumentParser) -> int:
+    print('Started computing Metric: Property Completeness of References')
+    input_data_file = os.path.join(
+        opts.data_dir + os.sep + 'statement_fact_refed_props.data')
+    output_file_dist = os.path.join(
+        opts.output_dir + os.sep + 'property_completeness.csv')
+    output_file_result = os.path.join(
+        opts.output_dir + os.sep + 'property_completeness_ratio.csv')
+
+    # reading the input instance-level data
+    print('Reading instance-level data ...')
+    refed_fact_refs: List[FactRef] = []
+    try:
+        with open(input_data_file, encoding="utf8") as file:
+            reader = csv.reader(file)
+            for row in reader:
+                try:
+                    refed_fact_refs.append(FactRef(row[0], row[1], row[2]))
+                except IndexError:
+                    refed_fact_refs.append(FactRef(row[0], row[1]))
+    except FileNotFoundError:
+        print("Error: Input data file not found. Provide input data file with name: {0} in data_dir".format(
+            '"statement_fact_refed_props.data"'))
+        exit(1)
+
+    # running the framework metric function
+    print('Running metric ...')
+    start_time = datetime.datetime.now()
+    schema_comp_checker = PropertyCompletenessChecker(
+        refed_fact_refs)
+    results = schema_comp_checker.check_property_completeness_Wikidata()
+    end_time = datetime.datetime.now()
+
+    # saving the results for presentation layer
+    if results:
+        write_results_to_CSV(schema_comp_checker.results, output_file_dist)
+    write_results_to_CSV(str(schema_comp_checker), output_file_result)
+
+    print('Metric: Property Completeness of References results have been written in the file: {0} and {1}'.format(
+        output_file_dist, output_file_result))
+    print('DONE. Metric: Property Completeness of References, Duration: {0}'.format(
         end_time - start_time))
     return 0
 
@@ -1017,6 +1066,9 @@ def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Op
         framework_procs.append(p)
     if opts.schema_based_property_completeness:
         p = Process(target=compute_schema_based_property_completeness(opts))
+        framework_procs.append(p)
+    if opts.property_completeness:
+        p = Process(target=compute_property_completeness(opts))
         framework_procs.append(p)
 
     for proc in framework_procs:
