@@ -26,27 +26,27 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
     parser.add_argument("-eExt", "--extract-external",
                         help="Extract all external sources uris (Wikibase referencing model) and save them on output dir. Collects data for computing Dimensions: Availability, Licensing, Security", action='store_true')
     parser.add_argument("-sn", "--statement-nodes",
-                        help="Extract all statement nodes uris (Wikibase referencing model) and save them on output dir. Collects data for computing Metric: Syntactic validity of reference triples", action='store_true')
+                        help="Extract all statement nodes uris (Wikibase referencing model) and save them on output dir. Collects data for computing Metric: Syntactic Validity of Reference Triples", action='store_true')
     parser.add_argument("-l", "--literals",
-                        help="Extract all literal values in reference triples and save them on output dir. Collects data for computing Metric: Syntactic validity of references’ literals", action='store_true')
+                        help="Extract all literal values in reference triples and save them on output dir. Collects data for computing Metric: Syntactic Validity of References’ Literals", action='store_true')
     parser.add_argument("-fr", "--fact-ref-triples",
-                        help="Extract all facts and their reference triples and save them on output dir. Collects data for computing Metric: Semantic validity of reference triples", action='store_true')
+                        help="Extract all facts and their reference triples and save them on output dir. Collects data for computing Metric: Semantic Validity of Reference Triples", action='store_true')
     parser.add_argument("-rp", "--ref-properties",
-                        help="Extract all reference properties and save them on output dir. Collects data for computing Metric: Consistency of references’ properties", action='store_true')
+                        help="Extract all reference properties and save them on output dir. Collects data for computing Metric: Consistency of References’ Properties", action='store_true')
     parser.add_argument("-rpvt", "--ref-prop-value-type",
-                        help="Extract all reference properties and their object value types and save them on output dir. Collects data for computing Metric: Range consistency of reference triples", action='store_true')
+                        help="Extract all reference properties and their object value types and save them on output dir. Collects data for computing Metric: Range Consistency of Reference Triples", action='store_true')
     parser.add_argument("-ri", "--ref-incomings",
-                        help="Extract all reference nodes and the numebr of their incoming edges (prov:wasDerivedFrom) and save them on output dir. Collects data for computing Metric: Ratio of reference sharing", action='store_true')
+                        help="Extract all reference nodes and the numebr of their incoming edges (prov:wasDerivedFrom) and save them on output dir. Collects data for computing Metric: Ratio of Reference Sharing", action='store_true')
     parser.add_argument("-sr", "--statement-refs",
-                        help="Extract all sattement nodes and the numebr of their references and save them on output dir. Collects data for computing Metric: Multiple references for facts", action='store_true')
+                        help="Extract all sattement nodes and the numebr of their references and save them on output dir. Collects data for computing Metric: Multiple References for Facts", action='store_true')
     parser.add_argument("-irf", "--item-refed-facts",
-                        help="Extract all items and their referenced facts and save them on output dir. Collects data for computing Metric: Human-added references ratio", action='store_true')
+                        help="Extract all items and their referenced facts and save them on output dir. Collects data for computing Metric: Human-added References Ratio", action='store_true')
     parser.add_argument("-wes", "--wikidata-eschema-data",
-                        help="Extract most up-to-date Wikidata EntitySchemas data from Wikidata directory and save them on output dir. Collects data for computing COMPLETENESS metrics", action='store_true')
+                        help="Extract most up-to-date Wikidata EntitySchemas data from Wikidata directory and save them on output dir. Collects Wikidata E-ids data for computing COMPLETENESS metrics", action='store_true')
     parser.add_argument("-cfr", "--classes-facts-refs",
                         help="Extract all classes of referenced items, and their referenced facts and the reference properties (distinct) and save them on output dir. Collects data for computing Metric: Schema completeness of references", action='store_true')
     parser.add_argument("-sfr", "--statements-facts-refs",
-                        help="Extract all statement id, fact of the statement and the reference properties and save them on output dir. Collects data for computing Metric: Schema-based property completeness of references", action='store_true')
+                        help="Extract all statement id, fact of the statement and the reference properties and save them on output dir. Collects data for computing Metrics: Schema-based Property Completeness and Property Completeness of references", action='store_true')
     return parser
 
 
