@@ -10,6 +10,20 @@ SELECT ?to_ret WHERE
 
 Limit 3
 ''',
+"get_all_statementNodes_refNodes_refValues_wikimedia":
+'''
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+PREFIX wdref: <http://www.wikidata.org/reference/>
+SELECT ?statementNode ?refNode ?refValue WHERE{
+  ?statementNode a wikibase:Statement.
+  ?statementNode prov:wasDerivedFrom ?refNode.
+  ?refNode ?predicate ?refValue .
+  MINUS {?refValue a wikibase:TimeValue}
+  MINUS {?refValue a wikibase:QuantityValue}
+  FILTER (?refValue != <http://wikiba.se/ontology#Reference>)
+}
+''',
 "get_statement_fact_refed_props_wikimedia":
 '''
 PREFIX wikibase: <http://wikiba.se/ontology#>
