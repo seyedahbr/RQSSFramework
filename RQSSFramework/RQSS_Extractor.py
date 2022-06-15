@@ -47,6 +47,8 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
                         help="Extract all classes of referenced items, and their referenced facts and the reference properties (distinct) and save them on output dir. Collects data for computing Metric: Schema completeness of references", action='store_true')
     parser.add_argument("-sfr", "--statements-facts-refs",
                         help="Extract all statement id, fact of the statement and the reference properties and save them on output dir. Collects data for computing Metrics: Schema-based Property Completeness and Property Completeness of references", action='store_true')
+    parser.add_argument("-aof", "--amount-of-data",
+                        help="Extract number of statement nodes, reference nodes, and distribution of triple and literals amongst reference nodes. Collects data for computing Amount-of-Data metrics", action='store_true')
     return parser
 
 
@@ -319,6 +321,7 @@ def extract_classes_facts_refs(opts: ArgumentParser) -> int:
         end_time - start_time))
     return 0
 
+
 def extract_statement_fact_refed_props_wikimedia(opts: ArgumentParser) -> int:
     print('Started extracting statement id, fact of the statement and the reference properties')
     start_time = datetime.now()
@@ -337,6 +340,57 @@ def extract_statement_fact_refed_props_wikimedia(opts: ArgumentParser) -> int:
     print('Statement id, fact of the statement and the reference properties have been written in the file: {0}'.format(
         output_file))
     print('DONE. Extracting statement id, fact of the statement and the reference properties, Duration: {0}'.format(
+        end_time - start_time))
+    return 0
+
+
+def extract_amount_of_data_wikimedia(opts: ArgumentParser) -> int:
+    print('Started extracting number of statement nodes, reference nodes, and distribution of triple and literals amongst reference nodes')
+    start_time = datetime.now()
+
+    output_file_num = os.path.join(
+        opts.output_dir + os.sep + 'num_of_statement_and_ref_nodes.data')
+    output_file_triple_dist = os.path.join(
+        opts.output_dir + os.sep + 'triple_per_ref_node_distribution.data')
+    output_file_literal_dist = os.path.join(
+        opts.output_dir + os.sep + 'literal_per_ref_node_distribution.data')
+
+    print('Get number of statement nodes')
+    num_statement_nodes = perform_query(
+        opts.endpoint, RQSS_QUERIES["get_num_of_statement_nodes_wikimedia"])
+    print('Get number of reference nodes')
+    num_ref_nodes = perform_query(
+        opts.endpoint, RQSS_QUERIES["get_num_of_ref_nodes_wikimedia"])
+
+    with open(output_file_num, 'w', newline='') as file_handler:
+        csv_writer = csv.writer(
+            file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        csv_writer.writerow(
+            ['num of statement nodes', 'num of reference nodes'])
+        csv_writer.writerow([num_statement_nodes[0][0], num_ref_nodes[0][0]])
+
+    print('Get triple per reference node distribution')
+    triple_dist = perform_query(
+        opts.endpoint, RQSS_QUERIES["get_triple_per_ref_node_distribution_wikimedia"])
+    with open(output_file_triple_dist, 'w', newline='') as file_handler:
+        csv_writer = csv.writer(
+            file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        for row in triple_dist:
+            csv_writer.writerow(row)
+    
+    print('Get literal values per reference node distribution')
+    literal_dist = perform_query(
+        opts.endpoint, RQSS_QUERIES["get_literal_per_ref_node_distribution_wikimedia"])
+    with open(output_file_literal_dist, 'w', newline='') as file_handler:
+        csv_writer = csv.writer(
+            file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        for row in literal_dist:
+            csv_writer.writerow(row)
+
+    end_time = datetime.now()
+    print('Number of statement nodes, reference nodes, and distribution of triple and literals amongst reference nodes have been written in the files: {0}, {1}, {2}'.format(
+        output_file_num, output_file_triple_dist, output_file_literal_dist))
+    print('DONE. Extracting number of statement nodes, reference nodes, and distribution of triple and literals amongst reference nodes, Duration: {0}'.format(
         end_time - start_time))
     return 0
 
@@ -396,6 +450,10 @@ def extract_from_endpoint(opts: ArgumentParser) -> int:
 
     if(opts.statements_facts_refs):
         p = Process(target=extract_statement_fact_refed_props_wikimedia(opts))
+        extractor_procs.append(p)
+
+    if(opts.amount_of_data):
+        p = Process(target=extract_amount_of_data_wikimedia(opts))
         extractor_procs.append(p)
 
     for proc in extractor_procs:
