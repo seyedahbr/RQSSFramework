@@ -10,6 +10,49 @@ SELECT ?to_ret WHERE
 
 Limit 3
 ''',
+"get_literal_per_ref_node_distribution_wikimedia":
+'''
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+PREFIX wdref: <http://www.wikidata.org/reference/>
+SELECT  DISTINCT ?refNode (COUNT(?object) AS ?numOfTriples) WHERE{
+  ?refNode a wikibase:Reference .
+  ?refNode ?predicate ?object .
+  FILTER (isLiteral(?object))
+  MINUS {?object a wikibase:TimeValue}
+  MINUS {?object a wikibase:QuantityValue}
+  FILTER (?object != <http://wikiba.se/ontology#Reference>)
+}GROUP BY ?refNode
+'''
+,
+"get_triple_per_ref_node_distribution_wikimedia":
+'''
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+PREFIX wdref: <http://www.wikidata.org/reference/>
+SELECT  DISTINCT ?refNode (COUNT(?object) AS ?numOfTriples) WHERE{
+  ?refNode a wikibase:Reference .
+  ?refNode ?predicate ?object .
+  MINUS {?object a wikibase:TimeValue}
+  MINUS {?object a wikibase:QuantityValue}
+  FILTER (?object != <http://wikiba.se/ontology#Reference>)
+}GROUP BY ?refNode
+'''
+,
+"get_num_of_ref_nodes_wikimedia":
+'''
+PREFIX wikibase: <http://wikiba.se/ontology#>
+SELECT (COUNT(DISTINCT ?ref) AS ?numORefNodes) WHERE{
+	?ref a wikibase:Reference.
+}
+''',
+"get_num_of_statement_nodes_wikimedia":
+'''
+PREFIX wikibase: <http://wikiba.se/ontology#>
+SELECT (COUNT(DISTINCT ?statement) AS ?numOfStatementNodes) WHERE{ 
+	?statement a wikibase:Statement.
+}
+''',
 "get_all_statementNodes_refNodes_refValues_wikimedia":
 '''
 PREFIX wikibase: <http://wikiba.se/ontology#>
