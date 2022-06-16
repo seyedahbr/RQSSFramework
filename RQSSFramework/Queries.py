@@ -141,8 +141,9 @@ SELECT ?refnode (COUNT(?item) AS ?numOfStatements) WHERE{
 PREFIX wikibase: <http://wikiba.se/ontology#>
 PREFIX prov: <http://www.w3.org/ns/prov#>
 PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-SELECT DISTINCT (REPLACE(STR(?refProperty),".*P","P") AS ?ret1)
-                (REPLACE(STR(?refVlueType),".*Q","Q") AS ?ret2) WHERE{
+SELECT (REPLACE(STR(?refProperty),".*P","P") AS ?ret1)
+       (REPLACE(STR(?refObject),".*Q","Q") AS ?ret2)
+       (REPLACE(STR(?refVlueType),".*Q","Q") AS ?ret3) WHERE{
   ?refNode a wikibase:Reference.
   ?refNode ?refProperty ?refObject.
   OPTIONAL
