@@ -145,15 +145,8 @@ SELECT DISTINCT (REPLACE(STR(?refProperty),".*P","P") AS ?ret1)
                 (REPLACE(STR(?refVlueType),".*Q","Q") AS ?ret2) WHERE{
   ?refNode a wikibase:Reference.
   ?refNode ?refProperty ?refObject.
-  OPTIONAL{
-    {?refobject wdt:P31/wdt:P279* ?refVlueType.}
-    UNION
-    {
-      service <https://query.wikidata.org/sparql> {
-        ?refobject wdt:P31/wdt:P279* ?refVlueType.
-      }
-    }
-  }
+  OPTIONAL
+  {?refobject wdt:P31/wdt:P279* ?refVlueType.}
 }
 ''',
 "get_property_range_wikimedia":
