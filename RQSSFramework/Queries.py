@@ -139,15 +139,12 @@ SELECT ?refnode (COUNT(?item) AS ?numOfStatements) WHERE{
 "get_ref_properties_object_value_types_wikimedia":
 '''
 PREFIX wikibase: <http://wikiba.se/ontology#>
-PREFIX prov: <http://www.w3.org/ns/prov#>
-PREFIX wdt: <http://www.wikidata.org/prop/direct/>
 SELECT (REPLACE(STR(?refProperty),".*P","P") AS ?ret1)
-       (REPLACE(STR(?refObject),".*Q","Q") AS ?ret2)
-       (REPLACE(STR(?refVlueType),".*Q","Q") AS ?ret3) WHERE{
-  ?refNode a wikibase:Reference.
-  ?refNode ?refProperty ?refObject.
-  OPTIONAL
-  {?refobject wdt:P31/wdt:P279* ?refVlueType.}
+       (REPLACE(STR(?refObject),".*Q","Q") AS ?ret2) WHERE{
+  ?ref a wikibase:Reference.
+  ?ref ?refProperty ?refObject.
+  FILTER(STRSTARTS(STR(?refProperty),'http://www.wikidata.org/prop/reference/'))
+  FILTER(STRSTARTS(STR(?refObject),'http://www.wikidata.org/entity/'))
 }
 ''',
 "get_property_range_wikimedia":
