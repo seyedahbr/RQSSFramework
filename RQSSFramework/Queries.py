@@ -147,6 +147,16 @@ SELECT (REPLACE(STR(?refProperty),".*P","P") AS ?ret1)
   FILTER(STRSTARTS(STR(?refObject),'http://www.wikidata.org/entity/'))
 }
 ''',
+"get_instances_subclass_of_values_wikimedia":
+'''
+SELECT DISTINCT (REPLACE(STR(?item),".*Q","Q") AS ?to_ret) WHERE{{
+  {{wd:{0} wdt:P279+ ?item.}}
+  UNION{{
+    wd:{0} wdt:P31/wdt:279* ?item.
+  }}
+}}
+'''
+,
 "get_property_range_wikimedia":
 '''
 SELECT (REPLACE(STR(?constr),".*Q","Q") AS ?to_ret) WHERE{{wd:{0} p:P2302 [ps:P2302 wd:Q21510865;
