@@ -79,7 +79,7 @@ def extract_external_uris(opts: ArgumentParser) -> int:
     external_uris = perform_query(
         opts.endpoint, RQSS_QUERIES["get_all_external_sources_filter_wikimedia_distinct"])
     output_file = os.path.join(opts.output_dir + os.sep + 'external_uris.data')
-    with open(output_file, 'w') as file_handler:
+    with open(output_file, 'w', newline='') as file_handler:
         csv_writer = csv.writer(
             file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for uri in external_uris:
@@ -101,7 +101,7 @@ def extract_statement_nodes_uris(opts: ArgumentParser) -> int:
         opts.endpoint, RQSS_QUERIES["get_all_statement_nodes_wikimedia"])
     output_file = os.path.join(
         opts.output_dir + os.sep + 'statement_nodes_uris.data')
-    with open(output_file, 'w') as file_handler:
+    with open(output_file, 'w', newline='') as file_handler:
         csv_writer = csv.writer(
             file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for uri in statement_uris:
@@ -123,7 +123,7 @@ def extract_refrence_literals(opts: ArgumentParser) -> int:
         opts.endpoint, RQSS_QUERIES["get_reference_literals_wikimedia"])
     output_file = os.path.join(
         opts.output_dir + os.sep + 'reference_literals.data')
-    with open(output_file, 'w') as file_handler:
+    with open(output_file, 'w', newline='') as file_handler:
         csv_writer = csv.writer(
             file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for lit in ref_literals:
@@ -145,7 +145,7 @@ def extract_fact_ref_triples(opts: ArgumentParser) -> int:
         opts.endpoint, RQSS_QUERIES["get_fact_ref_triples_wikimedia"])
     output_file = os.path.join(
         opts.output_dir + os.sep + 'fact_ref_triples.data')
-    with open(output_file, 'w') as file_handler:
+    with open(output_file, 'w', newline='') as file_handler:
         csv_writer = csv.writer(
             file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for row in fact_ref_triples:
@@ -167,7 +167,7 @@ def extract_reference_properties(opts: ArgumentParser) -> int:
         opts.endpoint, RQSS_QUERIES["get_ref_properties_wikimedia"])
     output_file = os.path.join(
         opts.output_dir + os.sep + 'ref_properties.data')
-    with open(output_file, 'w') as file_handler:
+    with open(output_file, 'w', newline='') as file_handler:
         csv_writer = csv.writer(
             file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for row in ref_props:
@@ -189,7 +189,7 @@ def extract_reference_properties_value_types(opts: ArgumentParser) -> int:
         opts.endpoint, RQSS_QUERIES["get_ref_properties_object_value_types_wikimedia"])
     output_file = os.path.join(
         opts.output_dir + os.sep + 'ref_properties_object_value.data')
-    with open(output_file, 'w') as file_handler:
+    with open(output_file, 'w', newline='') as file_handler:
         csv_writer = csv.writer(
             file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for row in ref_props:
@@ -211,7 +211,7 @@ def extract_reference_node_incomings(opts: ArgumentParser) -> int:
         opts.endpoint, RQSS_QUERIES["get_ref_nodes_incomings_wikimedia"])
     output_file = os.path.join(
         opts.output_dir + os.sep + 'ref_nodes_incomings.data')
-    with open(output_file, 'w') as file_handler:
+    with open(output_file, 'w', newline='') as file_handler:
         csv_writer = csv.writer(
             file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for row in ref_props:
@@ -233,7 +233,7 @@ def extract_statement_node_references(opts: ArgumentParser) -> int:
         opts.endpoint, RQSS_QUERIES["get_sattement_nodes_ref_num_wikimedia"])
     output_file = os.path.join(
         opts.output_dir + os.sep + 'statement_node_ref_num.data')
-    with open(output_file, 'w') as file_handler:
+    with open(output_file, 'w', newline='') as file_handler:
         csv_writer = csv.writer(
             file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for row in ref_props:
@@ -255,7 +255,7 @@ def extract_item_referenced_facts(opts: ArgumentParser) -> int:
         opts.endpoint, RQSS_QUERIES["get_item_refed_facts_wikimedia"])
     output_file = os.path.join(
         opts.output_dir + os.sep + 'item_refed_facts.data')
-    with open(output_file, 'w') as file_handler:
+    with open(output_file, 'w', newline='') as file_handler:
         csv_writer = csv.writer(
             file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for row in item_refed_facts:
@@ -377,7 +377,7 @@ def extract_amount_of_data_wikimedia(opts: ArgumentParser) -> int:
             file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for row in triple_dist:
             csv_writer.writerow(row)
-    
+
     print('Get literal values per reference node distribution')
     literal_dist = perform_query(
         opts.endpoint, RQSS_QUERIES["get_literal_per_ref_node_distribution_wikimedia"])
