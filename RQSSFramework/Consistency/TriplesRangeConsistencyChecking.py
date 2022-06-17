@@ -68,10 +68,14 @@ class TriplesRangeConsistencyChecker:
             sparql.setQuery(
                 RQSS_QUERIES['get_property_range_wikimedia'].format(prop))
             sparql.setReturnFormat(JSON)
-            results = sparql.query().convert()
-            for result in results["results"]["bindings"]:
-                value = result["to_ret"]["value"]
-                ret_val[str(prop)].append(value)
+            try:
+                results = sparql.query().convert()
+                for result in results["results"]["bindings"]:
+                    value = result["to_ret"]["value"]
+                    ret_val[str(prop)].append(value)
+            except Exception as e:
+                print('\t\t ERROR: ', e)
+                continue
         return ret_val
 
     def get_instances_subclass_of_values_from_Wikidata(self) -> Dict:
@@ -89,11 +93,15 @@ class TriplesRangeConsistencyChecker:
             print('\t Getting instances or subclasses of value: ', ref_value)
             sparql.setQuery(
                 RQSS_QUERIES['get_instances_subclass_of_values_wikimedia'].format(ref_value))
-            sparql.setReturnFormat(JSON)
-            results = sparql.query().convert()
-            for result in results["results"]["bindings"]:
-                query_value = result["to_ret"]["value"]
-                ret_val[ref_value].append(query_value)
+            try:
+                sparql.setReturnFormat(JSON)
+                results = sparql.query().convert()
+                for result in results["results"]["bindings"]:
+                    query_value = result["to_ret"]["value"]
+                    ret_val[ref_value].append(query_value)
+            except Exception as e:
+                print('\t\t ERROR: ', e)
+                continue
         return ret_val
 
     @property

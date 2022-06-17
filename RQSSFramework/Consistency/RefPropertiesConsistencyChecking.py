@@ -27,16 +27,21 @@ class RefPropertiesConsistencyChecker:
         sparql = SPARQLWrapper(
             "https://query.wikidata.org/sparql", agent=user_agent)
         for prop in self._ref_properties:
+            print('\t Getting specificity of reference property: ', prop)
             sparql.setQuery(
                 RQSS_QUERIES['get_property_constraints_specificity'].format(prop))
             sparql.setReturnFormat(JSON)
-            results = sparql.query().convert()
-            for result in results["results"]["bindings"]:
-                value = result["to_ret"]["value"]
-                if value == 'true':
-                    self.results.append(PropConsistencyResult(prop, True))
-                else:
-                    self.results.append(PropConsistencyResult(prop, False))
+            try:
+                results = sparql.query().convert()
+                for result in results["results"]["bindings"]:
+                    value = result["to_ret"]["value"]
+                    if value == 'true':
+                        self.results.append(PropConsistencyResult(prop, True))
+                    else:
+                        self.results.append(PropConsistencyResult(prop, False))
+            except Exception as e:
+                print('\t\t ERROR: ', e)
+                continue
         return self.results
 
     @property
@@ -49,8 +54,7 @@ class RefPropertiesConsistencyChecker:
         if self.results == None:
             return 'Results are not computed'
         return """num of properties,num of refspecifics,score
-{0},{1},{2}""".format(len(self.results), sum([1 for i in self.results if i.is_ref_specific]),self.score)
-
+{0},{1},{2}""".format(len(self.results), sum([1 for i in self.results if i.is_ref_specific]), self.score)
 
     def print_results(self):
         """
