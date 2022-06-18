@@ -43,7 +43,7 @@ class ReferenceSharingChecker:
         if self.result == None:
             return 'Results are not computed'
         return """num of ref nodes, shared noes, score
-{0},{1}""".format(self.result.total, self.result.shared, self.score)
+{0},{1},{2}""".format(self.result.total, self.result.shared, self.score)
 
     def print_results(self):
         """
