@@ -259,7 +259,8 @@ def extract_item_referenced_facts(opts: ArgumentParser) -> int:
         csv_writer = csv.writer(
             file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for row in item_refed_facts:
-            csv_writer.writerow(row)
+            csv_writer.writerow([cell.replace('http://www.wikidata.org/entity/',
+                                              '').replace('http://www.wikidata.org/prop/', '') for cell in row])
 
     end_time = datetime.now()
     print('Items and their referenced facts have been written in the file: {0}'.format(

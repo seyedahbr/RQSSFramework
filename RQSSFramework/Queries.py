@@ -108,8 +108,8 @@ SELECT DISTINCT (REPLACE(STR(?class),".*Q","Q") AS ?ret1)
 '''
 PREFIX wikibase: <http://wikiba.se/ontology#>
 PREFIX prov: <http://www.w3.org/ns/prov#>
-SELECT DISTINCT (REPLACE(STR(?item),".*Q","Q") AS ?ret1)
-                (REPLACE(STR(?refedProperty),".*P","P") AS ?ret2) WHERE{
+SELECT DISTINCT (?item AS ?ret1)
+                (?refedProperty AS ?ret2) WHERE{
   ?item a wikibase:Item;
           ?refedProperty [prov:wasDerivedFrom ?refNode].
 }
