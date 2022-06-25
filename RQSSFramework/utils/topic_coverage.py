@@ -1,6 +1,8 @@
 import sys
+import pandas as pd
 from argparse import ArgumentParser
 from pathlib import Path
+from matplotlib import pyplot as plt
 from typing import Dict, List, Optional, Union
 #from Queries import RQSS_QUERIES
 from SPARQLWrapper import JSON, SPARQLWrapper
@@ -31,9 +33,6 @@ def main(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] = Non
     QID_class_dict = Dict.fromkeys(QIDs)
     for q in QID_class_dict.keys():
         QID_class_dict[q] = set(get_instances_subclass_of_values_from_Wikidata(q))
-    
-    # test
-    # print("QIDs and Classes: ", QID_class_dict)
 
     print('Fetching distinct classes ...')
     distinct_classes = set.union(*[set(value) for key, value in QID_class_dict.items()])
@@ -48,17 +47,27 @@ def main(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] = Non
             if cl in QID_class_dict[q]:
                 CLASS_QID_dict[cl].append(q)
     
-    # test
-    # print("Classes and QIDs: ", CLASS_QID_dict)
-    
     # sorting 
     print('Sorting classes based on frequency ...')
-    CLASS_QID_dict = sorted(CLASS_QID_dict.keys(), reverse=True, key=lambda s: len(CLASS_QID_dict[s]))
+    CLASS_QID_sorted_list = sorted(CLASS_QID_dict.keys(), reverse=True, key=lambda s: len(CLASS_QID_dict[s]))
 
-    # test
-    # print("Sorted classes and QIDs: ", CLASS_QID_dict)
+    print('Disjointening: Removing duplication from smaller sets ...')
+    for key in CLASS_QID_sorted_list:
+        for value in CLASS_QID_dict[key]:
+            [l.remove(value) for k,l in CLASS_QID_dict.items() if k != key and value in l]
 
-    
+    # creating the frequency list
+    print('Creating the frequency list ...')
+    freq_list = [[item , len(CLASS_QID_dict[item])] for item in CLASS_QID_dict.keys()]
+
+    # creating the pie chart
+    print('Plotting Pie Chart ...')
+    df = pd.DataFrame(freq_list, columns = ['class','frequency'])
+    df.loc[df['frequency'] <= 1, 'class'] = 'other'
+    df = df.groupby('class')['frequency'].sum().reset_index()
+    plt.pie(df['frequency'], labels=df['class'], autopct='%.0f%%')
+
+    plt.savefig(opts.output)
 
 def get_instances_subclass_of_values_from_Wikidata(qid) -> List:
     ret_val = []
