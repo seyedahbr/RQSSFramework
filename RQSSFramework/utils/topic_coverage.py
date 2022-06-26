@@ -60,11 +60,18 @@ def main(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] = Non
     print('Creating the frequency list ...')
     freq_list = [[item , len(CLASS_QID_dict[item])] for item in CLASS_QID_dict.keys()]
 
-    # creating the pie chart
-    print('Plotting Pie Chart ...')
+    # creating the data frame
+    print('Creating the frequency dataframe ...')
     df = pd.DataFrame(freq_list, columns = ['class','frequency'])
-    df.loc[df['frequency'] <= 1, 'class'] = 'other'
+    df.loc[df['frequency'] < 400, 'class'] = 'other'
     df = df.groupby('class')['frequency'].sum().reset_index()
+
+    # writing the dataframe to a file for future uses
+    print('Writing the dataframe to a file for future uses ...')
+    df.to_csv(opts.output.with_suffix('.csv'), index=False)
+
+    # creating the pie chart
+    print('Plotting pie chart ...')
     plt.pie(df['frequency'], labels=df['class'], autopct='%.0f%%')
 
     plt.savefig(opts.output)
