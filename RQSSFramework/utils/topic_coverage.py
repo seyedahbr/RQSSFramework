@@ -68,7 +68,7 @@ def main(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] = Non
 
     # writing the dataframe to a file for future uses
     print('Writing the dataframe to a file for future uses ...')
-    df.to_csv(opts.output.with_suffix('.csv'), index=False)
+    df.to_csv(opts.output.with_suffix('.df.csv'), index=False)
 
     # creating the pie chart
     print('Plotting pie chart ...')
