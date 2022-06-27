@@ -313,6 +313,10 @@ def extract_classes_facts_refs(opts: ArgumentParser) -> int:
         csv_writer = csv.writer(
             file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for row in item_refed_facts:
+            row = [
+                row[0].replace('http://www.wikidata.org/entity/',''),
+                row[1].replace('http://www.wikidata.org/prop/', ''),
+                row[2].replace('http://www.wikidata.org/prop/reference/','')]
             csv_writer.writerow(row)
 
     end_time = datetime.now()

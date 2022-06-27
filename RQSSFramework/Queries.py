@@ -91,9 +91,9 @@ SELECT (REPLACE(STR(?statementNode),"http://www.wikidata.org/entity/statement/",
 PREFIX wikibase: <http://wikiba.se/ontology#>
 PREFIX prov: <http://www.w3.org/ns/prov#>
 PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-SELECT DISTINCT (REPLACE(STR(?class),".*Q","Q") AS ?ret1)
-                (REPLACE(STR(?property),".*P","P") AS ?ret2)
-                (REPLACE(STR(?refProperty),".*P","P") AS ?ret3) WHERE{
+SELECT DISTINCT (?class AS ?ret1)
+                (?property AS ?ret2)
+                (?refProperty AS ?ret3) WHERE{
   ?item ?property ?statementNode.
   ?statementNode a wikibase:Statement.
   ?statementNode prov:wasDerivedFrom ?refNode.
