@@ -1,9 +1,10 @@
 import sys
-import pandas as pd
 from argparse import ArgumentParser
 from pathlib import Path
-from matplotlib import pyplot as plt
 from typing import Dict, List, Optional, Union
+
+import pandas as pd
+from matplotlib import pyplot as plt
 #from Queries import RQSS_QUERIES
 from SPARQLWrapper import JSON, SPARQLWrapper
 
