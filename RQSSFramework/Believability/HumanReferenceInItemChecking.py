@@ -49,24 +49,29 @@ class HumanReferenceInItemChecker:
             for prop in self._item_refed_facts[str(item)]:
                 # we get both added and edited times, combine them,
                 # then will pick up the latest time/user pair
-                revisions_adder = tree.xpath(
-                    xpath_added.format(str(prop), str(prop)))
-                revisions_chanr = tree.xpath(
-                    xpath_changed.format(str(prop), str(prop)))
-                revisions_adder.extend(revisions_chanr)
-                it = iter(revisions_adder)
-                editor_time_pairs = [(i, next(it)) for i in it]
-                editor_time_pairs = self.remove_upper_than_base_time_sort(
-                    editor_time_pairs)
-                if not editor_time_pairs:
-                    print(
-                        '\t fact {0} : found NO historical info'.format(prop))
+                try:
+                    revisions_adder = tree.xpath(
+                        xpath_added.format(str(prop), str(prop)))
+                    revisions_chanr = tree.xpath(
+                        xpath_changed.format(str(prop), str(prop)))
+                    revisions_adder.extend(revisions_chanr)
+                    it = iter(revisions_adder)
+                    editor_time_pairs = [(i, next(it)) for i in it]
+                    editor_time_pairs = self.remove_upper_than_base_time_sort(
+                        editor_time_pairs)
+                    if not editor_time_pairs:
+                        print(
+                            '\t fact {0} : found NO historical info'.format(prop))
+                        num_not_found += 1
+                        continue
+                    if 'bot' not in editor_time_pairs[0][1].lower():
+                        print(
+                            '\t fact {0} : latest edited by a human account'.format(prop))
+                        num_human_added += 1
+                except:
+                    print('FAILED: getting history of property: {0}'.format(str(prop)))
                     num_not_found += 1
                     continue
-                if 'bot' not in editor_time_pairs[0][1].lower():
-                    print(
-                        '\t fact {0} : latest edited by a human account'.format(prop))
-                    num_human_added += 1
             self.results.append(HumanAddedResult(str(item), len(
                 self._item_refed_facts[str(item)]), num_human_added, num_not_found))
         return self.results
