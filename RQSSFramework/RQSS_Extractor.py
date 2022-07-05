@@ -314,9 +314,9 @@ def extract_classes_facts_refs(opts: ArgumentParser) -> int:
             file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for row in item_refed_facts:
             row = [
-                row[0].replace('http://www.wikidata.org/entity/',''),
+                row[0].replace('http://www.wikidata.org/entity/', ''),
                 row[1].replace('http://www.wikidata.org/prop/', ''),
-                row[2].replace('http://www.wikidata.org/prop/reference/','')]
+                row[2].replace('http://www.wikidata.org/prop/reference/', '')]
             csv_writer.writerow(row)
 
     end_time = datetime.now()
@@ -340,10 +340,12 @@ def extract_statement_fact_refed_props_wikimedia(opts: ArgumentParser) -> int:
             file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for row in item_refed_facts:
             row = [
-                row[0].replace('http://www.wikidata.org/entity/statement/',''),
+                row[0].replace(
+                    'http://www.wikidata.org/entity/statement/', ''),
                 row[1].replace('http://www.wikidata.org/prop/', ''),
-                row[2].replace('http://www.wikidata.org/prop/reference/','')] if len(row) == 3 else [
-                row[0].replace('http://www.wikidata.org/entity/statement/',''),
+                row[2].replace('http://www.wikidata.org/prop/reference/', '')] if len(row) == 3 else [
+                row[0].replace(
+                    'http://www.wikidata.org/entity/statement/', ''),
                 row[1].replace('http://www.wikidata.org/prop/', ''),
                 '']
             csv_writer.writerow(row)
@@ -388,6 +390,9 @@ def extract_amount_of_data_wikimedia(opts: ArgumentParser) -> int:
         csv_writer = csv.writer(
             file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for row in triple_dist:
+            row = [
+                row[0].replace('http://www.wikidata.org/reference/', ''),
+                row[1]]
             csv_writer.writerow(row)
 
     print('Get literal values per reference node distribution')
@@ -397,6 +402,9 @@ def extract_amount_of_data_wikimedia(opts: ArgumentParser) -> int:
         csv_writer = csv.writer(
             file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for row in literal_dist:
+            row = [
+                row[0].replace('http://www.wikidata.org/reference/', ''),
+                row[1]]
             csv_writer.writerow(row)
 
     end_time = datetime.now()
