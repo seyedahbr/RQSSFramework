@@ -13,6 +13,7 @@ from Accuracy.LiteralSyntaxChecking import WikibaseRefLiteralSyntaxChecker
 from Accuracy.TripleSemanticChecking import (FactReference,
                                              RefTripleSemanticChecker)
 from Accuracy.TripleSyntaxChecking import WikibaseRefTripleSyntaxChecker
+from Amount_of_Data.AmountOfDataComputing import *
 from Availability.DereferencePossibility import DerefrenceExplorer
 from Believability.HumanReferenceInItemChecking import *
 from Completeness.ClassesPropertiesSchemaCompletenessChecking import *
@@ -87,6 +88,8 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
                         help="Compute the metric: Schema-based Property Completeness of References", action='store_true')
     parser.add_argument("-pc", "--property-completeness",
                         help="Compute the metric: Property Completeness of References", action='store_true')
+    parser.add_argument("-aof", "--amount-of-data",
+                        help="Compute the Dimension: Amount-of-Data", action='store_true')
 
     return parser
 
@@ -993,6 +996,75 @@ def compute_property_completeness(opts: ArgumentParser) -> int:
     return 0
 
 
+def compute_amount_of_data(opts: ArgumentParser) -> int:
+    print('Started computing Dimension: Amount-of-Data')
+    input_data_file_nums = os.path.join(
+        opts.data_dir + os.sep + 'num_of_statement_and_ref_nodes.data')
+    input_data_file_triple_dist = os.path.join(
+        opts.data_dir + os.sep + 'triple_per_ref_node_distribution.data')
+    input_data_file_literal_dist = os.path.join(
+        opts.data_dir + os.sep + 'literal_per_ref_node_distribution.data')
+    output_file_result = os.path.join(
+        opts.output_dir + os.sep + 'amount_of_data_ratios.csv')
+
+    print('Reading number of statement/reference nodes file ...')
+    try:
+        with open(input_data_file_nums, encoding="utf8") as file:
+            df = pd.read_csv(file, usecols=['num of statement nodes', 'num of reference nodes'])
+            num_statement_node = int(df['num of statement nodes'].iloc[0])
+            num_ref_node = int(df['num of reference nodes'].iloc[0])
+    except FileNotFoundError:
+        print("Error: Input data file not found. Provide input data file with name: {0} in data_dir".format(
+            '"num_of_statement_and_ref_nodes.data"'))
+        exit(1)
+
+    print('Reading triple per ref node distribution file ...')
+    triple_dist = []
+    try:
+        with open(input_data_file_triple_dist, encoding="utf8") as file:
+            reader = csv.reader(file)
+            for row in reader:
+                triple_dist.append(RefNodeOutgoing(row[0], int(row[1])))
+
+    except FileNotFoundError:
+        print("Error: Input data file not found. Provide input data file with name: {0} in data_dir".format(
+            '"triple_per_ref_node_distribution.data"'))
+        exit(1)
+    
+    print('Reading literal per ref node distribution file ...')
+    literal_dist = []
+    try:
+        with open(input_data_file_literal_dist, encoding="utf8") as file:
+            reader = csv.reader(file)
+            for row in reader:
+                literal_dist.append(RefNodeOutgoing(row[0], int(row[1])))
+
+    except FileNotFoundError:
+        print("Error: Input data file not found. Provide input data file with name: {0} in data_dir".format(
+            '"literal_per_ref_node_distribution.data"'))
+        exit(1)
+
+    # running the framework metric function
+    print('Running metric ...')
+    start_time = datetime.datetime.now()
+    amount_of_data_computer = AmountOfDataComputer(
+        triple_dist,
+        literal_dist,
+        num_statement_node,
+        num_ref_node
+    )
+    write_results_to_CSV(str(amount_of_data_computer), output_file_result)
+    end_time = datetime.datetime.now()
+
+    # saving the results for presentation layer
+    
+
+    print('Dimension: Amount-of-Data results have been written in the file: {0}'.format(output_file_result))
+    print('DONE. Dimension: Amount-of-Data, Duration: {0}'.format(
+        end_time - start_time))
+    return 0
+
+
 def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] = None) -> int:
     if isinstance(argv, str):
         argv = argv.split()
@@ -1069,6 +1141,9 @@ def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Op
         framework_procs.append(p)
     if opts.property_completeness:
         p = Process(target=compute_property_completeness(opts))
+        framework_procs.append(p)
+    if opts.amount_of_data:
+        p = Process(target=compute_amount_of_data(opts))
         framework_procs.append(p)
 
     for proc in framework_procs:
