@@ -30,12 +30,12 @@ class AmountOfDataComputer:
     @property
     def ref_triple_per_ref_node_ratio(self):
         num_ref_triple = sum([i.num_out for i in self._triple_dist])
-        return num_ref_triple / self._num_statement_node
+        return num_ref_triple / self._num_ref_node
 
     @property
     def ref_literal_per_ref_node_ratio(self):
         num_ref_literal = sum([i.num_out for i in self._literal_dist])
-        return num_ref_literal / self._num_statement_node
+        return num_ref_literal / self._num_ref_node
 
     def __repr__(self):
         return """ref node per statement ratio,ref triple per statement ratio,ref triple per ref node ratio,ref literal per ref node ratio
