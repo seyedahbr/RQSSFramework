@@ -346,8 +346,7 @@ def extract_statement_fact_refed_props_wikimedia(opts: ArgumentParser) -> int:
                 row[2].replace('http://www.wikidata.org/prop/reference/', '')] if len(row) == 3 else [
                 row[0].replace(
                     'http://www.wikidata.org/entity/statement/', ''),
-                row[1].replace('http://www.wikidata.org/prop/', ''),
-                '']
+                row[1].replace('http://www.wikidata.org/prop/', '')]
             csv_writer.writerow(row)
 
     end_time = datetime.now()
