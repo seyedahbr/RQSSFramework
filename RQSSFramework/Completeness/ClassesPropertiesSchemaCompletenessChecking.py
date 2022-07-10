@@ -19,10 +19,10 @@ class ClassesPropertiesSchemaCompletenessChecker:
     def __init__(self, classes_refed_props: Dict):
         self._classes_refed_props = classes_refed_props
 
-    def check_ref_schema_existance_for_properties_Wikidata(self, wikidata_entityschemas_ref_summery: List[EidRefSummary]) -> List[ClassPropSchemaResult]:
+    def check_ref_schema_existance_for_properties_Wikidata(self, wikidata_entityschemas_ref_summary: List[EidRefSummary]) -> List[ClassPropSchemaResult]:
         self.results = []
         general_refed_facts = []
-        for i in wikidata_entityschemas_ref_summery:
+        for i in wikidata_entityschemas_ref_summary:
             if len(i.refed_facts_refs) > 0:
                 for j in i.related_properties:
                     general_refed_facts.append(j)
@@ -33,7 +33,7 @@ class ClassesPropertiesSchemaCompletenessChecker:
                 if fact in set(general_refed_facts):
                     total_refed_facts_in_eschemas += 1
                     continue
-                for eid in wikidata_entityschemas_ref_summery:
+                for eid in wikidata_entityschemas_ref_summary:
                     if class_id not in eid.related_classes:
                         continue
                     if fact in set([facts.refed_fact for facts in eid.refed_facts_refs]):
@@ -61,7 +61,7 @@ class ClassesPropertiesSchemaCompletenessChecker:
     def __repr__(self):
         if self.results == None:
             return 'Results are not computed'
-        return """num of classes,total of refed properties,total classes with defined schema,total properties with schema defined,class schema completeness score,property schema completeness score
+        return """num of classes,total of refed properties in classes,total classes with defined schema,total properties in classes with schema defined,class schema completeness score,property schema completeness score
 {0},{1},{2},{3},{4},{5}""".format(len(self.results),
                                   sum([i.total_refed_properties for i in self.results]),
                                   len([
