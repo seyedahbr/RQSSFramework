@@ -843,8 +843,11 @@ def compute_class_property_schema_completeness(opts: ArgumentParser) -> int:
             reader = csv.reader(file)
             for row in reader:
                 if row[0] not in refed_fact_refs.keys():
-                    refed_fact_refs[str(row[0])] = []
-                refed_fact_refs[str(row[0])].append(row[1])
+                    refed_fact_refs[row[0]] = []
+                if row[1] in refed_fact_refs[row[0]]:
+                    continue
+                else:
+                    refed_fact_refs[row[0]].append(row[1])
     except FileNotFoundError:
         print("Error: Input data file not found. Provide input data file with name: {0} in data_dir".format(
             '"classes_facts_refs.data"'))
@@ -1010,7 +1013,8 @@ def compute_amount_of_data(opts: ArgumentParser) -> int:
     print('Reading number of statement/reference nodes file ...')
     try:
         with open(input_data_file_nums, encoding="utf8") as file:
-            df = pd.read_csv(file, usecols=['num of statement nodes', 'num of reference nodes'])
+            df = pd.read_csv(
+                file, usecols=['num of statement nodes', 'num of reference nodes'])
             num_statement_node = int(df['num of statement nodes'].iloc[0])
             num_ref_node = int(df['num of reference nodes'].iloc[0])
     except FileNotFoundError:
@@ -1030,7 +1034,7 @@ def compute_amount_of_data(opts: ArgumentParser) -> int:
         print("Error: Input data file not found. Provide input data file with name: {0} in data_dir".format(
             '"triple_per_ref_node_distribution.data"'))
         exit(1)
-    
+
     print('Reading literal per ref node distribution file ...')
     literal_dist = []
     try:
@@ -1057,9 +1061,9 @@ def compute_amount_of_data(opts: ArgumentParser) -> int:
     end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
-    
 
-    print('Dimension: Amount-of-Data results have been written in the file: {0}'.format(output_file_result))
+    print(
+        'Dimension: Amount-of-Data results have been written in the file: {0}'.format(output_file_result))
     print('DONE. Dimension: Amount-of-Data, Duration: {0}'.format(
         end_time - start_time))
     return 0
