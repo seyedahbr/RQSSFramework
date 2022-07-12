@@ -49,10 +49,10 @@ class SchemaBasedRefPropertiesCompletenessChecker:
         self._df = pd.DataFrame.from_records(
             self._input, columns=self._input[0]._fields)
 
-    def check_schema_based_property_completeness_Wikidata(self, wikidata_entityschemas_ref_summery: List[EidRefSummary]) -> List[SchemaBasedCompletenessResult]:
+    def check_schema_based_property_completeness_Wikidata(self, wikidata_entityschemas_ref_summary: List[EidRefSummary]) -> List[SchemaBasedCompletenessResult]:
         self.results = []
         eschema_facts_refs = self._get_eschema_distinct_properties_and_ref_predicates(
-            wikidata_entityschemas_ref_summery)
+            wikidata_entityschemas_ref_summary)
         print('len of eschema_fact_refs: ', len(eschema_facts_refs.keys()))
         for fact in eschema_facts_refs.keys():
             for ref in eschema_facts_refs[fact]:
@@ -67,9 +67,9 @@ class SchemaBasedRefPropertiesCompletenessChecker:
                     fact, ref, total_instances, total_instances_not_refed, total_refed_instances_schema_based))
         return self.results
 
-    def _get_eschema_distinct_properties_and_ref_predicates(self, wikidata_entityschemas_ref_summery: List[EidRefSummary]) -> Dict:
+    def _get_eschema_distinct_properties_and_ref_predicates(self, wikidata_entityschemas_ref_summary: List[EidRefSummary]) -> Dict:
         ret_dict = {}
-        for schema in wikidata_entityschemas_ref_summery:
+        for schema in wikidata_entityschemas_ref_summary:
             for fact_ref in schema.refed_facts_refs:
                 if not fact_ref.ref_predicates:
                     continue
