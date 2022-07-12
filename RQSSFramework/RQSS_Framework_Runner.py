@@ -795,7 +795,7 @@ def compute_external_uris_timeliness(opts: ArgumentParser) -> int:
 def compute_class_property_schema_completeness(opts: ArgumentParser) -> int:
     print('Started computing Metric: Schema completeness of references')
     input_data_file = os.path.join(
-        opts.data_dir + os.sep + 'classes_facts_refs.data')
+        opts.data_dir + os.sep + 'classes_facts.data')
     input_eid_summarization_related_classes = os.path.join(
         opts.data_dir + os.sep + 'eschemas_summarization_related_classes.data')
     input_eid_summarization_refed_fact_refs = os.path.join(
@@ -850,16 +850,15 @@ def compute_class_property_schema_completeness(opts: ArgumentParser) -> int:
                     refed_fact_refs[row[0]].append(row[1])
     except FileNotFoundError:
         print("Error: Input data file not found. Provide input data file with name: {0} in data_dir".format(
-            '"classes_facts_refs.data"'))
+            '"classes_facts.data"'))
         exit(1)
 
     # running the framework metric function
     print('Running metric ...')
     start_time = datetime.datetime.now()
     schema_comp_checker = ClassesPropertiesSchemaCompletenessChecker(
-        refed_fact_refs)
-    results = schema_comp_checker.check_ref_schema_existance_for_properties_Wikidata(
-        eid_summaries)
+        refed_fact_refs, eid_summaries)
+    results = schema_comp_checker.check_ref_schema_existance_for_properties_Wikidata()
     end_time = datetime.datetime.now()
 
     # saving the results for presentation layer
