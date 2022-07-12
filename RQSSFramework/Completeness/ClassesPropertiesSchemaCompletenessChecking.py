@@ -1,6 +1,6 @@
 from typing import Dict, List, NamedTuple, Set
 
-from RQSSFramework.EntitySchemaExtractor import EidRefSummary
+from EntitySchemaExtractor import EidRefSummary
 
 
 class ClassPropSchemaResult(NamedTuple):
@@ -9,7 +9,7 @@ class ClassPropSchemaResult(NamedTuple):
     num_properties_with_defined_ref_schema: int = 0
 
     def __repr__(self):
-        return "Class {0}, fact properties: {1}; schema exists for: {2}".format(self.class_id, self.total_properties, self.num_properties_with_defined_ref_schema)
+        return "Class {0}, fact properties: {1}; schema exists for: {2}".format(self.class_id, self.num_total_properties, self.num_properties_with_defined_ref_schema)
 
 
 class ClassesPropertiesSchemaCompletenessChecker:
