@@ -86,22 +86,18 @@ SELECT (?statementNode AS ?ret1)
   }
 }
 ''',
-"get_classes_and_facts_and_refed_props":
+"get_classes_and_facts":
 '''
 PREFIX wikibase: <http://wikiba.se/ontology#>
 PREFIX prov: <http://www.w3.org/ns/prov#>
 PREFIX wdt: <http://www.wikidata.org/prop/direct/>
 SELECT DISTINCT (?class AS ?ret1)
-                (?property AS ?ret2)
-                (?refProperty AS ?ret3) WHERE{
+                (?property AS ?ret2) WHERE{
   ?item ?property ?statementNode.
   ?statementNode a wikibase:Statement.
-  ?statementNode prov:wasDerivedFrom ?refNode.
-  ?refNode ?refProperty ?refObject.
-  MINUS {?refObject a wikibase:TimeValue}
-  MINUS {?refObject a wikibase:QuantityValue}
-  FILTER (?refObject != <http://wikiba.se/ontology#Reference>)
-  ?item wdt:P31 ?class.
+  OPTIONAL{
+    ?item wdt:P31 ?class.
+  }
 }
 ''',
 "get_item_refed_facts_wikimedia":
