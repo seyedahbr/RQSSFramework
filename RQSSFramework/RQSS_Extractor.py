@@ -43,10 +43,10 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
                         help="Extract all items and their referenced facts and save them on output dir. Collects data for computing Metric: Human-added References Ratio", action='store_true')
     parser.add_argument("-wes", "--wikidata-eschema-data",
                         help="Extract most up-to-date Wikidata EntitySchemas data from Wikidata directory and save them on output dir. Collects Wikidata E-ids data for computing COMPLETENESS metrics", action='store_true')
-    parser.add_argument("-cfr", "--classes-facts-refs",
-                        help="Extract all classes of referenced items, and their referenced facts and the reference properties (distinct) and save them on output dir. Collects data for computing Metric: Schema completeness of references", action='store_true')
+    parser.add_argument("-cf", "--classes-facts",
+                        help="Extract all classes and their facts. Collects data for computing Metric: Class/Property Schema Completeness of References", action='store_true')
     parser.add_argument("-sfr", "--statements-facts-refs",
-                        help="Extract all statement id, fact of the statement and the reference properties and save them on output dir. Collects data for computing Metrics: Schema-based Property Completeness and Property Completeness of references", action='store_true')
+                        help="Extract all statement id, fact of the statement and the reference properties and save them on output dir. Collects data for computing Metrics: Schema-based Property Completeness and Property Completeness of References", action='store_true')
     parser.add_argument("-aof", "--amount-of-data",
                         help="Extract number of statement nodes, reference nodes, and distribution of triple and literals amongst reference nodes. Collects data for computing Amount-of-Data metrics", action='store_true')
     return parser
@@ -301,28 +301,29 @@ def extract_wikidata_entityschemas_data(opts: ArgumentParser) -> int:
                         [eid.e_id, refed_facts_ref.refed_fact, ref_predicate])
 
 
-def extract_classes_facts_refs(opts: ArgumentParser) -> int:
-    print('Started extracting classes of referenced items, and their referenced facts and the reference properties')
+def extract_classes_facts(opts: ArgumentParser) -> int:
+    print('Started extracting classes and their facts')
     start_time = datetime.now()
 
     item_refed_facts = perform_query(
-        opts.endpoint, RQSS_QUERIES["get_classes_and_facts_and_refed_props"])
+        opts.endpoint, RQSS_QUERIES["get_classes_and_facts"])
     output_file = os.path.join(
-        opts.output_dir + os.sep + 'classes_facts_refs.data')
+        opts.output_dir + os.sep + 'classes_facts.data')
     with open(output_file, 'w', newline='') as file_handler:
         csv_writer = csv.writer(
             file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for row in item_refed_facts:
             row = [
                 row[0].replace('http://www.wikidata.org/entity/', ''),
-                row[1].replace('http://www.wikidata.org/prop/', ''),
-                row[2].replace('http://www.wikidata.org/prop/reference/', '')]
+                row[1].replace('http://www.wikidata.org/prop/', '')] if len(row) == 2 else [
+                'no_class_found',
+                row[0].replace('http://www.wikidata.org/prop/', '')]
             csv_writer.writerow(row)
 
     end_time = datetime.now()
-    print('Classes of referenced items, and their referenced facts and the reference properties have been written in the file: {0}'.format(
+    print('Classes and their facts have been written in the file: {0}'.format(
         output_file))
-    print('DONE. Extracting classes of referenced items, and their referenced facts and the reference properties, Duration: {0}'.format(
+    print('DONE. Extracting classes and their facts, Duration: {0}'.format(
         end_time - start_time))
     return 0
 
@@ -463,8 +464,8 @@ def extract_from_endpoint(opts: ArgumentParser) -> int:
         p = Process(target=extract_wikidata_entityschemas_data(opts))
         extractor_procs.append(p)
 
-    if(opts.classes_facts_refs):
-        p = Process(target=extract_classes_facts_refs(opts))
+    if(opts.classes_facts):
+        p = Process(target=extract_classes_facts(opts))
         extractor_procs.append(p)
 
     if(opts.statements_facts_refs):
