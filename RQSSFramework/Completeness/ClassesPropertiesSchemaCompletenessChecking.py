@@ -22,6 +22,15 @@ class ClassesPropertiesSchemaCompletenessChecker:
         self._classes_refed_props = classes_refed_props
         self._eschema_refed_classes, self._eschema_refed_properties = self._get_eschema_distinct_ref_specified_classes_properties(
             wikidata_entityschemas_ref_summary)
+        print('Report E-Schemata Summary:')
+        print('\tNumber of (parsable) E-ids: ',
+              len(wikidata_entityschemas_ref_summary))
+        print('\tNumber of E-ids with referenced facts: ',
+              len([i for i in wikidata_entityschemas_ref_summary if len(i.refed_facts_refs) > 0]))
+        print('\tNumber of classes with defined reference in E-ids: ',
+              len(self._eschema_refed_classes))
+        print('\tNumber of Properties with defined reference in E-ids: ',
+              len(self._eschema_refed_properties))
 
     def check_ref_schema_existance_for_properties_Wikidata(self) -> List[ClassPropSchemaResult]:
         self.results = []
