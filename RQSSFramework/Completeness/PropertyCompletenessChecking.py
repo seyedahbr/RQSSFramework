@@ -44,8 +44,6 @@ class PropertyCompletenessChecker:
     def check_property_completeness_Wikidata(self) -> List[PropertyCompletenessResult]:
         self.results = []
         fact_equivalence_classes_refs = self._get_distinct_fact_and_ref_predicates()
-        print('Fact equivalence classes and refs:\n',
-              fact_equivalence_classes_refs)
         for fact in fact_equivalence_classes_refs:
             for ref in fact_equivalence_classes_refs[fact]:
                 print('computing fact {0}, ref {1}'.format(fact, ref))
