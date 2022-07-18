@@ -64,6 +64,30 @@ class TestRefPropertiesCompletenessChecking(unittest.TestCase):
             FactRef('s38', 'P31', 'P248'),
             FactRef('s39', 'P1000'), ]  # not real data, only for test
         
+        self.data_2 = [
+            FactRef('s1', 'P31', 'P407'),
+            FactRef('s1', 'P31', 'P407'),
+            FactRef('s2', 'P31', 'P428'),
+            FactRef('s3', 'P32', 'P407'),
+            FactRef('s3', 'P32', 'P407'),
+            FactRef('s4', 'P32', 'P557'),
+            FactRef('s5', 'P33', 'P604'),
+            FactRef('s5', 'P33', 'P604'),
+            FactRef('s6', 'P33', 'P665'),
+            FactRef('s7', 'P34', 'P77'),
+            FactRef('s7', 'P34', 'P77'),
+            FactRef('s8', 'P34', 'P407')]
+        
+        self.data_3 = [
+            FactRef('s1', 'P31', 'P407'),
+            FactRef('s2', 'P279', 'P408'),
+            FactRef('s3', 'P4844', 'P407'),
+            FactRef('s4', 'P91', 'P408'),
+            FactRef('s5', 'P17', 'P407'),
+            FactRef('s6', 'P21', 'P408'),
+            FactRef('s8', 'P85', 'P407'),
+            FactRef('s9', 'P279', 'P428')]
+        
     def test_check_property_completeness_Wikidata(self):
         test_class = PropertyCompletenessChecker(self.data)
         self.assertEqual(test_class.results, None)
