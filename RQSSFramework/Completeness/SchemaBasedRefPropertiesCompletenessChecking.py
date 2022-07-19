@@ -1,5 +1,6 @@
 from typing import Dict, List, NamedTuple
 
+import math
 import pandas as pd
 from EntitySchemaExtractor import EidRefSummary
 
@@ -13,12 +14,12 @@ class SchemaBasedCompletenessResult(NamedTuple):
 
     @property
     def score(self):
-        return self.total_refed_instances_schema_based / self.total_instances if self.total_instances > 0 else 1
+        return self.total_refed_instances_schema_based / self.total_instances if self.total_instances > 0 else math.nan
 
     @property
     def score_including_not_refed(self):
-        including_not_refed = self.total_instances + self.total_instances_not_refed
-        return self.total_refed_instances_schema_based / including_not_refed if including_not_refed > 0 else 1
+        including_not_refed = self.total_instances_not_refed
+        return self.total_refed_instances_schema_based / including_not_refed if including_not_refed > 0 else math.nan
 
     def __repr__(self):
         return '''For fact {0} and reference property {1} in the schema-level,\n
@@ -83,23 +84,23 @@ class SchemaBasedRefPropertiesCompletenessChecker:
     @property
     def score(self):
         if self.results is not None:
-            total = len(
-                [i for i in self._input if i.ref_predicate is not None])
-            return sum([i.total_refed_instances_schema_based for i in self.results])/total if total > 0 else 1
+            total = sum([i.score for i in self.results if not math.isnan(i.score)])
+            return total / len(self.results) if len(self.results) > 0 else 1
         return None
 
     @property
     def score_including_not_refed(self):
         if self.results is not None:
-            total_including_not_refed = len(self._input)
-            return sum([i.total_refed_instances_schema_based for i in self.results])/total_including_not_refed if total_including_not_refed > 0 else 1
+            total_including_not_refed = sum(
+                [i.score_including_not_refed for i in self.results if not math.isnan(i.score_including_not_refed)])
+            return total_including_not_refed / len(self.results) if len(self.results) > 0 else 1
         return None
 
     def __repr__(self):
         if self.results == None:
             return 'Results are not computed'
-        return """total fact-reference pairs,total facts without reference,total facts (distinct),total referenced facts (distinct),total reference properties (distinct),total reference-specific predicates mentioned in schema level (distinct),total facts that are referenced with a reference-specific property mentioned in the schema level,score,score including not refed
-{0},{1},{2},{3},{4},{5},{6},{7},{8}""".format(
+        return """total fact-reference pairs,total facts without reference,total facts (distinct),total referenced facts (distinct),total reference properties (distinct),total reference-specific predicates mentioned in schema level (distinct),total facts that are referenced with a reference-specific property mentioned in the schema level,total property-reference pairs,score,score including not refed
+{0},{1},{2},{3},{4},{5},{6},{7},{8},{9}""".format(
             len([i for i in self._input if i.ref_predicate is not None]),
             len([i for i in self._input if i.ref_predicate is None]),
             len(list(dict.fromkeys([i.fact for i in self._input]))),
@@ -108,6 +109,7 @@ class SchemaBasedRefPropertiesCompletenessChecker:
             len(list(dict.fromkeys([i.ref_predicate for i in self._input]))),
             len(list(dict.fromkeys([i.ref_predicate for i in self.results]))),
             sum([i.total_refed_instances_schema_based for i in self.results]),
+            len(self.results),
             self.score,
             self.score_including_not_refed)
 
