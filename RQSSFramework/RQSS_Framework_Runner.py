@@ -30,6 +30,7 @@ from EntitySchemaExtractor import EidRefSummary, RefedFactRef
 from Licensing.LicenseExistanceChecking import LicenseChecker
 from Objectivity.MultipleReferenceChecking import *
 from Queries import RQSS_QUERIES
+from Representational_Conciseness.ExternalSourcesURILengthChecking import *
 from Reputation.DNSBLBlacklistedChecking import DNSBLBlacklistedChecker
 from Security.TLSExistanceChecking import TLSChecker
 from Timeliness.ExternalURIsTimelinessChecking import *
@@ -90,6 +91,8 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
                         help="Compute the metric: Property Completeness of References", action='store_true')
     parser.add_argument("-aof", "--amount-of-data",
                         help="Compute the Dimension: Amount-of-Data", action='store_true')
+    parser.add_argument("-el", "--ext-uri-length",
+                        help="Compute the metric: External Sources URL Length", action='store_true')
 
     return parser
 
@@ -1068,6 +1071,46 @@ def compute_amount_of_data(opts: ArgumentParser) -> int:
     return 0
 
 
+def compute_external_uris_length(opts: ArgumentParser) -> int:
+    print('Started computing Metric: External Sources URL Length')
+    input_data_file = os.path.join(
+        opts.data_dir + os.sep + 'external_uris.data')
+    output_file_dist = os.path.join(
+        opts.output_dir + os.sep + 'url_length.csv')
+    output_file_result = os.path.join(
+        opts.output_dir + os.sep + 'url_length_ratio.csv')
+
+    # reading the extracted External URIs
+    print('Reading data ...')
+    uris = []
+    try:
+        with open(input_data_file, encoding="utf8") as file:
+            for line in file:
+                uris.append(line.rstrip())
+    except FileNotFoundError:
+        print("Error: Input data file not found. Provide data file with name: {0} in data_dir".format(
+            '"external_uris.data"'))
+        exit(1)
+
+    # running the framework metric function
+    print('Running metric ...')
+    start_time = datetime.datetime.now()
+    length_computer = ExternalURLLengthChecking(uris)
+    results = length_computer.count_length_scores()
+    end_time = datetime.datetime.now()
+
+    # saving the results for presentation layer
+    if len(results) > 0:
+        write_results_to_CSV(results, output_file_dist)
+        write_results_to_CSV(str(length_computer), output_file_result)
+
+    print('Metric: External Sources URL Length results have been written in the file: {0} and {1}'.format(
+        output_file_dist, output_file_result))
+    print('DONE. Metric: External Sources URL Length, Duration: {0}'.format(
+        end_time - start_time))
+    return 0
+
+
 def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] = None) -> int:
     if isinstance(argv, str):
         argv = argv.split()
@@ -1147,6 +1190,9 @@ def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Op
         framework_procs.append(p)
     if opts.amount_of_data:
         p = Process(target=compute_amount_of_data(opts))
+        framework_procs.append(p)
+    if opts.ext_uri_length:
+        p = Process(target=compute_external_uris_length(opts))
         framework_procs.append(p)
 
     for proc in framework_procs:
