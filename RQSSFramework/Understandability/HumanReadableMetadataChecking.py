@@ -26,7 +26,43 @@ class HumanReadableMetadataChecker:
 
     def check_labels_comments_existance_from_Wikdiata(self) -> List[HumanReadableMetadataResult]:
         self.results = []
-        # TODO
+        user_agent = "RQSSFramework Python/%s.%s" % (
+            sys.version_info[0], sys.version_info[1])
+        sparql = SPARQLWrapper(
+            "https://query.wikidata.org/sparql", agent=user_agent)
+        for prop in self._ref_properties:
+            print('\t Getting labels of reference property: ', prop)
+            sparql.setQuery(
+                RQSS_QUERIES['get_property_labels_wikidata'].format(prop))
+            sparql.setReturnFormat(JSON)
+            try:
+                results = sparql.query().convert()
+                for result in results["results"]["bindings"]:
+                    value = result["to_ret"]["value"]
+                    if value.isdigit():
+                        num_labels = int(value)
+                    else:
+                        num_labels = 0
+            except Exception as e:
+                print('\t\t ERROR: ', e)
+                continue
+            print('\t Getting comments of reference property: ', prop)
+            sparql.setQuery(
+                RQSS_QUERIES['get_property_comments_wikidata'].format(prop))
+            sparql.setReturnFormat(JSON)
+            try:
+                results = sparql.query().convert()
+                for result in results["results"]["bindings"]:
+                    value = result["to_ret"]["value"]
+                    if value.isdigit():
+                        num_comments = int(value)
+                    else:
+                        num_comments = 0
+            except Exception as e:
+                print('\t\t ERROR: ', e)
+                continue
+            self.results.append(HumanReadableMetadataResult(
+                prop, num_labels, num_comments))
         return self.results
 
     @property
@@ -45,7 +81,7 @@ class HumanReadableMetadataChecker:
         if self.results is None:
             return 'Results are not computed'
         return """num of properties,human-readable labeling score,human-readable commenting score
-{0},{1},{2},{3}""".format(
+{0},{1},{2}""".format(
             len(self.results),
             self.human_readable_labeling_score,
             self.human_readable_commenting_score)
