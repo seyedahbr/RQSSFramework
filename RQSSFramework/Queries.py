@@ -10,6 +10,20 @@ SELECT ?to_ret WHERE
 
 Limit 3
 ''',
+"get_property_comments_wikidata":
+'''
+SELECT (COUNT (?itemDescs) AS ?to_ret)
+WHERE {{ 
+  wd:{0} schema:description ?itemDescs.
+}}
+''',
+"get_property_labels_wikidata":
+'''
+SELECT (COUNT (?itemLabel) AS ?to_ret)
+WHERE {{ 
+  wd:{0} rdfs:label ?itemLabel.
+}}
+''',
 "get_literal_per_ref_node_distribution_wikimedia":
 '''
 PREFIX wikibase: <http://wikiba.se/ontology#>
