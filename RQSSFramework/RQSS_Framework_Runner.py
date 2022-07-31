@@ -27,6 +27,7 @@ from Consistency.TriplesRangeConsistencyChecking import \
 from Currency.ExternalURIsFreshnessChecking import *
 from Currency.ReferenceFreshnessChecking import *
 from EntitySchemaExtractor import EidRefSummary, RefedFactRef
+from Interlinking.RefPropertiesInterlinkingChecking import *
 from Licensing.LicenseExistanceChecking import LicenseChecker
 from Objectivity.MultipleReferenceChecking import *
 from Queries import RQSS_QUERIES
@@ -54,14 +55,16 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
                         help="Compute the metric: External Sources’ Datasets Licensing", action='store_true')
     parser.add_argument("-sec", "--security",
                         help="Compute the metric: Link Security of the External URIs", action='store_true')
+    parser.add_argument("-i", "--interlinking",
+                        help="Compute the metric: Interlinking of Reference Properties", action='store_true')
     parser.add_argument("-rts", "--ref-triple-syntax",
                         help="Compute the metric: Syntactic Validity of Reference Triples", action='store_true')
     parser.add_argument("-rls", "--ref-literal-syntax",
-                        help="Compute the metric: Syntactic Validity of References’ Literals", action='store_true')
+                        help="Compute the metric: Syntactic Validity of Reference Literals", action='store_true')
     parser.add_argument("-rtm", "--ref-triple-semantic",
                         help="Compute the metric: Semantic Validity of Reference Triples", action='store_true')
     parser.add_argument("-rpc", "--ref-property-consistency",
-                        help="Compute the metric: Consistency of References’ Properties", action='store_true')
+                        help="Compute the metric: Consistency of Reference Properties", action='store_true')
     parser.add_argument("-rc", "--range-consistency",
                         help="Compute the metric: Range Consistency of Reference Triples", action='store_true')
     parser.add_argument("-rs", "--ref-sharing",
@@ -233,6 +236,45 @@ def compute_security(opts: ArgumentParser) -> int:
     return 0
 
 
+def compute_interlinking(opts: ArgumentParser) -> int:
+    print('Started computing Metric: Interlinking of Reference Properties')
+    input_data_file = os.path.join(
+        opts.data_dir + os.sep + 'ref_properties.data')
+    output_file_dist = os.path.join(
+        opts.output_dir + os.sep + 'interlinking.csv')
+    output_file_result = os.path.join(
+        opts.output_dir + os.sep + 'interlinking_ratio.csv')
+
+    # reading the extracted External URIs
+    print('Reading data ...')
+    props = []
+    try:
+        with open(input_data_file, encoding="utf8") as file:
+            for line in file:
+                props.append(line.rstrip())
+    except FileNotFoundError:
+        print("Error: Input data file not found. Provide data file with name: {0} in data_dir".format(
+            '"ref_properties.data"'))
+        exit(1)
+    # running the framework metric function
+    print('Running metric ...')
+    start_time = datetime.datetime.now()
+    inter_checker = RefPropertiesInterlinkingChecker(props)
+    results = inter_checker.check_reference_interlinking_from_Wikdiata()
+    end_time = datetime.datetime.now()
+
+    # saving the results for presentation layer
+    if len(results) > 0:
+        write_results_to_CSV(results, output_file_dist)
+        write_results_to_CSV(str(inter_checker), output_file_result)
+
+    print('Metric: Interlinking of Reference Properties results have been written in the file: {0} and {1}'.format(
+        output_file_dist, output_file_result))
+    print('DONE. Metric: Interlinking of Reference Properties, Duration: {0}'.format(
+        end_time - start_time))
+    return 0
+
+
 def compute_ref_triple_syntax(opts: ArgumentParser) -> int:
     print('Started computing Metric: Syntactic Validity of Reference Triples')
     input_data_file = os.path.join(
@@ -370,7 +412,7 @@ def compute_ref_triple_semantic(opts: ArgumentParser) -> int:
 
 
 def compute_ref_properties_consistency(opts: ArgumentParser) -> int:
-    print('Started computing Metric: Consistency of references’ properties')
+    print('Started computing Metric: Consistency of reference properties')
     input_data_file = os.path.join(
         opts.data_dir + os.sep + 'ref_properties.data')
     output_file_dist = os.path.join(
@@ -401,9 +443,9 @@ def compute_ref_properties_consistency(opts: ArgumentParser) -> int:
         write_results_to_CSV(results, output_file_dist)
         write_results_to_CSV(str(cons_checker), output_file_result)
 
-    print('Metric: Consistency of references’ properties results have been written in the file: {0} and {1}'.format(
+    print('Metric: Consistency of reference properties results have been written in the file: {0} and {1}'.format(
         output_file_dist, output_file_result))
-    print('DONE. Metric: Consistency of references’ properties, Duration: {0}'.format(
+    print('DONE. Metric: Consistency of reference properties, Duration: {0}'.format(
         end_time - start_time))
     return 0
 
@@ -1180,6 +1222,9 @@ def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Op
         framework_procs.append(p)
     if opts.security:
         p = Process(target=compute_security(opts))
+        framework_procs.append(p)
+    if opts.interlinking:
+        p = Process(target=compute_interlinking(opts))
         framework_procs.append(p)
     if opts.ref_triple_syntax:
         p = Process(target=compute_ref_triple_syntax(opts))
