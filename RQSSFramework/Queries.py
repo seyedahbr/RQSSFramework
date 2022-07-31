@@ -10,6 +10,13 @@ SELECT ?to_ret WHERE
 
 Limit 3
 ''',
+"get_property_equivalents_Wikidata":
+'''
+SELECT (COUNT (?propEq) AS ?to_ret)
+WHERE {{ 
+  wd:{0} wdt:P1628 ?propEq.
+}}
+''',
 "get_property_comments_wikidata":
 '''
 SELECT (COUNT (?itemDescs) AS ?to_ret)
