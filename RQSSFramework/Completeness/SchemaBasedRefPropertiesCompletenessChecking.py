@@ -1,6 +1,6 @@
+import math
 from typing import Dict, List, NamedTuple
 
-import math
 import pandas as pd
 from EntitySchemaExtractor import EidRefSummary
 
@@ -84,7 +84,8 @@ class SchemaBasedRefPropertiesCompletenessChecker:
     @property
     def score(self):
         if self.results is not None:
-            total = sum([i.score for i in self.results if not math.isnan(i.score)])
+            total = sum(
+                [i.score for i in self.results if not math.isnan(i.score)])
             return total / len(self.results) if len(self.results) > 0 else 1
         return None
 
@@ -106,7 +107,8 @@ class SchemaBasedRefPropertiesCompletenessChecker:
             len(list(dict.fromkeys([i.fact for i in self._input]))),
             len(list(dict.fromkeys(
                 [i.fact for i in self._input if i.ref_predicate is not None]))),
-            len(list(dict.fromkeys([i.ref_predicate for i in self._input]))),
+            len(list(dict.fromkeys(
+                [i.ref_predicate for i in self._input if i.ref_predicate is not None]))),
             len(list(dict.fromkeys([i.ref_predicate for i in self.results]))),
             sum([i.total_refed_instances_schema_based for i in self.results]),
             len(self.results),

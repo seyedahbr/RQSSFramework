@@ -1,7 +1,7 @@
+import math
 from typing import Dict, List, NamedTuple
 
 import pandas as pd
-import math
 
 from Completeness.SchemaBasedRefPropertiesCompletenessChecking import FactRef
 
@@ -72,14 +72,16 @@ class PropertyCompletenessChecker:
     @property
     def score(self):
         if self.results is not None:
-            total = sum([i.score for i in self.results if not math.isnan(i.score)])
+            total = sum(
+                [i.score for i in self.results if not math.isnan(i.score)])
             return total / len(self.results) if len(self.results) > 0 else 1
         return None
 
     @property
     def score_including_not_refed(self):
         if self.results is not None:
-            total = sum([i.score_including_not_refed for i in self.results if not math.isnan(i.score_including_not_refed)])
+            total = sum([i.score_including_not_refed for i in self.results if not math.isnan(
+                i.score_including_not_refed)])
             return total / len(self.results) if len(self.results) > 0 else 1
         return None
 
@@ -93,7 +95,8 @@ class PropertyCompletenessChecker:
             len(list(dict.fromkeys([i.fact for i in self._input]))),
             len(list(dict.fromkeys(
                 [i.fact for i in self._input if i.ref_predicate is not None]))),
-            len(list(dict.fromkeys([i.ref_predicate for i in self._input]))),
+            len(list(dict.fromkeys(
+                [i.ref_predicate for i in self._input if i.ref_predicate is not None]))),
             len(self.results),
             self.score,
             self.score_including_not_refed)
