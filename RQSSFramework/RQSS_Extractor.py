@@ -23,7 +23,7 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
         "-f", "--format", help="Input file RDF format (nt, ttl)", default='nt')
     parser.add_argument(
         "-o", "--output-dir", help="Output destination directory to store extarcted components from the RDF input file", default=os.getcwd()+os.sep+'rqss_extractor_output')
-    parser.add_argument("-eExt", "--extract-external",
+    parser.add_argument("-eu", "--external-uris",
                         help="Extract all external sources uris (Wikibase referencing model) and save them on output dir. Collects data for computing Dimensions: Availability, Licensing, Security", action='store_true')
     parser.add_argument("-sn", "--statement-nodes",
                         help="Extract all statement nodes uris (Wikibase referencing model) and save them on output dir. Collects data for computing Metric: Syntactic Validity of Reference Triples", action='store_true')
@@ -49,6 +49,8 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
                         help="Extract all statement id, fact of the statement and the reference properties and save them on output dir. Collects data for computing Metrics: Schema-based Property Completeness and Property Completeness of References", action='store_true')
     parser.add_argument("-aof", "--amount-of-data",
                         help="Extract number of statement nodes, reference nodes, and distribution of triple and literals amongst reference nodes. Collects data for computing Amount-of-Data metrics", action='store_true')
+    parser.add_argument("-es", "--external-sources",
+                        help="Extract all external sources (including Wikidata items) and save them on output dir. Collects data for computing Mtric: Handy External Sources", action='store_true')
     return parser
 
 
@@ -415,6 +417,26 @@ def extract_amount_of_data_wikimedia(opts: ArgumentParser) -> int:
     return 0
 
 
+def extract_external_sources_wikimedia(opts: ArgumentParser) -> int:
+    print('Started extracting External Sources')
+    start_time = datetime.now()
+
+    external_uris = perform_query(
+        opts.endpoint, RQSS_QUERIES["get_all_external_sources_distinct"])
+    output_file = os.path.join(opts.output_dir + os.sep + 'external_sources.data')
+    with open(output_file, 'w', newline='') as file_handler:
+        csv_writer = csv.writer(
+            file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        for uri in external_uris:
+            csv_writer.writerow([cell.replace('http://www.wikidata.org/entity/','') for cell in uri])
+
+    end_time = datetime.now()
+    print('External Sources have been written in the file: {0}'.format(
+        output_file))
+    print('DONE. Extracting External Sources, Duration: {0}'.format(
+        end_time - start_time))
+    return 0
+
 def extract_from_file(opts: ArgumentParser) -> int:
     print('Local file extraction is not supported yet. Please use local/public endpoint.')
     return 1
@@ -424,7 +446,7 @@ def extract_from_endpoint(opts: ArgumentParser) -> int:
     # list of parallel processes
     extractor_procs = []
 
-    if(opts.extract_external):
+    if(opts.external_uris):
         p = Process(target=extract_external_uris(opts))
         extractor_procs.append(p)
 
@@ -474,6 +496,10 @@ def extract_from_endpoint(opts: ArgumentParser) -> int:
 
     if(opts.amount_of_data):
         p = Process(target=extract_amount_of_data_wikimedia(opts))
+        extractor_procs.append(p)
+
+    if(opts.external_sources):
+        p = Process(target=extract_external_sources_wikimedia(opts))
         extractor_procs.append(p)
 
     for proc in extractor_procs:
