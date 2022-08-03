@@ -35,6 +35,7 @@ from Representational_Conciseness.ExternalSourcesURILengthChecking import *
 from Reputation.DNSBLBlacklistedChecking import DNSBLBlacklistedChecker
 from Security.TLSExistanceChecking import TLSChecker
 from Timeliness.ExternalURIsTimelinessChecking import *
+from Understandability.HandyExternalSourcesChecking import *
 from Understandability.HumanReadableMetadataChecking import *
 from Volatility.ExternalURIsVolatilityChecking import *
 
@@ -99,7 +100,8 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
                         help="Compute the metric: External Sources URL Length", action='store_true')
     parser.add_argument("-hm", "--human-readable-metadata",
                         help="Compute the metrics: Human-readable Labeling and Human-readable Commenting of reference properties", action='store_true')
-
+    parser.add_argument("-he", "--handy-external-sources",
+                        help="Compute the metrics: Handy External Sources", action='store_true')
     return parser
 
 
@@ -1195,6 +1197,45 @@ def compute_human_readable_metadata(opts: ArgumentParser) -> int:
     return 0
 
 
+def compute_handy_external_sources(opts: ArgumentParser) -> int:
+    print('Started computing Metrics: Handy External Sources')
+    input_data_file = os.path.join(
+        opts.data_dir + os.sep + 'external_sources.data')
+    output_file_dist = os.path.join(
+        opts.output_dir + os.sep + 'handy_external_sources.csv')
+    output_file_result = os.path.join(
+        opts.output_dir + os.sep + 'handy_external_sources_ratio.csv')
+
+    # reading the extracted External URIs
+    print('Reading data ...')
+    srcs = []
+    try:
+        with open(input_data_file, encoding="utf8") as file:
+            for line in file:
+                srcs.append(line.rstrip())
+    except FileNotFoundError:
+        print("Error: Input data file not found. Provide data file with name: {0} in data_dir".format(
+            '"external_sources.data"'))
+        exit(1)
+    # running the framework metric function
+    print('Running metric ...')
+    start_time = datetime.datetime.now()
+    handy_checker = HandyExternalSourcesChecker(srcs)
+    results = handy_checker.check_handy_external_sources_wikidata()
+    end_time = datetime.datetime.now()
+
+    # saving the results for presentation layer
+    if len(results) > 0:
+        write_results_to_CSV(results, output_file_dist)
+        write_results_to_CSV(str(handy_checker), output_file_result)
+
+    print('Metrics: Handy External Sources results have been written in the file: {0} and {1}'.format(
+        output_file_dist, output_file_result))
+    print('DONE. Metrics: Handy External Sources, Duration: {0}'.format(
+        end_time - start_time))
+    return 0
+
+
 def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] = None) -> int:
     if isinstance(argv, str):
         argv = argv.split()
@@ -1283,6 +1324,9 @@ def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Op
         framework_procs.append(p)
     if opts.human_readable_metadata:
         p = Process(target=compute_human_readable_metadata(opts))
+        framework_procs.append(p)
+    if opts.handy_external_sources:
+        p = Process(target=compute_handy_external_sources(opts))
         framework_procs.append(p)
 
     for proc in framework_procs:
