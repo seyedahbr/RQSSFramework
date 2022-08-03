@@ -10,6 +10,21 @@ SELECT ?to_ret WHERE
 
 Limit 3
 ''',
+"is_item_internal_source_wikidata":
+'''
+SELECT ?to_ret WHERE{{
+  BIND (EXISTS {{wd:{0} wdt:P127 wd:Q180}} AS ?to_ret)
+}}
+''',
+"is_item_online_available_dataset_wikidata":
+'''
+SELECT ?to_ret WHERE{{
+  BIND (EXISTS {{wd:{0} wdt:P31/wdt:P279* wd:Q7094076}} ||
+        EXISTS {{wd:{0} wdt:P953 ?value}} ||
+        EXISTS {{wd:{0} wdt:P5305 ?value2}} ||
+        EXISTS {{wd:{0} wdt:P6269 ?value3}} AS ?to_ret)
+}}
+''',
 "get_all_external_sources_distinct" : 
 '''
 PREFIX prov: <http://www.w3.org/ns/prov#>
