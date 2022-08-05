@@ -10,6 +10,42 @@ SELECT ?to_ret WHERE
 
 Limit 3
 ''',
+"get_reference properties usage_distribution_wikimedia":
+'''
+PREFIX wikibase: <http://wikiba.se/ontology#>
+SELECT DISTINCT ?refProperty (COUNT(?object) AS ?usage) WHERE{
+        ?item a wikibase:Reference.
+        ?item ?refProperty ?object.
+        MINUS {?object a wikibase:TimeValue}
+        MINUS {?object a wikibase:QuantityValue}
+        FILTER (?object != <http://wikiba.se/ontology#Reference>)
+
+}
+GROUP BY (?refProperty)
+ORDER BY DESC(?usage)
+''',
+"get_num_of_reference_triples_wikimedia":
+'''
+PREFIX wikibase: <http://wikiba.se/ontology#>
+SELECT (COUNT(?object) AS ?numOfRefTriple) WHERE{
+  ?refNode a wikibase:Reference .
+  ?refNode ?predicate ?object .
+  MINUS {?object a wikibase:TimeValue}
+  MINUS {?object a wikibase:QuantityValue}
+  FILTER (?object != <http://wikiba.se/ontology#Reference>)
+}
+''',
+"get_num_of_reference_properties_wikimedia":
+'''
+PREFIX wikibase: <http://wikiba.se/ontology#>
+SELECT (COUNT(DISTINCT ?predicate) AS ?numOfRefProp) WHERE{
+  ?refNode a wikibase:Reference .
+  ?refNode ?predicate ?object .
+  MINUS {?object a wikibase:TimeValue}
+  MINUS {?object a wikibase:QuantityValue}
+  FILTER (?object != <http://wikiba.se/ontology#Reference>)
+}
+''',
 "is_item_internal_source_wikidata":
 '''
 SELECT ?to_ret WHERE{{
