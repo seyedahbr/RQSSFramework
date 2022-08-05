@@ -32,6 +32,7 @@ from Licensing.LicenseExistanceChecking import LicenseChecker
 from Objectivity.MultipleReferenceChecking import *
 from Queries import RQSS_QUERIES
 from Representational_Conciseness.ExternalSourcesURILengthChecking import *
+from Representational_Consistency.RefPropertiesDiversityComputing import *
 from Reputation.DNSBLBlacklistedChecking import DNSBLBlacklistedChecker
 from Security.TLSExistanceChecking import TLSChecker
 from Timeliness.ExternalURIsTimelinessChecking import *
@@ -98,6 +99,8 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
                         help="Compute the Dimension: Amount-of-Data", action='store_true')
     parser.add_argument("-el", "--ext-uri-length",
                         help="Compute the metric: External Sources URL Length", action='store_true')
+    parser.add_argument("-rpd", "--ref-property-diversity",
+                        help="Compute the metric: Diversity of Reference Properties", action='store_true')
     parser.add_argument("-hm", "--human-readable-metadata",
                         help="Compute the metrics: Human-readable Labeling and Human-readable Commenting of reference properties", action='store_true')
     parser.add_argument("-he", "--handy-external-sources",
@@ -1158,6 +1161,60 @@ def compute_external_uris_length(opts: ArgumentParser) -> int:
     return 0
 
 
+def compute_ref_property_diversity(opts: ArgumentParser) -> int:
+    print('Started computing Metric: Diversity of Reference Properties')
+    input_data_file_nums = os.path.join(
+        opts.data_dir + os.sep + 'num_of_ref_props_and_ref_triples.data')
+    input_data_file_dist = os.path.join(
+        opts.data_dir + os.sep + 'reference_property_usage_distribution.data')
+    output_file_result = os.path.join(
+        opts.output_dir + os.sep + 'ref_properties_diversity_ratios.csv')
+
+    print('Reading number of properties/triples file ...')
+    try:
+        with open(input_data_file_nums, encoding="utf8") as file:
+            df = pd.read_csv(
+                file, usecols=['num of ref properties', 'num of ref triples'])
+            num_ref_prop = int(df['num of ref properties'].iloc[0])
+            num_ref_triple = int(df['num of ref triples'].iloc[0])
+    except FileNotFoundError:
+        print("Error: Input data file not found. Provide input data file with name: {0} in data_dir".format(
+            '"num_of_ref_props_and_ref_triples.data"'))
+        exit(1)
+
+    print('Reading ref property usage distribution file ...')
+    usage_dist = []
+    try:
+        with open(input_data_file_dist, encoding="utf8") as file:
+            reader = csv.reader(file)
+            for row in reader:
+                usage_dist.append(RefPropInstances(row[0], int(row[1])))
+
+    except FileNotFoundError:
+        print("Error: Input data file not found. Provide input data file with name: {0} in data_dir".format(
+            '"reference_property_usage_distribution.data"'))
+        exit(1)
+
+    # running the framework metric function
+    print('Running metric ...')
+    start_time = datetime.datetime.now()
+    diversity_computer = RefPropertyDiversityComputer(
+        usage_dist,
+        num_ref_prop,
+        num_ref_triple
+    )
+    write_results_to_CSV(str(diversity_computer), output_file_result)
+    end_time = datetime.datetime.now()
+
+    # saving the results for presentation layer
+
+    print(
+        'Metric: Diversity of Reference Properties results have been written in the file: {0}'.format(output_file_result))
+    print('DONE. Metric: Diversity of Reference Properties, Duration: {0}'.format(
+        end_time - start_time))
+    return 0
+
+
 def compute_human_readable_metadata(opts: ArgumentParser) -> int:
     print('Started computing Metrics: Human-readable Labeling and Human-readable Commenting of reference properties')
     input_data_file = os.path.join(
@@ -1321,6 +1378,9 @@ def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Op
         framework_procs.append(p)
     if opts.ext_uri_length:
         p = Process(target=compute_external_uris_length(opts))
+        framework_procs.append(p)
+    if opts.ref_property_diversity:
+        p = Process(target=compute_ref_property_diversity(opts))
         framework_procs.append(p)
     if opts.human_readable_metadata:
         p = Process(target=compute_human_readable_metadata(opts))
