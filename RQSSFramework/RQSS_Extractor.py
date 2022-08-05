@@ -49,6 +49,8 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
                         help="Extract all statement id, fact of the statement and the reference properties and save them on output dir. Collects data for computing Metrics: Schema-based Property Completeness and Property Completeness of References", action='store_true')
     parser.add_argument("-aof", "--amount-of-data",
                         help="Extract number of statement nodes, reference nodes, and distribution of triple and literals amongst reference nodes. Collects data for computing Amount-of-Data metrics", action='store_true')
+    parser.add_argument("-pu", "--ref-prop-usage",
+                        help="Extract number of reference properties, reference triples and reference properties usage distribution and save them on output dir. Collects data for computing Mtric: Diversity of Reference Properties", action='store_true')
     parser.add_argument("-es", "--external-sources",
                         help="Extract all external sources (including Wikidata items) and save them on output dir. Collects data for computing Mtric: Handy External Sources", action='store_true')
     return parser
@@ -417,18 +419,63 @@ def extract_amount_of_data_wikimedia(opts: ArgumentParser) -> int:
     return 0
 
 
+def extract_refـpropـusage_wikimedia(opts: ArgumentParser) -> int:
+    print('Started extracting number of reference properties, reference triples and reference properties usage distribution')
+    start_time = datetime.now()
+
+    output_file_num = os.path.join(
+        opts.output_dir + os.sep + 'num_of_ref_props_and_ref_triples.data')
+    output_file_usage_dist = os.path.join(
+        opts.output_dir + os.sep + 'reference_property_usage_distribution.data')
+
+    print('Get number of reference properties')
+    num_ref_prop = perform_query(
+        opts.endpoint, RQSS_QUERIES["get_num_of_reference_properties_wikimedia"])
+    print('Get number of reference triples')
+    num_ref_triple = perform_query(
+        opts.endpoint, RQSS_QUERIES["get_num_of_reference_triples_wikimedia"])
+
+    with open(output_file_num, 'w', newline='') as file_handler:
+        csv_writer = csv.writer(
+            file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        csv_writer.writerow(
+            ['num of ref properties', 'num of ref triples'])
+        csv_writer.writerow([num_ref_prop[0][0], num_ref_triple[0][0]])
+
+    print('Get reference properties usage distribution')
+    usage_dist = perform_query(
+        opts.endpoint, RQSS_QUERIES["get_reference properties usage_distribution_wikimedia"])
+    with open(output_file_usage_dist, 'w', newline='') as file_handler:
+        csv_writer = csv.writer(
+            file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        for row in usage_dist:
+            row = [
+                row[0].replace('http://www.wikidata.org/prop/reference/', ''),
+                row[1]]
+            csv_writer.writerow(row)
+
+    end_time = datetime.now()
+    print('number of reference properties, reference triples and reference properties usage distribution have been written in the files: {0}, {1}'.format(
+        output_file_num, output_file_usage_dist))
+    print('DONE. Extracting number of reference properties, reference triples and reference properties usage distribution, Duration: {0}'.format(
+        end_time - start_time))
+    return 0
+
+
 def extract_external_sources_wikimedia(opts: ArgumentParser) -> int:
     print('Started extracting External Sources')
     start_time = datetime.now()
 
     external_uris = perform_query(
         opts.endpoint, RQSS_QUERIES["get_all_external_sources_distinct"])
-    output_file = os.path.join(opts.output_dir + os.sep + 'external_sources.data')
+    output_file = os.path.join(
+        opts.output_dir + os.sep + 'external_sources.data')
     with open(output_file, 'w', newline='') as file_handler:
         csv_writer = csv.writer(
             file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for uri in external_uris:
-            csv_writer.writerow([cell.replace('http://www.wikidata.org/entity/','') for cell in uri])
+            csv_writer.writerow(
+                [cell.replace('http://www.wikidata.org/entity/', '') for cell in uri])
 
     end_time = datetime.now()
     print('External Sources have been written in the file: {0}'.format(
@@ -436,6 +483,7 @@ def extract_external_sources_wikimedia(opts: ArgumentParser) -> int:
     print('DONE. Extracting External Sources, Duration: {0}'.format(
         end_time - start_time))
     return 0
+
 
 def extract_from_file(opts: ArgumentParser) -> int:
     print('Local file extraction is not supported yet. Please use local/public endpoint.')
@@ -496,6 +544,10 @@ def extract_from_endpoint(opts: ArgumentParser) -> int:
 
     if(opts.amount_of_data):
         p = Process(target=extract_amount_of_data_wikimedia(opts))
+        extractor_procs.append(p)
+
+    if(opts.ref_prop_usage):
+        p = Process(target=extract_refـpropـusage_wikimedia(opts))
         extractor_procs.append(p)
 
     if(opts.external_sources):
