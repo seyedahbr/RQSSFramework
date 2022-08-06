@@ -444,7 +444,7 @@ def extract_refـpropـusage_wikimedia(opts: ArgumentParser) -> int:
 
     print('Get reference properties usage distribution')
     usage_dist = perform_query(
-        opts.endpoint, RQSS_QUERIES["get_reference properties usage_distribution_wikimedia"])
+        opts.endpoint, RQSS_QUERIES["get_reference_properties_usage_distribution_wikimedia"])
     with open(output_file_usage_dist, 'w', newline='') as file_handler:
         csv_writer = csv.writer(
             file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)

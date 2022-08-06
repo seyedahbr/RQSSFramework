@@ -10,7 +10,7 @@ SELECT ?to_ret WHERE
 
 Limit 3
 ''',
-"get_reference properties usage_distribution_wikimedia":
+"get_reference_properties_usage_distribution_wikimedia":
 '''
 PREFIX wikibase: <http://wikiba.se/ontology#>
 SELECT DISTINCT ?refProperty (COUNT(?object) AS ?usage) WHERE{
