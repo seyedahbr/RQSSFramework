@@ -10,6 +10,79 @@ SELECT ?to_ret WHERE
 
 Limit 3
 ''',
+"get_num_of_BN_ref_value_wikimedia":
+'''
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+SELECT (COUNT(DISTINCT ?refValue) AS ?to_ret) WHERE{
+  ?statementNode a wikibase:Statement.
+  ?statementNode prov:wasDerivedFrom ?refNode.
+  ?refNode ?refProperty ?refValue.
+  FILTER (isBlank(?refValue))
+  MINUS {?refValue a wikibase:TimeValue}
+  MINUS {?refValue a wikibase:QuantityValue}
+  FILTER (?refValue != <http://wikiba.se/ontology#Reference>)
+}
+''',
+"get_num_of_BN_ref_predicate_wikimedia":
+'''
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+SELECT (COUNT(DISTINCT ?refProperty) AS ?to_ret) WHERE{
+  ?statementNode a wikibase:Statement.
+  ?statementNode prov:wasDerivedFrom ?refNode.
+  ?refNode ?refProperty ?refValue.
+  FILTER (isBlank(?refProperty))
+  MINUS {?refValue a wikibase:TimeValue}
+  MINUS {?refValue a wikibase:QuantityValue}
+  FILTER (?refValue != <http://wikiba.se/ontology#Reference>)
+}
+''',
+"get_num_of_BN_provWasDerivedFrom_wikimedia":
+'''
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+SELECT (COUNT(DISTINCT ?refNode) AS ?to_ret) WHERE{
+  ?statementNode a wikibase:Statement.
+  ?statementNode prov:wasDerivedFrom ?refNode.
+  FILTER (isBlank(?refNode))
+}
+''',
+"get_num_of_ref_value_wikimedia":
+'''
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+SELECT (COUNT(DISTINCT ?refValue) AS ?to_ret) WHERE{
+  ?statementNode a wikibase:Statement.
+  ?statementNode prov:wasDerivedFrom ?refNode.
+  ?refNode ?refProperty ?refValue.
+  MINUS {?refValue a wikibase:TimeValue}
+  MINUS {?refValue a wikibase:QuantityValue}
+  FILTER (?refValue != <http://wikiba.se/ontology#Reference>)
+}
+''',
+"get_num_of_ref_predicate_wikimedia":
+'''
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+SELECT (COUNT(DISTINCT ?refProperty) AS ?to_ret) WHERE{
+  ?statementNode a wikibase:Statement.
+  ?statementNode prov:wasDerivedFrom ?refNode.
+  ?refNode ?refProperty ?refValue.
+  MINUS {?refValue a wikibase:TimeValue}
+  MINUS {?refValue a wikibase:QuantityValue}
+  FILTER (?refValue != <http://wikiba.se/ontology#Reference>)
+}
+''',
+"get_num_of_provWasDerivedFrom_wikimedia":
+'''
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+SELECT (COUNT(DISTINCT ?refNode) AS ?to_ret) WHERE{
+  ?statementNode a wikibase:Statement.
+  ?statementNode prov:wasDerivedFrom ?refNode.
+}
+''',
 "get_reference_properties_usage_distribution_wikimedia":
 '''
 PREFIX wikibase: <http://wikiba.se/ontology#>
