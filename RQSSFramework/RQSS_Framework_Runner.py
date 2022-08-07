@@ -28,6 +28,7 @@ from Currency.ExternalURIsFreshnessChecking import *
 from Currency.ReferenceFreshnessChecking import *
 from EntitySchemaExtractor import EidRefSummary, RefedFactRef
 from Interlinking.RefPropertiesInterlinkingChecking import *
+from Interpretability.BlankNodeChecking import *
 from Licensing.LicenseExistanceChecking import LicenseChecker
 from Objectivity.MultipleReferenceChecking import *
 from Queries import RQSS_QUERIES
@@ -105,6 +106,8 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
                         help="Compute the metrics: Human-readable Labeling and Human-readable Commenting of reference properties", action='store_true')
     parser.add_argument("-he", "--handy-external-sources",
                         help="Compute the metrics: Handy External Sources", action='store_true')
+    parser.add_argument("-bn", "--blank-node",
+                        help="Compute the metrics: Usage of Blank Nodes", action='store_true')
     return parser
 
 
@@ -1293,6 +1296,33 @@ def compute_handy_external_sources(opts: ArgumentParser) -> int:
     return 0
 
 
+def compute_blank_node_usage(opts: ArgumentParser) -> int:
+    print('Started computing Metric: Usage of Blank Nodes')
+    output_file = os.path.join(
+        opts.output_dir + os.sep + 'blank_node_result.csv')
+
+    # running the framework metric function
+    if not opts.endpoint:
+        print('ERROR: Usage of Blank Nodes needs endpoint. Specify an SPARQL endpoint with --endpoint arg.')
+        return -1
+    print('Running metric ...')
+    start_time = datetime.datetime.now()
+    bn_checker = None
+    bn_checker = BlankNodeChecker(opts.endpoint)
+    results = bn_checker.check_blank_nodes_over_endpoint()
+    end_time = datetime.datetime.now()
+
+    # saving the results for presentation layer
+    if results is not None:
+        write_results_to_CSV(str(bn_checker), output_file)
+
+    print('Metric: Usage of Blank Nodes results have been written in the file: {0}'.format(
+        output_file))
+    print('DONE. Metric: Usage of Blank Nodes, Duration: {0}'.format(
+        end_time - start_time))
+    return 0
+
+
 def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] = None) -> int:
     if isinstance(argv, str):
         argv = argv.split()
@@ -1387,6 +1417,9 @@ def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Op
         framework_procs.append(p)
     if opts.handy_external_sources:
         p = Process(target=compute_handy_external_sources(opts))
+        framework_procs.append(p)
+    if opts.blank_node:
+        p = Process(target=compute_blank_node_usage(opts))
         framework_procs.append(p)
 
     for proc in framework_procs:
