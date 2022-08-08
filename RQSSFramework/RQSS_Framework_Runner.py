@@ -40,6 +40,7 @@ from Timeliness.ExternalURIsTimelinessChecking import *
 from Understandability.HandyExternalSourcesChecking import *
 from Understandability.HumanReadableMetadataChecking import *
 from Volatility.ExternalURIsVolatilityChecking import *
+from Versatility.MultilingualMetadataChecking import *
 
 
 def genargs(prog: Optional[str] = None) -> ArgumentParser:
@@ -103,11 +104,13 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
     parser.add_argument("-rpd", "--ref-property-diversity",
                         help="Compute the metric: Diversity of Reference Properties", action='store_true')
     parser.add_argument("-hm", "--human-readable-metadata",
-                        help="Compute the metrics: Human-readable Labeling and Human-readable Commenting of reference properties", action='store_true')
+                        help="Compute the metrics: Human-readable Labeling and Human-readable Commenting of Reference Properties", action='store_true')
     parser.add_argument("-he", "--handy-external-sources",
                         help="Compute the metrics: Handy External Sources", action='store_true')
     parser.add_argument("-bn", "--blank-node",
                         help="Compute the metrics: Usage of Blank Nodes", action='store_true')
+    parser.add_argument("-mm", "--multilingual-metadata",
+                        help="Compute the metrics: Multilingual Labeling and Multilingual Commenting of Reference Properties", action='store_true')
     return parser
 
 
@@ -1219,7 +1222,7 @@ def compute_ref_property_diversity(opts: ArgumentParser) -> int:
 
 
 def compute_human_readable_metadata(opts: ArgumentParser) -> int:
-    print('Started computing Metrics: Human-readable Labeling and Human-readable Commenting of reference properties')
+    print('Started computing Metrics: Human-readable Labeling and Human-readable Commenting of Reference Properties')
     input_data_file = os.path.join(
         opts.data_dir + os.sep + 'ref_properties.data')
     output_file_dist = os.path.join(
@@ -1250,9 +1253,9 @@ def compute_human_readable_metadata(opts: ArgumentParser) -> int:
         write_results_to_CSV(results, output_file_dist)
         write_results_to_CSV(str(metadata_checker), output_file_result)
 
-    print('Metrics: Human-readable Labeling and Human-readable Commenting of reference properties results have been written in the file: {0} and {1}'.format(
+    print('Metrics: Human-readable Labeling and Human-readable Commenting of Reference Properties results have been written in the file: {0} and {1}'.format(
         output_file_dist, output_file_result))
-    print('DONE. Metrics: Human-readable Labeling and Human-readable Commenting of reference properties, Duration: {0}'.format(
+    print('DONE. Metrics: Human-readable Labeling and Human-readable Commenting of Reference Properties, Duration: {0}'.format(
         end_time - start_time))
     return 0
 
@@ -1319,6 +1322,45 @@ def compute_blank_node_usage(opts: ArgumentParser) -> int:
     print('Metric: Usage of Blank Nodes results have been written in the file: {0}'.format(
         output_file))
     print('DONE. Metric: Usage of Blank Nodes, Duration: {0}'.format(
+        end_time - start_time))
+    return 0
+
+
+def compute_multilingual_metadata(opts: ArgumentParser) -> int:
+    print('Started computing Metrics: Multilingual Labeling and Multilingual Commenting of Reference Properties')
+    input_data_file = os.path.join(
+        opts.data_dir + os.sep + 'ref_properties.data')
+    output_file_dist = os.path.join(
+        opts.output_dir + os.sep + 'multilingual_metadata.csv')
+    output_file_result = os.path.join(
+        opts.output_dir + os.sep + 'multilingual_metadata_ratio.csv')
+
+    # reading the extracted External URIs
+    print('Reading data ...')
+    props = []
+    try:
+        with open(input_data_file, encoding="utf8") as file:
+            for line in file:
+                props.append(line.rstrip())
+    except FileNotFoundError:
+        print("Error: Input data file not found. Provide data file with name: {0} in data_dir".format(
+            '"ref_properties.data"'))
+        exit(1)
+    # running the framework metric function
+    print('Running metric ...')
+    start_time = datetime.datetime.now()
+    ml_checker = MultilingualMetadataChecker(props)
+    results = ml_checker.check_multilingual_existance_from_Wikdiata()
+    end_time = datetime.datetime.now()
+
+    # saving the results for presentation layer
+    if len(results) > 0:
+        write_results_to_CSV(results, output_file_dist)
+        write_results_to_CSV(str(ml_checker), output_file_result)
+
+    print('Metrics: Multilingual Labeling and Multilingual Commenting of Reference Properties results have been written in the file: {0} and {1}'.format(
+        output_file_dist, output_file_result))
+    print('DONE. Metrics: Multilingual Labeling and Multilingual Commenting of Reference Properties, Duration: {0}'.format(
         end_time - start_time))
     return 0
 
@@ -1420,6 +1462,9 @@ def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Op
         framework_procs.append(p)
     if opts.blank_node:
         p = Process(target=compute_blank_node_usage(opts))
+        framework_procs.append(p)
+    if opts.multilingual_metadata:
+        p = Process(target=compute_multilingual_metadata(opts))
         framework_procs.append(p)
 
     for proc in framework_procs:
