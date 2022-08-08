@@ -10,6 +10,24 @@ SELECT ?to_ret WHERE
 
 Limit 3
 ''',
+"get_property_non_en_comments_wikidata":
+'''
+SELECT (COUNT(?language) AS ?to_ret) WHERE{{
+  wd:{0} schema:description ?desc ;
+         schema:description ?enDesc .
+  FILTER(lang(?enDesc) = "en")
+  BIND (lang(?desc) AS ?language)
+}}
+''',
+"get_property_non_en_labels_wikidata":
+'''
+SELECT (COUNT(?language) AS ?to_ret) WHERE{{
+  wd:{0} rdfs:label ?label ;
+          rdfs:label ?enLabel .
+  FILTER(lang(?enLabel) = "en")
+  BIND (lang(?label) AS ?language)
+}}
+''',
 "get_num_of_BN_ref_value_wikimedia":
 '''
 PREFIX wikibase: <http://wikiba.se/ontology#>
