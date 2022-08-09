@@ -53,6 +53,8 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
                         help="Extract number of reference properties, reference triples and reference properties usage distribution and save them on output dir. Collects data for computing Mtric: Diversity of Reference Properties", action='store_true')
     parser.add_argument("-es", "--external-sources",
                         help="Extract all external sources (including Wikidata items) and save them on output dir. Collects data for computing Mtric: Handy External Sources", action='store_true')
+    parser.add_argument("-ss", "--statement-source",
+                        help="Extract all statement ids and their sources (only IRIs, not literals) and save them on output dir. Collects data for computing Mtrics: Multilingual Sources and Multilingual Referenced Facts", action='store_true')
     return parser
 
 
@@ -485,6 +487,32 @@ def extract_external_sources_wikimedia(opts: ArgumentParser) -> int:
     return 0
 
 
+
+def extract_statements_sources_wikimedia(opts: ArgumentParser) -> int:
+    print('Started extracting statement ids and their sources (only IRIs, not literals)')
+    start_time = datetime.now()
+
+    statement_source = perform_query(
+        opts.endpoint, RQSS_QUERIES["get_statement_sources_wikimedia"])
+    output_file = os.path.join(
+        opts.output_dir + os.sep + 'statement_source.data')
+    with open(output_file, 'w', newline='') as file_handler:
+        csv_writer = csv.writer(
+            file_handler, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        for row in statement_source:
+            row = [
+                row[0].replace('http://www.wikidata.org/entity/statement/', ''),
+                row[1].replace('http://www.wikidata.org/entity/', '')]
+            csv_writer.writerow(row)
+
+    end_time = datetime.now()
+    print('Statement ids and their sources (only IRIs, not literals) have been written in the file: {0}'.format(
+        output_file))
+    print('DONE. Extracting statement ids and their sources (only IRIs, not literals), Duration: {0}'.format(
+        end_time - start_time))
+    return 0
+
+
 def extract_from_file(opts: ArgumentParser) -> int:
     print('Local file extraction is not supported yet. Please use local/public endpoint.')
     return 1
@@ -552,6 +580,10 @@ def extract_from_endpoint(opts: ArgumentParser) -> int:
 
     if(opts.external_sources):
         p = Process(target=extract_external_sources_wikimedia(opts))
+        extractor_procs.append(p)
+
+    if(opts.statement_source):
+        p = Process(target=extract_statements_sources_wikimedia(opts))
         extractor_procs.append(p)
 
     for proc in extractor_procs:
