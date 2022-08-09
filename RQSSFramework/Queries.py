@@ -10,6 +10,19 @@ SELECT ?to_ret WHERE
 
 Limit 3
 ''',
+"get_statement_sources_wikimedia" : 
+'''
+PREFIX prov: <http://www.w3.org/ns/prov#>
+PREFIX wikibase: <http://wikiba.se/ontology#>
+SELECT DISTINCT ?statementNode ?refValue WHERE {
+  ?statementNode prov:wasDerivedFrom ?refNode .
+  ?refNode ?refProperty ?refValue .
+  FILTER (isIRI(?refValue))
+  MINUS {?refValue a wikibase:TimeValue}
+  MINUS {?refValue a wikibase:QuantityValue}
+  FILTER (?refValue != <http://wikiba.se/ontology#Reference>)
+}
+''',
 "get_property_non_en_comments_wikidata":
 '''
 SELECT (COUNT(?language) AS ?to_ret) WHERE{{
