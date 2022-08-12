@@ -39,8 +39,9 @@ from Security.TLSExistanceChecking import TLSChecker
 from Timeliness.ExternalURIsTimelinessChecking import *
 from Understandability.HandyExternalSourcesChecking import *
 from Understandability.HumanReadableMetadataChecking import *
-from Volatility.ExternalURIsVolatilityChecking import *
 from Versatility.MultilingualMetadataChecking import *
+from Versatility.MultilingualSourcesAndFactsChecking import *
+from Volatility.ExternalURIsVolatilityChecking import *
 
 
 def genargs(prog: Optional[str] = None) -> ArgumentParser:
@@ -111,6 +112,8 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
                         help="Compute the metrics: Usage of Blank Nodes", action='store_true')
     parser.add_argument("-mm", "--multilingual-metadata",
                         help="Compute the metrics: Multilingual Labeling and Multilingual Commenting of Reference Properties", action='store_true')
+    parser.add_argument("-mfs", "--multilingual-facts-sources",
+                        help="Compute the metrics: Multilingual Sources and Multilingual Referenced Facts", action='store_true')
     return parser
 
 
@@ -1365,6 +1368,54 @@ def compute_multilingual_metadata(opts: ArgumentParser) -> int:
     return 0
 
 
+def compute_multilingual_facts_sources(opts: ArgumentParser) -> int:
+    print('Started computing Metrics: Multilingual Sources and Multilingual Referenced Facts')
+    input_data_file = os.path.join(
+        opts.data_dir + os.sep + 'statement_source.data')
+    output_file_sources_ml_dist = os.path.join(
+        opts.output_dir + os.sep + 'sources_multilingualism.csv')
+    output_file_facts_ml_dist = os.path.join(
+        opts.output_dir + os.sep + 'facts_multilingualism.csv')
+    output_file_ml_result = os.path.join(
+        opts.output_dir + os.sep + 'sources_facts_multilingualism_ratio.csv')
+
+    # reading the properties/literals
+    print('Reading data ...')
+    statements_ref_vals: Dict = {}
+    try:
+        with open(input_data_file, encoding="utf8") as file:
+            reader = csv.reader(file)
+            for row in reader:
+                if row[0] not in statements_ref_vals.keys():
+                    statements_ref_vals[row[0]] = []
+                statements_ref_vals[row[0]].append(row[1])
+    except FileNotFoundError:
+        print("Error: Input data file not found. Provide data file with name: {0} in data_dir".format(
+            '"statement_source.data"'))
+        exit(1)
+
+    # running the framework metric function
+    print('Running metric ...')
+    start_time = datetime.datetime.now()
+    fact_source_ml_checker = MultilingualFactsAndSourcesChecker(
+        statements_ref_vals)
+    source_dist, facts_dist = fact_source_ml_checker.check_fact_sources_multilingualism()
+    end_time = datetime.datetime.now()
+
+    # saving the results for presentation layer
+    if len(source_dist) > 0:
+        write_results_to_CSV(source_dist, output_file_sources_ml_dist)
+    if len(facts_dist) > 0:
+        write_results_to_CSV(facts_dist, output_file_facts_ml_dist)
+    write_results_to_CSV(str(fact_source_ml_checker), output_file_ml_result)
+
+    print('Metrics: Multilingual Sources and Multilingual Referenced Facts results have been written in the files: {0} and {1} and {2}'.format(
+        output_file_sources_ml_dist, output_file_facts_ml_dist, output_file_ml_result))
+    print('DONE. Metrics: Multilingual Sources and Multilingual Referenced Facts, Duration: {0}'.format(
+        end_time - start_time))
+    return 0
+
+
 def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] = None) -> int:
     if isinstance(argv, str):
         argv = argv.split()
@@ -1465,6 +1516,9 @@ def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Op
         framework_procs.append(p)
     if opts.multilingual_metadata:
         p = Process(target=compute_multilingual_metadata(opts))
+        framework_procs.append(p)
+    if opts.multilingual_facts_sources:
+        p = Process(target=compute_multilingual_facts_sources(opts))
         framework_procs.append(p)
 
     for proc in framework_procs:
