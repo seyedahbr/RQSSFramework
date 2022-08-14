@@ -10,6 +10,13 @@ SELECT ?to_ret WHERE
 
 Limit 3
 ''',
+"get_source_languages_code_wikidata" : 
+'''
+SELECT DISTINCT (?languageCode AS ?to_ret) WHERE {{
+  wd:{0} wdt:P407 ?languageOFWork.
+  ?languageOFWork wdt:P218 ?languageCode.
+}}
+''',
 "get_statement_sources_wikimedia" : 
 '''
 PREFIX prov: <http://www.w3.org/ns/prov#>
