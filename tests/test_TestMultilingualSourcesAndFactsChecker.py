@@ -31,7 +31,7 @@ class TestMultilingualSourcesAndFactsChecking(unittest.TestCase):
             w = csv.writer(f)
             # write header from NamedTuple fields
             w.writerow(
-                [field for field in test_class.results_Facts[0]._fields])
-            for result in test_class.results_Facts:
+                [field for field in test_class.results_facts[0]._fields])
+            for result in test_class.results_facts:
                 row = [result._asdict()[field] for field in result._fields]
                 w.writerow(row)
