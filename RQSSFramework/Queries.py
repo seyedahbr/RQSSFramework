@@ -10,6 +10,12 @@ SELECT ?to_ret WHERE
 
 Limit 3
 ''',
+"get_instances_wikidata":
+'''
+SELECT DISTINCT (REPLACE(STR(?item),".*Q","Q") AS ?to_ret) WHERE{{
+  wd:{0} wdt:P31/wdt:279* ?item.
+}}
+''',
 "get_source_languages_code_wikidata" : 
 '''
 SELECT DISTINCT (?languageCode AS ?to_ret) WHERE {{
