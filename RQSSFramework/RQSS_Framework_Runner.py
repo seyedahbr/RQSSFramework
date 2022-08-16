@@ -39,6 +39,8 @@ from Security.TLSExistanceChecking import TLSChecker
 from Timeliness.ExternalURIsTimelinessChecking import *
 from Understandability.HandyExternalSourcesChecking import *
 from Understandability.HumanReadableMetadataChecking import *
+from utils.lists import known_datasets
+from Verifiability.TypeofSourcesChecking import *
 from Versatility.MultilingualMetadataChecking import *
 from Versatility.MultilingualSourcesAndFactsChecking import *
 from Volatility.ExternalURIsVolatilityChecking import *
@@ -80,6 +82,8 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
                         help="Compute the metric: Multiple References for Facts", action='store_true')
     parser.add_argument("-ha", "--human-added",
                         help="Compute the metric: Human-added References Ratio", action='store_true')
+    parser.add_argument("-ts", "--type-of-sources",
+                        help="Compute the metrics: Verifiable Type of References", action='store_true')
     parser.add_argument("-rf", "--ref-freshness",
                         help="Compute the metric: Freshness of Fact Referencing", action='store_true')
     parser.add_argument("-ef", "--ext-uris-freshness",
@@ -666,6 +670,52 @@ def compute_human_added_references_per_item(opts: ArgumentParser) -> int:
     print('Metric: Human-added references ratio results have been written in the files: {0} and {1}'.format(
         output_file_dist, output_file_result))
     print('DONE. Metric: Human-added references ratio, Duration: {0}'.format(
+        end_time - start_time))
+    return 0
+
+
+def compute_verifiable_type_of_sources(opts: ArgumentParser) -> int:
+    print('Started computing Metrics: Verifiable Type of References')
+    input_data_file = os.path.join(
+        opts.data_dir + os.sep + 'statement_source.data')
+    output_file_dist = os.path.join(
+        opts.output_dir + os.sep + 'type_of_sources.csv')
+    output_file_result = os.path.join(
+        opts.output_dir + os.sep + 'type_of_sources_ratio.csv')
+
+    # reading the extracted External URIs
+    print('Reading data ...')
+    srcs = []
+    statements_ref_vals: Dict = {}
+    try:
+        with open(input_data_file, encoding="utf8") as file:
+            reader = csv.reader(file)
+            for row in reader:
+                if row[0] not in statements_ref_vals.keys():
+                    statements_ref_vals[row[0]] = []
+                statements_ref_vals[row[0]].append(row[1])
+    except FileNotFoundError:
+        print("Error: Input data file not found. Provide data file with name: {0} in data_dir".format(
+            '"statement_source.data"'))
+        exit(1)
+
+    distinct_sources = set.union(
+        *[set(value) for key, value in statements_ref_vals.items()])
+    # running the framework metric function
+    print('Running metric ...')
+    start_time = datetime.datetime.now()
+    type_checker = TypeOfSourcesChecker(distinct_sources, known_datasets)
+    results = type_checker.check_type_of_sources_wikidata()
+    end_time = datetime.datetime.now()
+
+    # saving the results for presentation layer
+    if len(results) > 0:
+        write_results_to_CSV(results, output_file_dist)
+        write_results_to_CSV(str(type_checker), output_file_result)
+
+    print('Metrics: Verifiable Type of References results have been written in the file: {0} and {1}'.format(
+        output_file_dist, output_file_result))
+    print('DONE. Metrics: Verifiable Type of References, Duration: {0}'.format(
         end_time - start_time))
     return 0
 
@@ -1473,6 +1523,9 @@ def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Op
         framework_procs.append(p)
     if opts.human_added:
         p = Process(target=compute_human_added_references_per_item(opts))
+        framework_procs.append(p)
+    if opts.type_of_sources:
+        p = Process(target=compute_verifiable_type_of_sources(opts))
         framework_procs.append(p)
     if opts.ref_freshness:
         p = Process(
