@@ -54,7 +54,7 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
     parser.add_argument("-es", "--external-sources",
                         help="Extract all external sources (including Wikidata items) and save them on output dir. Collects data for computing Mtric: Handy External Sources", action='store_true')
     parser.add_argument("-ss", "--statement-source",
-                        help="Extract all statement ids and their sources (only IRIs, not literals) and save them on output dir. Collects data for computing Mtrics: Multilingual Sources and Multilingual Referenced Facts", action='store_true')
+                        help="Extract all statement ids and their sources (only IRIs, not literals) and save them on output dir. Collects data for computing Mtrics: Verifiable Type of references, Multilingual Sources and Multilingual Referenced Facts", action='store_true')
     return parser
 
 
