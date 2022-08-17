@@ -37,7 +37,6 @@ class ExternalURIsVolatilityChecker:
         return self.results
 
     def get_volatility_from_change_freq(self, change_freq: SitemapPageChangeFrequency) -> float:
-        print('** A change_freq value is found **')
         if change_freq.has_value('always'):
             return 1.0
         if change_freq.has_value('hourly'):
@@ -63,8 +62,18 @@ class ExternalURIsVolatilityChecker:
     def __repr__(self):
         if self.results == None:
             return 'Results are not computed'
-        return """num of uris,volatility score,not found
-{0},{1},{2}""".format(len(self.results), self.score, len([i.volatility for i in self.results if i.volatility == None]))
+        return """num of uris,number of always changed-feq,number of hourly changed-feq,number of daily changed-feq,number of weekly changed-feq,number of monthly changed-feq,number of yearly changed-feq,not found,score
+{0},{1},{2},{3},{4},{5},{6},{7},{8}""".format(
+    len(self.results),
+    len([i for i in self.results if i.volatility is not None and i.volatility == 1]),
+    len([i for i in self.results if i.volatility is not None and i.volatility == 0.9]),
+    len([i for i in self.results if i.volatility is not None and i.volatility == 0.8]),
+    len([i for i in self.results if i.volatility is not None and i.volatility == 0.6]),
+    len([i for i in self.results if i.volatility is not None and i.volatility == 0.4]),
+    len([i for i in self.results if i.volatility is not None and i.volatility == 0.1]),
+    len([i for i in self.results if i.volatility is None]),
+    self.score
+    )
 
     def print_results(self):
         """
