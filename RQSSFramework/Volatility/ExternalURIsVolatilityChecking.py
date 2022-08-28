@@ -1,4 +1,5 @@
 from typing import Iterator, List, NamedTuple
+from urllib.parse import urlparse
 
 from rdflib import URIRef
 from usp.objects.page import SitemapPageChangeFrequency
@@ -22,14 +23,33 @@ class ExternalURIsVolatilityChecker:
 
     def check_external_uris_volatility(self) -> List[VolatilityOfURI]:
         self.results = []
-        for uri in self._uris:
+        print('\tGetting uri domains ...')
+        uri_and_domains = [(uri, self.domain_extractor(uri))
+                           for uri in self._uris]
+        domains_pages = dict.fromkeys(j for i, j in uri_and_domains)
+        for key in domains_pages:
+            domains_pages[key] = []
+        print('\tGetting uri domains sitemaps ...')
+        for domain in domains_pages.keys():
+            try:
+                print('\t\tGetting sitemap of domain: ', domain)
+                tree = sitemap_tree_for_homepage(str(domain))
+                for page in tree.all_pages():
+                    domains_pages[domain].append(
+                        (str(page), page.change_frequency))
+            except:
+                print('\t\t ERROR in getting sitemap of domain: ', domain)
+                continue
+
+        for uri, domain in uri_and_domains:
             not_found = True
-            tree = sitemap_tree_for_homepage(str(uri))
-            for page in tree.all_pages():
-                if str(uri) in str(page):
+            # tree = sitemap_tree_for_homepage(str(uri))
+            # for page in tree.all_pages():
+            for page, change_frequency in domains_pages[domain]:
+                if str(uri) in page:
                     not_found = False
                     self.results.append(VolatilityOfURI(uri, self.get_volatility_from_change_freq(
-                        page.change_frequency) if page.change_frequency is not None else None))
+                        change_frequency) if change_frequency is not None else None))
                     break
             if not_found:
                 self.results.append(VolatilityOfURI(uri, None))
@@ -51,6 +71,9 @@ class ExternalURIsVolatilityChecker:
             return 0.1
         return 0
 
+    def domain_extractor(self, uri: URIRef) -> URIRef:
+        return 'https://'+urlparse(uri).netloc
+
     @property
     def score(self):
         if self.results is not None:
@@ -64,16 +87,16 @@ class ExternalURIsVolatilityChecker:
             return 'Results are not computed'
         return """num of uris,number of always changed-feq,number of hourly changed-feq,number of daily changed-feq,number of weekly changed-feq,number of monthly changed-feq,number of yearly changed-feq,not found,score
 {0},{1},{2},{3},{4},{5},{6},{7},{8}""".format(
-    len(self.results),
-    len([i for i in self.results if i.volatility is not None and i.volatility == 1]),
-    len([i for i in self.results if i.volatility is not None and i.volatility == 0.9]),
-    len([i for i in self.results if i.volatility is not None and i.volatility == 0.8]),
-    len([i for i in self.results if i.volatility is not None and i.volatility == 0.6]),
-    len([i for i in self.results if i.volatility is not None and i.volatility == 0.4]),
-    len([i for i in self.results if i.volatility is not None and i.volatility == 0.1]),
-    len([i for i in self.results if i.volatility is None]),
-    self.score
-    )
+            len(self.results),
+            len([i for i in self.results if i.volatility is not None and i.volatility == 1]),
+            len([i for i in self.results if i.volatility is not None and i.volatility == 0.9]),
+            len([i for i in self.results if i.volatility is not None and i.volatility == 0.8]),
+            len([i for i in self.results if i.volatility is not None and i.volatility == 0.6]),
+            len([i for i in self.results if i.volatility is not None and i.volatility == 0.4]),
+            len([i for i in self.results if i.volatility is not None and i.volatility == 0.1]),
+            len([i for i in self.results if i.volatility is None]),
+            self.score
+        )
 
     def print_results(self):
         """
