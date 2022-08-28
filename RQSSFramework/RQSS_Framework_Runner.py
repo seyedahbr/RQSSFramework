@@ -116,7 +116,7 @@ def genargs(prog: Optional[str] = None) -> ArgumentParser:
                         help="Compute the metrics: Usage of Blank Nodes", action='store_true')
     parser.add_argument("-mm", "--multilingual-metadata",
                         help="Compute the metrics: Multilingual Labeling and Multilingual Commenting of Reference Properties", action='store_true')
-    parser.add_argument("-mfs", "--multilingual-facts-sources",
+    parser.add_argument("-mfs", "--multilingual-sources-facts",
                         help="Compute the metrics: Multilingual Sources and Multilingual Referenced Facts", action='store_true')
     return parser
 
@@ -1418,7 +1418,7 @@ def compute_multilingual_metadata(opts: ArgumentParser) -> int:
     return 0
 
 
-def compute_multilingual_facts_sources(opts: ArgumentParser) -> int:
+def compute_multilingual_sources_facts(opts: ArgumentParser) -> int:
     print('Started computing Metrics: Multilingual Sources and Multilingual Referenced Facts')
     input_data_file = os.path.join(
         opts.data_dir + os.sep + 'statement_source.data')
@@ -1570,8 +1570,8 @@ def RQSS_Framework_Runner(argv: Optional[Union[str, List[str]]] = None, prog: Op
     if opts.multilingual_metadata:
         p = Process(target=compute_multilingual_metadata(opts))
         framework_procs.append(p)
-    if opts.multilingual_facts_sources:
-        p = Process(target=compute_multilingual_facts_sources(opts))
+    if opts.multilingual_sources_facts:
+        p = Process(target=compute_multilingual_sources_facts(opts))
         framework_procs.append(p)
 
     for proc in framework_procs:
