@@ -30,7 +30,7 @@ class AmountOfDataComputer:
     @property
     def ref_triple_per_ref_node_ratio(self):
         num_ref_triple = sum([i.num_out for i in self._triple_dist])
-        return num_ref_triple / self._num_ref_node
+        return 1 - (self._num_ref_node / num_ref_triple) 
 
     @property
     def ref_literal_per_ref_triple_ratio(self):
