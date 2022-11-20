@@ -1,0 +1,26 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: ' RQSSFramework'
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Seyed Amir
+    family-names: Hosseini Beghaeiraveri
+    email: sh200@hw.ac.uk
+    affiliation: Heriot-Watt University
+    orcid: 'https://orcid.org/0000-0002-9123-5686'
+repository-code: 'https://github.com/seyedahbr/RQSSFramework'
+url: 'https://github.com/seyedahbr/RQSSFramework'
+repository: 'https://github.com/seyedahbr/RQSSFramework'
+repository-artifact: 'https://github.com/seyedahbr/RQSSFramework'
+keywords:
+  - Wikidata
+  - subset
+  - data quality
+  - reference quality
+license: CC-BY-1.0
+version: 1.0.0
