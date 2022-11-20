@@ -67,8 +67,7 @@ optional arguments:
 ``` 
 An example of using the Extractor to obtain all external sources URLs in the input graph:
 ```
- python3.9 ./RQSSFramework/RQSS_Extractor.py --endpoint http://localhost:9999/blazegraph/sparql --output ./rqss_extractor_output --external-uris
-Creating output directory: ./rqss_extractor_output
+$ python3.9 ./RQSSFramework/RQSS_Extractor.py --endpoint http://localhost:9999/blazegraph/sparql --output ./rqss_extractor_output --external-uris
 ```
 The above command will generate `external_uris.data` collection in the `./rqss_extractor_output` directory.
 
@@ -146,7 +145,7 @@ options for computing freshness of external sources:
 ```
 An example of using the Framework Runner to compute the Availability of External URIs:
 ```
-python3.9 RQSSFramework/RQSS_Framework_Runner.py ./rqss_extractor_output/ --dereferencing --output ./rqss_framework_output
+$ python3.9 RQSSFramework/RQSS_Framework_Runner.py ./rqss_extractor_output/ --dereferencing --output ./rqss_framework_output
 ```
 the above command computes the metric and saves the scores and details of external URIs availability in two `.csv` files in the `./rqss_framework_output` directory.
 
