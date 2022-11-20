@@ -150,7 +150,7 @@ python3.9 RQSSFramework/RQSS_Framework_Runner.py ./rqss_extractor_output/ --dere
 ```
 the above command computes the metric and saves the scores and details of external URIs availability in two `.csv` files in the `./rqss_framework_output` directory.
 
-### Presenttion Layer
+### Presentation Layer
 The presenter layer is the last step in RQSS. The Presenter looks into the framework layer results directory and plots different charts to demonstrate the distribution of data over properties, statements, labels, etc. in some metrics. To deploy the Presenter, use `RQSSFramework/RQSS_Presenter.py` script:
 ```
 usage: RQSS_Presenter.py [-h] [--result-dir RESULT_DIR] [-o OUTPUT_DIR]
