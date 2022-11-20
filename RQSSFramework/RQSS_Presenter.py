@@ -106,6 +106,33 @@ def plot_security(opts: ArgumentParser) -> int:
     return 0
 
 
+def plot_interlinking(opts: ArgumentParser) -> int:
+    input_data_file = os.path.join(
+        opts.result_dir + os.sep + 'interlinking.csv')
+    output_file = os.path.join(
+        opts.output_dir + os.sep + 'interlinking.png')
+
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    csv_data = pd.read_csv(input_data_file, index_col=None, header=0)
+    csv_data.replace(0, np.nan, inplace=True)
+    box_plot = sns.boxplot(palette=["#3498db", "#2ecc71"],
+                           data=csv_data['num_equivalent'], showmeans=True, showfliers=False,
+                           meanprops={"marker": "^",
+                                      "markerfacecolor": "black",
+                                      "markeredgecolor": "black",
+                                      "markersize": "5"}, medianprops={'color': 'red'}, flierprops={"marker": "o", "markersize": "5"})
+    box_plot.set_xlabel(
+        'Distribution of the number of reference properties equivalence')
+    box_plot.set_ylabel("Number of equivalents\nin reference properties")
+    sns.despine(trim=True)
+    plt.savefig(output_file, format='png')
+    plt.close()
+    print('Metric: Interlinking of Reference Properties chart(s) have been plotted in the file: {0}'.format(
+        output_file))
+    return 0
+
+
 def plot_literal_syntax(opts: ArgumentParser) -> int:
     input_data_file = os.path.join(
         opts.result_dir + os.sep + 'ref_literal_syntax.csv')
@@ -164,12 +191,22 @@ def plot_range_consistency(opts: ArgumentParser) -> int:
     output_file = os.path.join(
         opts.output_dir + os.sep + 'range_consistency.png')
 
+    import matplotlib.pyplot as plt
+    import seaborn as sns
     csv_data = pd.read_csv(input_data_file, index_col=None, header=0)
     csv_data['consistency rate'] = 1 - csv_data['fails']/csv_data['total']
-    csv_data['not exixts rate'] = csv_data['not_exixts']/csv_data['total']
-    box_whisker_plot(pd.melt(csv_data[['consistency rate', 'not exixts rate']]),
-                     'Range consistency of reference triples and not exist range rate', 'value', output_file, 'variable')
-
+    box_plot = sns.boxplot(palette=["#3498db", "#2ecc71"],
+                           data=csv_data['consistency rate'], showmeans=True, showfliers=False,
+                           meanprops={"marker": "^",
+                                      "markerfacecolor": "black",
+                                      "markeredgecolor": "black",
+                                      "markersize": "5"}, medianprops={'color': 'red'}, flierprops={"marker": "o", "markersize": "5"})
+    box_plot.set_xlabel(
+        'Distribution of the consistency rate of the reference properties')
+    box_plot.set_ylabel("Consistency Ratio")
+    sns.despine(trim=True)
+    plt.savefig(output_file, format='png')
+    plt.close()
     print('Metric: Range consistency of reference triples chart(s) have been plotted in the file: {0}'.format(
         output_file))
     return 0
@@ -344,8 +381,8 @@ def plot_class_properties_schema_completeness(opts: ArgumentParser) -> int:
     import matplotlib.pyplot as plt
     import seaborn as sns
     csv_data = pd.read_csv(input_data_file, index_col=None, header=0)
-    csv_data['property completeness of class'] = csv_data['num_properties_schema_exists'] / \
-        csv_data['total_refed_properties']
+    csv_data['property completeness of class'] = csv_data['num_properties_with_defined_ref_schema'] / \
+        csv_data['num_total_properties']
     csv_data.replace(0, np.nan, inplace=True)
     box_plot = sns.boxplot(palette=["#3498db", "#2ecc71"],
                            data=csv_data['property completeness of class'], showmeans=True, showfliers=False,
@@ -371,6 +408,7 @@ def plot_schema_based_property_completeness(opts: ArgumentParser) -> int:
 
     import matplotlib.pyplot as plt
     import seaborn as sns
+    plt.figure(figsize=(5, 6))
     csv_data = pd.read_csv(input_data_file, index_col=None, header=0)
     csv_data.replace(0, np.nan, inplace=True)
     box_plot = sns.boxplot(palette=["#3498db", "#2ecc71"],
@@ -380,9 +418,10 @@ def plot_schema_based_property_completeness(opts: ArgumentParser) -> int:
                                       "markeredgecolor": "black",
                                       "markersize": "5"}, medianprops={'color': 'red'}, flierprops={"marker": "o", "markersize": "5"})
     box_plot.set_xlabel(
-        'Distribution of total referenced instances per reference property')
+        'Distribution of total referenced instances per requiered\n reference property (based on schema)')
     box_plot.set_ylabel('Num of referenced instances')
     sns.despine(trim=True)
+
     plt.savefig(output_file, format='png')
     plt.close()
     print('Metric: Property Completeness of References chart(s) have been plotted in the file: {0}'.format(
@@ -407,12 +446,122 @@ def plot_property_completeness(opts: ArgumentParser) -> int:
                                       "markeredgecolor": "black",
                                       "markersize": "5"}, medianprops={'color': 'red'}, flierprops={"marker": "o", "markersize": "5"})
     box_plot.set_xlabel(
-        'Distribution of total referenced instances per requiered reference property (based on schema)')
+        'Distribution of total referenced instances per reference property')
     box_plot.set_ylabel('Num of referenced instances')
     sns.despine(trim=True)
     plt.savefig(output_file, format='png')
     plt.close()
     print('Metric: Schema-based Property Completeness of References chart(s) have been plotted in the file: {0}'.format(
+        output_file))
+    return 0
+
+
+def plot_human_readable_metadata(opts: ArgumentParser) -> int:
+    input_data_file = os.path.join(
+        opts.result_dir + os.sep + 'human_readable_metadata.csv')
+    output_file = os.path.join(
+        opts.output_dir + os.sep + 'human_readable_metadata.png')
+
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    csv_data = pd.read_csv(input_data_file, index_col=None, header=0)
+    csv_data.replace(0, np.nan, inplace=True)
+    df_labels = csv_data[['num_label']].copy().rename(
+        columns={'num_label': 'num'})
+    df_labels['metric'] = 'Labels'
+    df_labels['dataset'] = 'dataset'
+    df_comments = csv_data[['num_comment']].copy().rename(
+        columns={'num_comment': 'num'})
+    df_comments['metric'] = 'Comments'
+    df_comments['dataset'] = 'dataset'
+    data_dist = pd.concat([df_labels, df_comments])
+    ax = sns.boxplot(
+        data=data_dist,
+        x='dataset',
+        y='num',
+        hue='metric',
+        showmeans=True,
+        showfliers=True,
+        meanprops={
+            "marker": "^",
+            "markerfacecolor": "black",
+            "markeredgecolor": "black",
+            "markersize": "5"
+        },
+        medianprops={
+            'color': 'red'
+        },
+        flierprops={
+            "markerfacecolor": "black",
+            "markeredgecolor": "black",
+            "marker": "o",
+            "markersize": "3"
+        }
+    )
+    # ax.set_xticklabels(ax.get_xticklabels(),rotation=90)
+    ax.set_ylabel('Number of labels/commnents')
+    ax.set_xlabel('')
+    plt.legend(frameon=True, title='Distribution')
+    sns.despine(trim=True)
+    plt.autoscale()
+    plt.savefig(output_file, format='png')
+    plt.close()
+    print('Metrics: Human-readable labeling and Commentting of Reference Properties chart(s) have been plotted in the file: {0}'.format(
+        output_file))
+    return 0
+
+
+def plot_multilingual_metadata(opts: ArgumentParser) -> int:
+    input_data_file = os.path.join(
+        opts.result_dir + os.sep + 'multilingual_metadata.csv')
+    output_file = os.path.join(
+        opts.output_dir + os.sep + 'multilingual_metadata.png')
+
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    csv_data = pd.read_csv(input_data_file, index_col=None, header=0)
+    csv_data.replace(0, np.nan, inplace=True)
+    df_labels = csv_data[['num_non_en_label']].copy().rename(
+        columns={'num_non_en_label': 'num'})
+    df_labels['metric'] = 'Labels'
+    df_labels['dataset'] = 'dataset'
+    df_comments = csv_data[['num_non_en_comment']].copy().rename(
+        columns={'num_non_en_comment': 'num'})
+    df_comments['metric'] = 'Comments'
+    df_comments['dataset'] = 'dataset'
+    data_dist = pd.concat([df_labels, df_comments])
+    ax = sns.boxplot(
+        data=data_dist,
+        x='dataset',
+        y='num',
+        hue='metric',
+        showmeans=True,
+        showfliers=True,
+        meanprops={
+            "marker": "^",
+            "markerfacecolor": "black",
+            "markeredgecolor": "black",
+            "markersize": "5"
+        },
+        medianprops={
+            'color': 'red'
+        },
+        flierprops={
+            "markerfacecolor": "black",
+            "markeredgecolor": "black",
+            "marker": "o",
+            "markersize": "3"
+        }
+    )
+    # ax.set_xticklabels(ax.get_xticklabels(),rotation=90)
+    ax.set_ylabel('Number of non-English labels/commnents')
+    ax.set_xlabel('')
+    plt.legend(frameon=True, title='Distribution')
+    sns.despine(trim=True)
+    plt.autoscale()
+    plt.savefig(output_file, format='png')
+    plt.close()
+    print('Metrics: Mutilingual labeling and Commentting of Reference Properties chart(s) have been plotted in the file: {0}'.format(
         output_file))
     return 0
 
@@ -444,6 +593,9 @@ def RQSS_Plot(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] 
         framework_procs.append(p)
     if Path(opts.result_dir + os.sep + 'security.csv').is_file():
         p = Process(target=plot_security(opts))
+        framework_procs.append(p)
+    if Path(opts.result_dir + os.sep + 'interlinking.csv').is_file():
+        p = Process(target=plot_interlinking(opts))
         framework_procs.append(p)
     if Path(opts.result_dir + os.sep + 'ref_literal_syntax.csv').is_file():
         p = Process(target=plot_literal_syntax(opts))
@@ -489,6 +641,12 @@ def RQSS_Plot(argv: Optional[Union[str, List[str]]] = None, prog: Optional[str] 
         framework_procs.append(p)
     if Path(opts.result_dir + os.sep + 'property_completeness.csv').is_file():
         p = Process(target=plot_property_completeness(opts))
+        framework_procs.append(p)
+    if Path(opts.result_dir + os.sep + 'human_readable_metadata.csv').is_file():
+        p = Process(target=plot_human_readable_metadata(opts))
+        framework_procs.append(p)
+    if Path(opts.result_dir + os.sep + 'multilingual_metadata.csv').is_file():
+        p = Process(target=plot_multilingual_metadata(opts))
         framework_procs.append(p)
 
     for proc in framework_procs:
